@@ -17,5 +17,6 @@ namespace backend.Entities
         public int QuestionId { get; set; }
 
         public virtual Exam? Exam { get; set; }
+        public virtual Question? Question { get; set; }
     }
 }
