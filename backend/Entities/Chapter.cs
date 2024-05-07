@@ -20,7 +20,7 @@ namespace backend.Entities
         public int SourceId { get; set; }
         public virtual Source? Source { get; set; }
 
-        public ICollection<Lession>? Lessions { get; set; }
+        public ICollection<Lesson>? Lessions { get; set; }
         public ICollection<Exam>? Exams { get; set; }
     }
 }

@@ -14,7 +14,7 @@ namespace backend.Data
         public virtual DbSet<Chapter> Chapters { get; set; }
         public virtual DbSet<Exam> Exams { get; set; }
         public virtual DbSet<ForgotPasswordRequest> ForgotPasswordRequests { get; set; }
-        public virtual DbSet<Lession> Lessions { get; set; }
+        public virtual DbSet<Lesson> Lessons { get; set; }
         public virtual DbSet<Option> Options { get; set; }
         public virtual DbSet<Question> Questions { get; set; }
         public virtual DbSet<QuizQuestion> QuizQuestions { get; set; }
