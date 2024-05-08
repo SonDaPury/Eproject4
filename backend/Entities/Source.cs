@@ -23,7 +23,7 @@ namespace backend.Entities
         public string? Slug { get; set; }
 
         [Column("status")]
-        public byte Status { get; set; }
+        public bool Status { get; set; }
 
         [Column("benefit")]
         public string[]? Benefit { get; set; }

@@ -1,0 +1,90 @@
+﻿using AutoMapper;
+using backend.Dtos;
+using backend.Entities;
+using backend.Service.Interface;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace backend.Controller
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AttempController : ControllerBase
+    {
+        private readonly IAttempService _attempService;
+        private readonly IMapper _mapper;
+
+        public AttempController(IAttempService attempService, IMapper mapper)
+        {
+            _attempService = attempService;
+            _mapper = mapper;
+        }
+
+        // POST: api/Attemps
+        [HttpPost]
+        public async Task<ActionResult<AttempDto>> CreateAttemp([FromBody] AttempDto attempDto)
+        {
+            if (attempDto == null)
+            {
+                return BadRequest("Attemp data is required");
+            }
+
+            var attemp = _mapper.Map<Attemp>(attempDto);
+            var createdAttemp = await _attempService.CreateAsync(attemp);
+            var createdAttempDto = _mapper.Map<AttempDto>(createdAttemp);
+            return CreatedAtAction(nameof(GetAttemp), new { id = createdAttempDto.Id }, createdAttempDto);
+        }
+
+        // GET: api/Attemps
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AttempDto>>> GetAllAttemps()
+        {
+            var attemps = await _attempService.GetAllAsync();
+            var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
+            return Ok(attempDtos);
+        }
+
+        // GET: api/Attemps/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<AttempDto>> GetAttemp(int id)
+        {
+            var attemp = await _attempService.GetByIdAsync(id);
+            if (attemp == null)
+            {
+                return NotFound($"Attemp with ID {id} not found.");
+            }
+            var attempDto = _mapper.Map<AttempDto>(attemp);
+            return Ok(attempDto);
+        }
+
+        // PUT: api/Attemps/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAttemp(int id, [FromBody] AttempDto attempDto)
+        {
+            if (attempDto == null || id != attempDto.Id)
+            {
+                return BadRequest("Invalid attemp data");
+            }
+
+            var attemp = _mapper.Map<Attemp>(attempDto);
+            var updatedAttemp = await _attempService.UpdateAsync(id, attemp);
+            if (updatedAttemp == null)
+            {
+                return NotFound($"Attemp with ID {id} not found.");
+            }
+            return Ok(_mapper.Map<AttempDto>(updatedAttemp));
+        }
+
+        // DELETE: api/Attemps/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAttemp(int id)
+        {
+            var success = await _attempService.DeleteAsync(id);
+            if (!success)
+            {
+                return NotFound($"Attemp with ID {id} not found.");
+            }
+            return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
+        }
+    }
+}
