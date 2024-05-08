@@ -5,13 +5,13 @@ import ExampleRedux from "../../ExampleRedux.jsx";
 
 function DefaultLayout({ children }) {
   return (
-    <div>
+    <div className="flex flex-col h-[100vh]">
       <Header />
       {/*<ExampleRedux />*/}
-      <Box>
+      <Box sx={{ flex: 1 }}>
         <Box>{children}</Box>
       </Box>
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 }
