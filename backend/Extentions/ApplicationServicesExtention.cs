@@ -24,6 +24,7 @@ namespace backend.Extentions
             services.AddScoped<ISourceService, SourceService>();
             services.AddScoped<ISubTopicService, SubTopicService>();
             services.AddScoped<ITopicService, TopicService>();
+            services.AddAutoMapper(typeof(CreateAutoMapper));
 
             services.Configure<ApiBehaviorOptions>(options =>
             {

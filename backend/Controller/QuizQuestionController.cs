@@ -1,0 +1,90 @@
+﻿using AutoMapper;
+using backend.Dtos;
+using backend.Entities;
+using backend.Service.Interface;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace backend.Controller
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class QuizQuestionController : ControllerBase
+    {
+        private readonly IQuizQuestionService _quizQuestionService;
+        private readonly IMapper _mapper;
+
+        public QuizQuestionController(IQuizQuestionService quizQuestionService, IMapper mapper)
+        {
+            _quizQuestionService = quizQuestionService;
+            _mapper = mapper;
+        }
+
+        // POST: api/QuizQuestions
+        [HttpPost]
+        public async Task<ActionResult<QuizQuestionDto>> CreateQuizQuestion([FromBody] QuizQuestionDto quizQuestionDto)
+        {
+            if (quizQuestionDto == null)
+            {
+                return BadRequest("Quiz question data is required");
+            }
+
+            var quizQuestion = _mapper.Map<QuizQuestion>(quizQuestionDto);
+            var createdQuizQuestion = await _quizQuestionService.CreateAsync(quizQuestion);
+            var createdQuizQuestionDto = _mapper.Map<QuizQuestionDto>(createdQuizQuestion);
+            return CreatedAtAction(nameof(GetQuizQuestion), new { id = createdQuizQuestionDto.Id }, createdQuizQuestionDto);
+        }
+
+        // GET: api/QuizQuestions
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetAllQuizQuestions()
+        {
+            var quizQuestions = await _quizQuestionService.GetAllAsync();
+            var quizQuestionDtos = _mapper.Map<List<QuizQuestionDto>>(quizQuestions);
+            return Ok(quizQuestionDtos);
+        }
+
+        // GET: api/QuizQuestions/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<QuizQuestionDto>> GetQuizQuestion(int id)
+        {
+            var quizQuestion = await _quizQuestionService.GetByIdAsync(id);
+            if (quizQuestion == null)
+            {
+                return NotFound($"Quiz question with ID {id} not found.");
+            }
+            var quizQuestionDto = _mapper.Map<QuizQuestionDto>(quizQuestion);
+            return Ok(quizQuestionDto);
+        }
+
+        // PUT: api/QuizQuestions/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateQuizQuestion(int id, [FromBody] QuizQuestionDto quizQuestionDto)
+        {
+            if (quizQuestionDto == null)
+            {
+                return BadRequest("Invalid quiz question data");
+            }
+
+            var quizQuestion = _mapper.Map<QuizQuestion>(quizQuestionDto);
+            var updatedQuizQuestion = await _quizQuestionService.UpdateAsync(id, quizQuestion);
+            if (updatedQuizQuestion == null)
+            {
+                return NotFound($"Quiz question with ID {id} not found.");
+            }
+            return Ok(_mapper.Map<QuizQuestionDto>(updatedQuizQuestion));
+        }
+
+        // DELETE: api/QuizQuestions/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteQuizQuestion(int id)
+        {
+            var success = await _quizQuestionService.DeleteAsync(id);
+            if (!success)
+            {
+                return NotFound($"Quiz question with ID {id} not found.");
+            }
+            return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
+        }
+    }
+}
