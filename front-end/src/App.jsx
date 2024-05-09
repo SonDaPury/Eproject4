@@ -2,6 +2,7 @@ import { publicRoutes, privateRoutes } from "./routes";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { DefaultLayout } from "./components/layout";
 import { Fragment } from "react";
+import NotFound from "./components/NotFound";
 
 function App() {
   return (
@@ -31,6 +32,14 @@ function App() {
                 />
               );
             })}
+            <Route
+              path="*"
+              element={
+                <DefaultLayout>
+                  <NotFound />
+                </DefaultLayout>
+              }
+            />
           </Routes>
         </div>
       </>

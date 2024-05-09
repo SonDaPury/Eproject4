@@ -9,6 +9,7 @@
   box-sizing: border-box;
   vertical-align: baseline;
 }
+
 *[hidden] {
   display: none;
 }
@@ -30,6 +31,7 @@ q:after {
   content: "";
   content: none;
 }
+
 table {
   border-collapse: collapse;
   border-spacing: 0;
