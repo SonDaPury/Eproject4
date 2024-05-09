@@ -1,7 +1,12 @@
-using backend.Data;
+﻿using backend.Data;
 using backend.Extentions;
 using backend.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Net.Mail;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +25,81 @@ builder.Services.AddDbContext<LMSContext>(
 );
 builder.Services.AddAppServices();
 
+// Jwt Config
+builder.Services
+    .AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(o =>
+    {
+        var Key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]);
+        o.SaveToken = true;
+        o.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            ValidAudience = builder.Configuration["JWT:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Key),
+            ClockSkew = TimeSpan.Zero
+        };
+        o.Events = new JwtBearerEvents()
+        {
+            OnAuthenticationFailed = (context) =>
+            {
+                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                {
+                    context.Response.Headers.Append("IS-TOKEN-EXPIRED", "true");
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+    // Thêm thông tin xác thực
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter 'Bearer {token}'",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+    c.AddSecurityDefinition("Bearer", securityScheme);
+    var securityRequirement = new OpenApiSecurityRequirement
+    {
+        { securityScheme, new[] { "Bearer" } }
+    };
+    c.AddSecurityRequirement(securityRequirement);
+});
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<SmtpClient>(provider =>
+{
+    // Truy cập Configuration để lấy các thông tin cấu hình của SmtpClient từ appsettings hoặc các nguồn khác
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var smtpClient = new SmtpClient();
+    //smtpClient.Host = configuration["SmtpConfig:HostName"];
+    smtpClient.Port = int.Parse(configuration["SmtpConfig:Port"]);
+    //smtpClient.EnableSsl = bool.Parse(configuration["SmtpConfig:EnableSsl"]);
+    smtpClient.Credentials = new System.Net.NetworkCredential(
+        configuration["SmtpConfig:Username"],
+        configuration["SmtpConfig:Password"]
+    );
+    return smtpClient;
+});
 
 var app = builder.Build();
 
@@ -36,6 +116,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseMiddleware<GlobalErrorHandlingMiddleware>();
+
+app.UseCors("AllowLocalHost");
 
 app.MapControllers();
 
