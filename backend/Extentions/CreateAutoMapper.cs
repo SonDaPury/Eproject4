@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using backend.Dtos;
+using backend.Dtos.UserDto;
 using backend.Entities;
 
 namespace backend.Extentions
@@ -30,7 +31,8 @@ namespace backend.Extentions
 
             CreateMap<Topic, TopicDto>().ReverseMap();
 
-
+            CreateMap<User, UserLoginDto>().ReverseMap();
+            CreateMap<User, UserRegisterDto>().ReverseMap();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using backend.Attributes;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -34,6 +35,7 @@ namespace backend.Controller
 
         // GET: api/Topics
         [HttpGet]
+        [JwtAuthorize("user")]
         public async Task<IActionResult> GetAllTopics()
         {
             var topics = await _topicService.GetAllAsync();
