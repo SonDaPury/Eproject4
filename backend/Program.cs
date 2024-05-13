@@ -131,6 +131,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("AllowLocalHost");
 
 app.UseEndpoints(endpoints =>
 {
@@ -142,7 +143,6 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<GlobalErrorHandlingMiddleware>();
 
-app.UseCors("AllowLocalHost");
 
 app.MapControllers();
 
