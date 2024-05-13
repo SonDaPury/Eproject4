@@ -6,11 +6,14 @@ const ButtonCustomize = ({
   width = "130px",
   height = "40px",
   fontSize = "12px",
+  backgroundColor = "main.primary",
+  variant = "contained",
+  sx = {},
 }) => {
   return (
     <Box>
       <Button
-        variant="contained"
+        variant={variant}
         sx={{
           color: "white",
           borderRadius: 0,
@@ -18,6 +21,8 @@ const ButtonCustomize = ({
           width: width,
           height: height,
           fontSize: fontSize,
+          backgroundColor: backgroundColor,
+          ...sx,
         }}>
         {text}
       </Button>

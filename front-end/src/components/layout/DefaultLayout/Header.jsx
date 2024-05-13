@@ -12,10 +12,12 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { ReactComponent as LmsLogo } from "@eproject4/assets/images/logo.svg";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Badge, styled, SvgIcon } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { register, getToken } from "@eproject4/services/auth";
+import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 
 const pages = [
   { text: "Khóa học", path: "/khoa-hoc" },
@@ -35,6 +37,8 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 function Header() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const token = getToken();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -167,7 +171,17 @@ function Header() {
                 </Link>
               ))}
             </Box>
-            <Box sx={{ flexGrow: 0, display: "flex" }}>
+            <Box sx={{ display: token ? "none" : "flex" }}>
+              <ButtonCustomize text="Đăng ký" width="100px" />
+              <ButtonCustomize
+                text="Đăng nhập"
+                width="110px"
+                backgroundColor="#0E1640"
+                variant="outlined"
+                sx={{ border: "0.5px solid #FFFFFF", marginLeft: "10px" }}
+              />
+            </Box>
+            <Box sx={{ flexGrow: 0, display: token ? "flex" : "none" }}>
               <Box sx={{ marginRight: "30px" }}>
                 <button className="mr-[10px]">
                   <FavoriteBorderIcon sx={{ color: "#FFFFFF" }} />
