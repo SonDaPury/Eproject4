@@ -103,7 +103,8 @@ builder.Services.AddSingleton<SmtpClient>(provider =>
     return smtpClient;
 });
 
-builder.Services.AddSignalR(e => {
+builder.Services.AddSignalR(e =>
+{
     e.MaximumReceiveMessageSize = 102400000;
 }); ;
 
@@ -113,7 +114,7 @@ builder.Services.AddCors(
             name: "AllowLocalHost",
             policy =>
             {
-                policy.WithOrigins("http://localhost:5187").AllowAnyHeader().AllowAnyMethod();
+                policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
             }
         )
 );
@@ -123,8 +124,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  app.UseSwagger();
-  app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.UseDeveloperExceptionPage();
 }
 
