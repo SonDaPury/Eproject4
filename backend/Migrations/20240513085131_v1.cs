@@ -167,6 +167,26 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserConnections",
+                columns: table => new
+                {
+                    ConnectionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    ConnectedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DisconnectedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserConnections", x => x.ConnectionId);
+                    table.ForeignKey(
+                        name: "FK_UserConnections_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sources",
                 columns: table => new
                 {
@@ -176,7 +196,7 @@ namespace backend.Migrations
                     description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     slug = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    status = table.Column<byte>(type: "tinyint", nullable: false),
+                    status = table.Column<bool>(type: "bit", nullable: false),
                     benefit = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     requirement = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     video_intro = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -233,6 +253,7 @@ namespace backend.Migrations
                     time_limit = table.Column<int>(type: "int", nullable: false),
                     max_question = table.Column<int>(type: "int", nullable: false),
                     status = table.Column<bool>(type: "bit", nullable: false),
+                    is_started = table.Column<bool>(type: "bit", nullable: false),
                     chapter_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -397,6 +418,11 @@ namespace backend.Migrations
                 column: "topic_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserConnections_UserId",
+                table: "UserConnections",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_role_id",
                 table: "Users",
                 column: "role_id");
@@ -425,6 +451,9 @@ namespace backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "QuizQuestions");
+
+            migrationBuilder.DropTable(
+                name: "UserConnections");
 
             migrationBuilder.DropTable(
                 name: "UserRefreshTokens");

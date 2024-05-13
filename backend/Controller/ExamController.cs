@@ -86,5 +86,47 @@ namespace backend.Controller
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
+
+
+        [HttpPost("start/{examId}")]
+        public async Task<IActionResult> StartExam(int examId)
+        {
+            var userId = 3;
+                //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
+            if (userId == 0)
+            {
+                return Unauthorized("User is not identified");
+            }
+
+            try
+            {
+                await _examService.StartExam(examId, userId);
+                return Ok(new { message = "Exam started successfully. Time updates are being sent." });
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("end/{examId}")]
+        public async Task<IActionResult> EndExam(int examId)
+        {
+            var userId = 3;
+            //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
+            if (userId == 0)
+            {
+                return Unauthorized("User is not identified");
+            }
+
+            try
+            {
+                await _examService.EndExam(examId, userId);
+                return Ok(new { message = "Bạn đã hoàn thành bài thi" });
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

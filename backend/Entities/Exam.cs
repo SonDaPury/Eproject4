@@ -26,6 +26,12 @@ namespace backend.Entities
         [Column("status")]
         public bool Status { get; set; }
 
+        /// <summary>
+        /// ktra xem đã bắt đầu thi chưa để xác định trong 1 tg chỉ có 1 bài thi của 1 user dc bắt đầu
+        /// </summary>
+        [Column("is_started")]
+        public bool IsStarted { get; set; } = false;
+
         [Column("chapter_id")]
         public int ChapterId { get; set; }
         public virtual Chapter? Chapter { get; set; }

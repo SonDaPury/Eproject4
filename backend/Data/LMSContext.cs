@@ -24,6 +24,8 @@ namespace backend.Data
         public virtual DbSet<Topic> Topics { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserRefreshTokens> UserRefreshTokens { get; set; }
+
+        public virtual DbSet<UserConnection> UserConnections { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>().HasIndex(ul => new { ul.Username }).IsUnique();

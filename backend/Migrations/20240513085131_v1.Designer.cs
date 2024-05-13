@@ -12,7 +12,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(LMSContext))]
-    [Migration("20240507043705_v1")]
+    [Migration("20240513085131_v1")]
     partial class v1
     {
         /// <inheritdoc />
@@ -132,6 +132,10 @@ namespace backend.Migrations
                     b.Property<int>("ChapterId")
                         .HasColumnType("int")
                         .HasColumnName("chapter_id");
+
+                    b.Property<bool>("IsStarted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_started");
 
                     b.Property<int>("MaxQuestion")
                         .HasColumnType("int")
@@ -358,8 +362,8 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("slug");
 
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint")
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit")
                         .HasColumnName("status");
 
                     b.Property<int>("SubTopicId")
@@ -481,6 +485,27 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("backend.Entities.UserConnection", b =>
+                {
+                    b.Property<string>("ConnectionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("ConnectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DisconnectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConnectionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserConnections");
                 });
 
             modelBuilder.Entity("backend.Entities.UserRefreshTokens", b =>
@@ -638,6 +663,17 @@ namespace backend.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("backend.Entities.UserConnection", b =>
+                {
+                    b.HasOne("backend.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("backend.Entities.Attemp", b =>
