@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const request = axios.create({
-  baseURL: "http://localhost:5187",
-  timeout: 10000,
+  baseURL: "http://localhost:5187/api",
 });
 
 export default request;
