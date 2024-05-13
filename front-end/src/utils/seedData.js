@@ -1,5 +1,152 @@
+import Courses from "@eproject4/pages/user/Courses";
+
 const seedData = () => {
-  return [
+  const courses= [
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Bussiness",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Bussiness",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Design",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Design",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Design",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Design",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Design",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Design",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
+    {
+      imageThumbnail: "https://bom.so/vV4j7x",
+      topic: "Development",
+      title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
+      rating: 5,
+      views: 3000,
+      price: 200,
+    },
     {
       imageThumbnail: "https://bom.so/vV4j7x",
       topic: "Development",
@@ -154,6 +301,10 @@ const seedData = () => {
       price: 200,
     },
   ];
+  return courses.map((course, index) => ({
+    id: index + 1,  
+    ...course
+  }));
 };
 
 export default seedData;
