@@ -20,6 +20,24 @@ namespace backend.Controller
             _mapper = mapper;
         }
 
+        [HttpGet("detail/{examId}")]
+        public async Task<IActionResult> GetExamDetails(int examId)
+        {
+            try
+            {
+                var examDetails = await _examService.GetDetailsExam(examId);
+                if (examDetails == null)
+                    return NotFound();
+
+                return Ok(examDetails);
+            }
+            catch (Exception )
+            {
+                // Log the exception details here
+                return StatusCode(500,new { message = "Internal Server Error" });
+            }
+        }
+
         // POST: api/Exams
         [HttpPost]
         public async Task<ActionResult<ExamDto>> CreateExam([FromBody] ExamDto examDto)

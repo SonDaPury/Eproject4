@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using backend.Exceptions;
+using System.Net;
 using System.Text.Json;
 
 namespace backend.Middleware
@@ -42,6 +43,24 @@ namespace backend.Middleware
                 stackTrace = exception.StackTrace;
             }
             else if (exceptionType == typeof(KeyNotFoundException))
+            {
+                status = HttpStatusCode.Unauthorized;
+                message = exception.Message;
+                stackTrace = exception.StackTrace;
+            }
+            else if (exceptionType == typeof(BadRequestException))
+            {
+                status = HttpStatusCode.Unauthorized;
+                message = exception.Message;
+                stackTrace = exception.StackTrace;
+            }
+            else if (exceptionType == typeof(NotFoundException))
+            {
+                status = HttpStatusCode.Unauthorized;
+                message = exception.Message;
+                stackTrace = exception.StackTrace;
+            }
+            else if (exceptionType == typeof(ArgumentException))
             {
                 status = HttpStatusCode.Unauthorized;
                 message = exception.Message;

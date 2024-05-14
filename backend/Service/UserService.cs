@@ -72,6 +72,30 @@ namespace backend.Service
             return newUser;
         }
 
+
+        public async Task<bool> DeleteUser (int userId){
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return false;
+            var sources = await _context.Sources.Where(s => s.UserId == userId).ToListAsync();
+            if(sources != null)
+            {
+                _context.Sources.RemoveRange(sources);
+            }
+            var answers = await _context.Answers.Where(a => a.UserId == userId).ToListAsync();
+            if(answers != null)
+            {
+                _context.Answers.RemoveRange(answers);
+            }
+            var attemps = await _context.Attemps.Where(a => a.UserId == userId).ToListAsync();
+            if(attemps != null)
+            {
+                _context.Attemps.RemoveRange(attemps);
+            }
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<User?> GetByEmail(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -269,7 +293,7 @@ namespace backend.Service
             }
             else
             {
-                throw new Exception("Invalid password or user does not exist.");
+                throw new BadRequestException("Invalid password or user does not exist.");
             }
         }
 

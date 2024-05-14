@@ -35,8 +35,6 @@ namespace backend.Service
         public async Task<Topic?> UpdateAsync(int id, Topic updatedItem)
         {
             var topic = await _context.Topics.FindAsync(id);
-            if (topic == null) return null;
-
             topic.TopicName = updatedItem.TopicName;
             await _context.SaveChangesAsync();
             return topic;

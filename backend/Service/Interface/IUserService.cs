@@ -24,5 +24,6 @@ namespace backend.Service.Interface
         Task ResetPassword(ResetPasswordDto user);
         Task Logout(Tokens tokens);
         Task<List<User>> GetListUsers();
+        Task<bool> DeleteUser(int userId);
     }
 }
