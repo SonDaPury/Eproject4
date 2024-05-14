@@ -61,6 +61,7 @@ function Courses() {
   });
 
   const topics = removeDuplicate(courseTopics);
+  console.log(topics);
   const data = seedData();
 
   const handleClickFilter = () => {
@@ -641,7 +642,7 @@ function Courses() {
                         }
                       })}
                     </Swiper>
-                    <ButtonCustomize text="Xem tất cả" />
+                    <ButtonCustomize text="Xem tất cả"  navigateTo={`/category/${topic}`} />
                   </Box>
                 </Box>
               </Box>

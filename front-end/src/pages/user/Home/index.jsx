@@ -11,13 +11,23 @@ import "swiper/css";
 import "swiper/css/navigation";
 
 import "@eproject4/styles/styles.css";
-// import { useState } from "react";
+import ButtonCustomize from "@eproject4/components/ButtonCustomize";
+import CourseGrid from "@eproject4/components/CourseGrid";
 
 function Home() {
   const Allcourses = seedData();
-  const courses = Allcourses.slice(0, 8);
+  const courses = Allcourses.slice(0, 10);
   const couresFive = Allcourses.slice(0, 5);
-  // const [isShowFilter, setIsShowFilter] = useState(false);
+  const sections = [
+    {
+      title: "Top khóa học bán chạy",
+      courses: courses,
+    },
+    {
+      title: "Khóa học đề xuất",
+      courses: couresFive,
+    },
+  ];
   return (
     <Box
       sx={{
@@ -75,9 +85,7 @@ function Home() {
                       variant="subtitle1">
                       {course.title}
                     </Typography>
-                    <Button variant="contained" sx={{ mt: 2 }}>
-                      Tạo Tài Khoản
-                    </Button>
+                    <ButtonCustomize text="Tạo tài khoản" />
                   </Box>
                 </Box>
                 <Box sx={{ width: "50%" }}>
@@ -111,10 +119,11 @@ function Home() {
           </div>
         </Box>
         {/* Danh Muc */}
-        <Box className="text-center pt-[30px] " maxWidth="1320px" margin="auto">
+        <Box className="text-center pt-[30px] ">
           <Typography
+            sx={{ "font-size": "40px" }}
             variant="h6"
-            className="text-black font-roboto text-xl font-medium leading-none mb-[34px]">
+            className="text-black font-roboto text-xl font-medium leading-none mb-[34px] ">
             Danh mục khóa học
           </Typography>
           <Box
@@ -153,7 +162,6 @@ function Home() {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    // padding: "0px 23px",
                   }}>
                   <Card
                     sx={{
@@ -200,73 +208,18 @@ function Home() {
             </Swiper>
           </Box>
         </Box>
-        {/* Top khóa học bán chạy*/}
-        <Box sx={{ backgroundColor: "#F5F7FA", marginTop: "34px" }}>
-          {/* Outer box to extend background to full width */}
-          <Box sx={{ maxWidth: "1320px", margin: "auto" }}>
-            {/* Inner box to constrain content width */}
-            <Typography
-              sx={{ pt: "30px", mb: "34px" }}
-              variant="h6"
-              className="text-black font-roboto text-xl font-medium leading-none text-center">
-              Top khóa học bán chạy
-            </Typography>
-            <Grid
-              container
-              spacing={2}
-              textAlign="center"
-              sx={{ px: 2, py: 3 }}>
-              {courses.map((course) => (
-                <Grid item xs={12} sm={6} md={4} lg={2.4} key={course.id}>
-                  {/* Responsive Grid setup: xs=12 for mobiles, sm=6 for tablets, md=4 for small desktops, lg=2.4 for large desktops */}
-                  <CardCourse
-                    id={course.id}
-                    path={`/course/${course.id}`}
-                    category={course.topic}
-                    price={`$${course.price}`}
-                    title={course.title}
-                    rating={course.rating}
-                    students={course.views}
-                    image={course.imageThumbnail}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        </Box>
 
-        {/* Khóa học đề xuất*/}
-        <Box sx={{ marginTop: "34px" }}>
-          <Typography
-            sx={{ pt: "30px", mb: "34px" }}
-            variant="h6"
-            className="text-black font-roboto text-xl font-medium leading-none text-center">
-            Khóa học đề xuất
-          </Typography>
-          <Grid
-            container
-            spacing={2}
-            textAlign="center"
-            sx={{ px: 2, py: 3, maxWidth: "1320px", margin: "auto" }}>
-            {couresFive.map((course) => (
-              <Grid item xs={12} sm={6} md={4} lg={2.4} key={course.id}>
-                {/* Responsive Grid setup: xs=12 for mobiles, sm=6 for tablets, md=4 for small desktops, lg=2.4 for large desktops */}
-                <CardCourse
-                  id={course.id}
-                  path={`/course/${course.id}`}
-                  category={course.topic}
-                  price={`$${course.price}`}
-                  title={course.title}
-                  rating={course.rating}
-                  students={course.views}
-                  image={course.imageThumbnail}
-                />
-              </Grid>
-            ))}
-          </Grid>
-          <Box sx={{ textAlign: "center", mt: 2 }}>
-            <Button variant="contained">Tạo Tài Khoản</Button>
-          </Box>
+        {/* đâsdsadas*/}
+        <Box sx={{ marginTop: "50px" }}>
+          {sections.map((section, index) => (
+            <CourseGrid
+              key={index}
+              title={section.title}
+              courses={section.courses}
+              index={index}
+              showViewAllButton={section.courses.length == 5}
+            />
+          ))}
         </Box>
 
         {/* Learn From Everywhere */}
@@ -303,7 +256,11 @@ function Home() {
                 alignItems: { xs: "center", md: "flex-start" },
                 width: { xs: "100%", md: "50%" },
               }}>
-              <Typography variant="h4" component="h2" gutterBottom>
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: 600 }}
+                component="h2"
+                gutterBottom>
                 Learn From Everywhere
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
@@ -324,13 +281,10 @@ function Home() {
                   <Typography variant="subtitle1">Courses</Typography>
                 </Grid>
               </Grid>
-              <Button variant="contained" color="primary">
-                Hãy Cùng Học Tập
-              </Button>
+              <ButtonCustomize text="Hãy cùng học tập" width="158px" />
             </Box>
           </Box>
         </Box>
-
         {/* Email Send */}
         <Grid
           container
@@ -436,13 +390,7 @@ function Home() {
                   required
                 />
                 <Box sx={{ paddingLeft: { xs: "0px", md: "27px" } }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    sx={{ height: "56px", width: "128px" }}>
-                    Liên Hệ
-                  </Button>
+                  <ButtonCustomize text="Liên hệ" width="128px" />
                 </Box>
               </Box>
             </Box>

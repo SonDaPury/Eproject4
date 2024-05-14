@@ -7,7 +7,7 @@ const seedData = () => {
       topic: "Development",
       title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
       rating: 5,
-      views: 3000,
+      views: 4000,
       price: 200,
     },
     {
@@ -55,7 +55,7 @@ const seedData = () => {
       topic: "Development",
       title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
       rating: 5,
-      views: 3000,
+      views: 5000,
       price: 200,
     },
     {
@@ -71,7 +71,7 @@ const seedData = () => {
       topic: "Development",
       title: "Machine Learning A-Z™: Hands-On Python & R In Data...",
       rating: 5,
-      views: 3000,
+      views: 7000,
       price: 200,
     },
 
