@@ -11,6 +11,7 @@ namespace backend.Extentions
     {
         public static IServiceCollection AddAppServices(this IServiceCollection services)
         {
+            services.AddScoped<IElasticSearchRepository,ElasticSearchRepository>();
             services.AddScoped<LMSContext>();
             services.AddScoped<IAnswerService,AnswerService>();
             services.AddScoped<IAttempService,AttempService>();
