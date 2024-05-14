@@ -1,5 +1,6 @@
 ﻿using backend.Data;
 using backend.Entities;
+using backend.Exceptions;
 using backend.Helper;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.SignalR;
@@ -28,6 +29,27 @@ namespace backend.Service
                 //.Include(e => e.Answers) // Include associated answers
                 .ToListAsync();
         }
+
+        public async Task<dynamic> GetDetailsExam(int examId)
+        {
+            var exam = await _context.Exams
+                .Where(e => e.Id == examId)
+                .Select(e => new
+                {
+                    e.Id,
+                    e.Title,
+                    e.TimeLimit,
+                    Questions = e.QuizQuestions.Select(qq => new
+                    {
+                        QuestionText = qq.Question.Content,
+                        Options = qq.Question.Options.Select(o => new { o.Answer, o.IsCorrect })
+                    })
+                })
+                .FirstOrDefaultAsync();
+            
+            return exam ?? throw new NotFoundException($"exam not found with id : {examId} ");
+        }
+
 
         public async Task<Exam?> GetByIdAsync(int id)
         {
@@ -91,10 +113,10 @@ namespace backend.Service
             _continueExam = true;
 
             while (DateTime.UtcNow < endTime && _continueExam == true)
-            { 
+            {
                 var remainingTime = endTime - DateTime.UtcNow;
                 var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
-                await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate",formattedTime);
+                await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
                 await Task.Delay(1000);
             }
             exam.IsStarted = false;
@@ -135,8 +157,8 @@ namespace backend.Service
                 // Xử lý trường hợp DisconnectedAt hoặc ConnectedAt không có giá trị
                 throw new Exception("DisconnectedAt or ConnectedAt not found");
             }
-            
-        } 
+
+        }
     }
 
 }

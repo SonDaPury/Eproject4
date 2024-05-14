@@ -35,7 +35,7 @@ namespace backend.Controller
             var createdAttempDto = _mapper.Map<AttempDto>(createdAttemp);
             return CreatedAtAction(nameof(GetAttemp), new { id = createdAttempDto.Id }, createdAttempDto);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -52,7 +52,7 @@ namespace backend.Controller
             var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
             return Ok(attempDtos);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -69,7 +69,7 @@ namespace backend.Controller
             var attempDto = _mapper.Map<AttempDto>(attemp);
             return Ok(attempDto);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }

@@ -32,7 +32,7 @@ namespace backend.Controller
                 return Ok(data);
 
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { massage = ex.Message });
             }
@@ -48,11 +48,23 @@ namespace backend.Controller
                 var data = _mapper.Map<ListUserDto>(user);
                 return Ok(data);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { massage = ex.Message });
             }
         }
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser (int userId)
+        {
+            
+             var success = await _userService.DeleteUser(userId);
+            if (!success)
+            {
+                return NotFound(new { message = $"Exam with ID {userId} not found." });
+            }
+            return NoContent();
+        }
+
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login([FromBody] UserLoginDto loginViewModel)
         {
@@ -75,7 +87,7 @@ namespace backend.Controller
                 var newUser = await _userService.Create(data);
                 return Ok(newUser);
             }
-            catch (ArgumentException ex)
+            catch (BadRequestException ex)
             {
                 return BadRequest(new { massage = ex.Message });
             }
@@ -103,7 +115,7 @@ namespace backend.Controller
                 _userService.SendConfirmationEmail(isUserExists.Email, confirmationCode);
                 return Ok(new { massage = "Confirmation email sent." });
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { massage = ex.Message });
             }
@@ -137,10 +149,15 @@ namespace backend.Controller
             {
                 return BadRequest(new { massage = ex.Message });
             }
-            //catch (NotFoundException ex)
-            //{
-            //    return NotFound(ex.Message);
-            //}
+            catch (BadRequestException ex)
+            {
+                return BadRequest(new { massage = ex.Message });
+            }
+            catch (NotFoundException ex)
+            {
+                return BadRequest(new { massage = ex.Message });
+            }
+           
         }
 
         [HttpPut("change-password")]
