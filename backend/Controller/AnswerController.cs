@@ -26,22 +26,36 @@ namespace backend.Controller
         {
             if (answerDto == null)
             {
-                return BadRequest("Answer data is required");
+                return BadRequest(new { message = "Answer data is required" });
             }
-
+            try
+            {
             var answer = _mapper.Map<Answer>(answerDto);
             var createdAnswer = await _answerService.CreateAsync(answer);
             var createdAnswerDto = _mapper.Map<AnswerDto>(createdAnswer);
             return CreatedAtAction(nameof(GetAnswer), new { id = createdAnswerDto.Id }, createdAnswerDto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
         }
 
         // GET: api/Answers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AnswerDto>>> GetAllAnswers()
         {
+            try
+            {
             var answers = await _answerService.GetAllAsync();
             var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
             return Ok(answerDtos);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // GET: api/Answers/5
@@ -51,7 +65,7 @@ namespace backend.Controller
             var answer = await _answerService.GetByIdAsync(id);
             if (answer == null)
             {
-                return NotFound($"Answer with ID {id} not found.");
+                return NotFound(new { message = $"Answer with ID {id} not found." });
             }
             var answerDto = _mapper.Map<AnswerDto>(answer);
             return Ok(answerDto);
@@ -61,16 +75,16 @@ namespace backend.Controller
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAnswer(int id, [FromBody] AnswerDto answerDto)
         {
-            if (answerDto == null || id != answerDto.Id)
+            if (answerDto == null)
             {
-                return BadRequest("Invalid answer data");
+                return BadRequest(new { message = "Invalid answer data" });
             }
 
             var answer = _mapper.Map<Answer>(answerDto);
             var updatedAnswer = await _answerService.UpdateAsync(id, answer);
             if (updatedAnswer == null)
             {
-                return NotFound($"Answer with ID {id} not found.");
+                return NotFound(new { message = $"Answer with ID {id} not found." });
             }
             return Ok(_mapper.Map<AnswerDto>(updatedAnswer));
         }
@@ -82,7 +96,7 @@ namespace backend.Controller
             var success = await _answerService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Answer with ID {id} not found.");
+                return NotFound(new { message = $"Answer with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }

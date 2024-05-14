@@ -1,5 +1,6 @@
 ﻿using backend.Data;
 using backend.Entities;
+using backend.Exceptions;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,24 +24,26 @@ namespace backend.Service
 
         public async Task<List<Attemp>> GetAllAsync()
         {
-            return await _context.Attemps
+            var attemps = await _context.Attemps
                 //.Include(a => a.User) // Includes the User associated with the Attemp
                 //.Include(a => a.Answers) // Includes Answers related to the Attemp
                 .ToListAsync();
+            return attemps ?? throw new NotFoundException("list attemp notfound");
         }
 
         public async Task<Attemp?> GetByIdAsync(int id)
         {
-            return await _context.Attemps
-                //.Include(a => a.User) // Include the User for full context
-                //.Include(a => a.Answers) // Include Answers to provide a complete view of the Attemp
+            var attemp = await _context.Attemps
+            //.Include(a => a.User) // Include the User for full context
+            //.Include(a => a.Answers) // Include Answers to provide a complete view of the Attemp
             .FirstOrDefaultAsync(a => a.Id == id);
+            return attemp ?? throw new NotFoundException($"Attemp not found with {id}");
         }
 
         public async Task<Attemp?> UpdateAsync(int id, Attemp updatedAttemp)
         {
             var attempt = await _context.Attemps.FindAsync(id);
-            if (attempt == null) return null;
+            if (attempt == null) throw new NotFoundException($"Attemp not found with {id}");
 
             attempt.Index = updatedAttemp.Index;
             attempt.TimeTaken = updatedAttemp.TimeTaken;
@@ -53,8 +56,8 @@ namespace backend.Service
         public async Task<bool> DeleteAsync(int id)
         {
             var attempt = await _context.Attemps.FindAsync(id);
-            if (attempt == null) return false;
-            var answer = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
+            if (attempt == null) throw new NotFoundException($"Attemp not found with {id}");
+            var answer = await _context.Answers.Where(a => a.AttemptId == id).ToListAsync();
             if (answer != null)
             {
                 _context.Answers.RemoveRange(answer);

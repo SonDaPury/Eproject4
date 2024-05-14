@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (questionDto == null)
             {
-                return BadRequest("Question data is required");
+                return BadRequest(new { message = "Question data is required" });
             }
 
             var question = _mapper.Map<Question>(questionDto);
@@ -51,7 +51,7 @@ namespace backend.Controller
             var question = await _questionService.GetByIdAsync(id);
             if (question == null)
             {
-                return NotFound($"Question with ID {id} not found.");
+                return NotFound(new { message = $"Question with ID {id} not found." });
             }
             var questionDto = _mapper.Map<QuestionDto>(question);
             return Ok(questionDto);
@@ -63,14 +63,14 @@ namespace backend.Controller
         {
             if (questionDto == null)
             {
-                return BadRequest("Invalid question data");
+                return BadRequest(new { message = "Invalid question data" });
             }
 
             var question = _mapper.Map<Question>(questionDto);
             var updatedQuestion = await _questionService.UpdateAsync(id, question);
             if (updatedQuestion == null)
             {
-                return NotFound($"Question with ID {id} not found.");
+                return NotFound(new { message = $"Question with ID {id} not found." });
             }
             return Ok(_mapper.Map<QuestionDto>(updatedQuestion));
         }
@@ -82,7 +82,7 @@ namespace backend.Controller
             var success = await _questionService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Question with ID {id} not found.");
+                return NotFound(new { message = $"Question with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }

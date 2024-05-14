@@ -39,6 +39,11 @@ namespace backend.Service
             _context = context;
         }
 
+        public async Task<List<User>> GetListUsers()
+        {
+            var users = await _context.Users.ToListAsync();
+            return users ?? throw new NotFoundException("there are no users at all");
+        }
         public async Task<User?> Create(User registerViewModel)
         {
             var existingUserByUsername = await GetByUsername(registerViewModel.Username ?? "");
@@ -86,9 +91,10 @@ namespace backend.Service
         public async Task<Tuple<Tokens,User>> Login(UserLoginDto loginViewModel)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginViewModel.Username);
-            var roleName = await _context.Roles.Where(r => r.Id == user.RoleId).Select(r => r.RoleName).FirstOrDefaultAsync();
+            
             if (user != null && BCrypt.Net.BCrypt.Verify(loginViewModel.Password, user.Password))
             {
+                var roleName = await _context.Roles.Where(r => r.Id == user.RoleId).Select(r => r.RoleName).FirstOrDefaultAsync();
                 // Nếu xác thực thành công, tạo JWT token
                 //var tokenHandler = new JwtSecurityTokenHandler();
                 //var key = Encoding.ASCII.GetBytes(_config["Jwt:SecretKey"] ?? "");
@@ -142,7 +148,7 @@ namespace backend.Service
         public async Task<Tokens> Refresh(Tokens tokens)
         {
             var principal = GetPrincipalFromExpiredToken(tokens.AccessToken);
-            var userId = int.Parse(principal.Identity?.Name);
+            var userId = int.Parse(principal.Identity.Name);
             var user = await GetById(userId);
             var roleId = user.RoleId;
             var savedRefreshToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(

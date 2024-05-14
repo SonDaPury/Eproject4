@@ -20,16 +20,38 @@ namespace backend.Controller
             _userService = userService;
             _mapper = mapper;
         }
+
+        // GET: /user/get-all-user
+        [HttpGet("get-all-user")]
+        public async Task<IActionResult> GetAllUser()
+        {
+            try
+            {
+                var user = await _userService.GetListUsers();
+                var data = _mapper.Map<List<ListUserDto>>(user);
+                return Ok(data);
+
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { massage = ex.Message });
+            }
+        }
+
         // GET: /user/{userId}
         [HttpGet("{userId}")]
-        public async Task<ActionResult<User>> GetUserById(int userId)
+        public async Task<IActionResult> GetUserById(int userId)
         {
-            var user = await _userService.GetById(userId);
-            if (user == null)
+            try
             {
-                return NotFound();
+                var user = await _userService.GetById(userId);
+                var data = _mapper.Map<ListUserDto>(user);
+                return Ok(data);
             }
-            return user;
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { massage = ex.Message });
+            }
         }
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login([FromBody] UserLoginDto loginViewModel)
@@ -39,9 +61,9 @@ namespace backend.Controller
                 var result = await _userService.Login(loginViewModel);
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { massage = ex.Message });
             }
         }
         [HttpPost("register")]
@@ -55,7 +77,7 @@ namespace backend.Controller
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { massage = ex.Message });
             }
         }
         // POST: /user/forgot-password
@@ -68,8 +90,8 @@ namespace backend.Controller
 
 
                 if (isUserExists is null)
-                {
-                    throw new NotFoundException("User is not existed");
+                {                    
+                    return BadRequest(new { massage = "User is not existed" });
                 }
 
                 var confirmationCode = _userService.GenerateRandomCode();
@@ -79,12 +101,16 @@ namespace backend.Controller
 
                 await _userService.AddRequest(request);
                 _userService.SendConfirmationEmail(isUserExists.Email, confirmationCode);
-                return Ok("Confirmation email sent.");
+                return Ok(new { massage = "Confirmation email sent." });
             }
-            catch (NotFoundException ex)
+            catch (ArgumentException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(new { massage = ex.Message });
             }
+            //catch (NotFoundException ex)
+            //{
+            //    return NotFound(ex.Message);
+            //}
         }
         // POST: /user/verify-reset-code
         [HttpPost("verify-reset-code")]
@@ -107,10 +133,14 @@ namespace backend.Controller
                 await _userService.RemoveConfirmCode(confirmCode);
                 return Ok(new { message = "Comfirm successfully" });
             }
-            catch (NotFoundException ex)
+            catch (ArgumentException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(new { massage = ex.Message });
             }
+            //catch (NotFoundException ex)
+            //{
+            //    return NotFound(ex.Message);
+            //}
         }
 
         [HttpPut("change-password")]

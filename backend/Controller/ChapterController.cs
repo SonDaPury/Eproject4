@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (chapterDto == null)
             {
-                return BadRequest("Chapter data is required");
+                return NotFound(new { message = "Chapter data is required" });
             }
 
             var chapter = _mapper.Map<Chapter>(chapterDto);
@@ -52,7 +52,7 @@ namespace backend.Controller
             var chapter = await _chapterService.GetByIdAsync(id);
             if (chapter == null)
             {
-                return NotFound($"Chapter with ID {id} not found.");
+                return NotFound(new { message = $"Chapter with ID {id} not found." });
             }
             var chapterDto = _mapper.Map<ChapterDto>(chapter);
             return Ok(chapterDto);
@@ -64,14 +64,14 @@ namespace backend.Controller
         {
             if (chapterDto == null)
             {
-                return BadRequest("Invalid chapter data");
+                return NotFound(new { message = "Invalid chapter data" });
             }
 
             var chapter = _mapper.Map<Chapter>(chapterDto);
             var updatedChapter = await _chapterService.UpdateAsync(id, chapter);
             if (updatedChapter == null)
             {
-                return NotFound($"Chapter with ID {id} not found.");
+                return NotFound(new { message = $"Chapter with ID {id} not found." });
             }
             return Ok(_mapper.Map<ChapterDto>(updatedChapter));
         }
@@ -83,7 +83,7 @@ namespace backend.Controller
             var success = await _chapterService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Chapter with ID {id} not found.");
+                return NotFound(new { message = $"Chapter with ID {id} not found." });
             }
             return NoContent();
 

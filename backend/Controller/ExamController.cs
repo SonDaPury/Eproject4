@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (examDto == null)
             {
-                return BadRequest("Exam data is required");
+                return BadRequest(new { message = "Exam data is required" });
             }
 
             var exam = _mapper.Map<Exam>(examDto);
@@ -51,7 +51,7 @@ namespace backend.Controller
             var exam = await _examService.GetByIdAsync(id);
             if (exam == null)
             {
-                return NotFound($"Exam with ID {id} not found.");
+                return NotFound(new { message = $"Exam with ID {id} not found." });
             }
             var examDto = _mapper.Map<ExamDto>(exam);
             return Ok(examDto);
@@ -63,14 +63,14 @@ namespace backend.Controller
         {
             if (examDto == null )
             {
-                return BadRequest("Invalid exam data");
+                return NotFound(new { message = "Invalid exam data" });
             }
 
             var exam = _mapper.Map<Exam>(examDto);
             var updatedExam = await _examService.UpdateAsync(id, exam);
             if (updatedExam == null)
             {
-                return NotFound($"Exam with ID {id} not found.");
+                return NotFound(new { message = $"Exam with ID {id} not found." });
             }
             return Ok(_mapper.Map<ExamDto>(updatedExam));
         }
@@ -82,7 +82,7 @@ namespace backend.Controller
             var success = await _examService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Exam with ID {id} not found.");
+                return NotFound(new { message = $"Exam with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
@@ -95,7 +95,7 @@ namespace backend.Controller
                 //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
             if (userId == 0)
             {
-                return Unauthorized("User is not identified");
+                return Unauthorized(new { message = "User is not identified" });
             }
 
             try
@@ -115,7 +115,7 @@ namespace backend.Controller
             //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
             if (userId == 0)
             {
-                return Unauthorized("User is not identified");
+                return Unauthorized(new { message = "User is not identified" });
             }
 
             try

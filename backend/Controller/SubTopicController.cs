@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (subTopicDto == null)
             {
-                return BadRequest("SubTopic data is required");
+                return BadRequest(new { message = "SubTopic data is required" });
             }
             var subTopic = _mapper.Map<SubTopic>(subTopicDto);
             var createdSubTopic = await _subTopicService.CreateAsync(subTopic);
@@ -50,7 +50,7 @@ namespace backend.Controller
             var subTopic = await _subTopicService.GetByIdAsync(id);
             if (subTopic == null)
             {
-                return NotFound($"SubTopic with ID {id} not found.");
+                return NotFound(new { message = $"SubTopic with ID {id} not found." });
             }
             var subTopicDto = _mapper.Map<SubTopicDto>(subTopic);
             return Ok(subTopicDto);
@@ -62,13 +62,13 @@ namespace backend.Controller
         {
             if (subTopicDto == null)
             {
-                return BadRequest("Invalid SubTopic data");
+                return BadRequest(new { message = "Invalid SubTopic data" });
             }
             var subTopic = _mapper.Map<SubTopic>(subTopicDto);
             var updatedSubTopic = await _subTopicService.UpdateAsync(id, subTopic);
             if (updatedSubTopic == null)
             {
-                return NotFound($"SubTopic with ID {id} not found.");
+                return NotFound(new { message = $"SubTopic with ID {id} not found." });
             }
             return Ok(_mapper.Map<SubTopicDto>(updatedSubTopic));
         }
@@ -80,7 +80,7 @@ namespace backend.Controller
             var success = await _subTopicService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"SubTopic with ID {id} not found.");
+                return NotFound(new { message = $"SubTopic with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
