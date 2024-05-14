@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { store } from "./redux/store.js";
 import { Provider } from "react-redux";
 import { Experimental_CssVarsProvider as CssVarsProvider } from "@mui/material/styles";
+import { SnackbarProvider } from "notistack";
 
 import App from "./App.jsx";
 import "./index.css";
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <Provider store={store}>
       <CssVarsProvider theme={theme}>
         <CssBaseline />
-        <App />
+        <SnackbarProvider maxSnack={3}>
+          <App />
+        </SnackbarProvider>
       </CssVarsProvider>
     </Provider>
   </React.StrictMode>

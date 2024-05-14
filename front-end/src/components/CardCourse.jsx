@@ -1,8 +1,7 @@
 import Box from "@mui/material/Box";
 import { Link } from "react-router-dom";
-import { Card, CardActions, CardContent, CardMedia } from "@mui/material";
+import { Card, CardContent, CardMedia } from "@mui/material";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import Tooltip from "@mui/material/Tooltip";
 import Divider from "@mui/material/Divider";
