@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (topicDto == null)
             {
-                return BadRequest("Topic data is required");
+                return BadRequest(new { message = "Topic data is required" });
             }
             var data = _mapper.Map<Topic>(topicDto);
             var createdTopic = await _topicService.CreateAsync(data);
@@ -50,7 +50,7 @@ namespace backend.Controller
             var topic = await _topicService.GetByIdAsync(id);
             if (topic == null)
             {
-                return NotFound($"Topic with ID {id} not found.");
+                return NotFound(new { message = $"Topic with ID {id} not found." });
             }
             return Ok(topic);
         }
@@ -61,13 +61,13 @@ namespace backend.Controller
         {
             if (topicDto == null )
             {
-                return BadRequest("Invalid topic data");
+                return BadRequest(new { message = "Invalid topic data" });
             }
             var data = _mapper.Map<Topic>(topicDto);
             var updatedTopic = await _topicService.UpdateAsync(id, data);
             if (updatedTopic == null)
             {
-                return NotFound($"Topic with ID {id} not found.");
+                return NotFound(new { message = $"Topic with ID {id} not found." });
             }
             return Ok(updatedTopic);
         }
@@ -79,7 +79,7 @@ namespace backend.Controller
             var success = await _topicService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Topic with ID {id} not found.");
+                return NotFound(new { message = $"Topic with ID {id} not found." });
             }
             return Ok(new {mesage = "delete successfuly !!!"});
         }

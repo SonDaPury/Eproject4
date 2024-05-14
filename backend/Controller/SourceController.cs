@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (sourceDto == null)
             {
-                return BadRequest("Source data is required");
+                return BadRequest(new { message = "Source data is required" });
             }
 
             var source = _mapper.Map<Source>(sourceDto);
@@ -51,7 +51,7 @@ namespace backend.Controller
             var source = await _sourceService.GetByIdAsync(id);
             if (source == null)
             {
-                return NotFound($"Source with ID {id} not found.");
+                return NotFound(new { message = $"Source with ID {id} not found." });
             }
             var sourceDto = _mapper.Map<SourceDto>(source);
             return Ok(sourceDto);
@@ -63,13 +63,13 @@ namespace backend.Controller
         {
             if (sourceDto == null)
             {
-                return BadRequest("Invalid Source data");
+                return BadRequest(new { message = "Invalid Source data" });
             }
             var source = _mapper.Map<Source>(sourceDto);
             var updatedSource = await _sourceService.UpdateAsync(id, source);
             if (updatedSource == null)
             {
-                return NotFound($"Source with ID {id} not found.");
+                return NotFound(new { message = $"Source with ID {id} not found." });
             }
             return Ok(_mapper.Map<SourceDto>(updatedSource));
         }
@@ -81,7 +81,7 @@ namespace backend.Controller
             var success = await _sourceService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Source with ID {id} not found.");
+                return NotFound(new { message = $"Source with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }

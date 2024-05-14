@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (lessonDto == null)
             {
-                return BadRequest("Lesson data is required");
+                return BadRequest(new { message = "Lesson data is required" });
             }
 
             var lesson = _mapper.Map<Lesson>(lessonDto);
@@ -51,7 +51,7 @@ namespace backend.Controller
             var lesson = await _lessonService.GetByIdAsync(id);
             if (lesson == null)
             {
-                return NotFound($"Lesson with ID {id} not found.");
+                return NotFound(new { message = $"Lesson with ID {id} not found." });
             }
             var lessonDto = _mapper.Map<LessonDto>(lesson);
             return Ok(lessonDto);
@@ -63,13 +63,13 @@ namespace backend.Controller
         {
             if (lessonDto == null)
             {
-                return BadRequest("Invalid lesson data");
+                return BadRequest(new { message = "Invalid lesson data" });
             }
             var data = _mapper.Map<Lesson>(lessonDto);
             var updatedLesson = await _lessonService.UpdateAsync(id, data);
             if (updatedLesson == null)
             {
-                return NotFound($"Lesson with ID {id} not found.");
+                return NotFound(new { message = $"Lesson with ID {id} not found." });
             }
             return Ok(_mapper.Map<LessonDto>(updatedLesson));
         }
@@ -81,7 +81,7 @@ namespace backend.Controller
             var success = await _lessonService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Lesson with ID {id} not found.");
+                return NotFound(new { message = $"Lesson with ID {id} not found." });
             }
             return Ok(new { message = "Delete successfuly!!!" });
         }

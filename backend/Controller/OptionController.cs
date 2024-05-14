@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (optionDto == null)
             {
-                return BadRequest("Option data is required");
+                return BadRequest(new { message = "Option data is required" });
             }
 
             var option = _mapper.Map<Option>(optionDto);
@@ -51,7 +51,7 @@ namespace backend.Controller
             var option = await _optionService.GetByIdAsync(id);
             if (option == null)
             {
-                return NotFound($"Option with ID {id} not found.");
+                return NotFound(new { message = $"Option with ID {id} not found." });
             }
             var optionDto = _mapper.Map<OptionDto>(option);
             return Ok(optionDto);
@@ -63,14 +63,14 @@ namespace backend.Controller
         {
             if (optionDto == null)
             {
-                return BadRequest("Invalid option data");
+                return BadRequest(new { message = "Invalid option data" });
             }
 
             var option = _mapper.Map<Option>(optionDto);
             var updatedOption = await _optionService.UpdateAsync(id, option);
             if (updatedOption == null)
             {
-                return NotFound($"Option with ID {id} not found.");
+                return NotFound(new { message = $"Option with ID {id} not found." });
             }
             return Ok(_mapper.Map<OptionDto>(updatedOption));
         }
@@ -82,7 +82,7 @@ namespace backend.Controller
             var success = await _optionService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Option with ID {id} not found.");
+                return NotFound(new { message = $"Option with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }

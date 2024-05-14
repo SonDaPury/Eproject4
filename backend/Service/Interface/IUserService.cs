@@ -2,7 +2,6 @@
 using backend.Entities;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace backend.Service.Interface
 {
     public interface IUserService
@@ -24,5 +23,6 @@ namespace backend.Service.Interface
         Task ChangePassword(ChangePassworkDto user);
         Task ResetPassword(ResetPasswordDto user);
         Task Logout(Tokens tokens);
+        Task<List<User>> GetListUsers();
     }
 }

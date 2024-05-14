@@ -26,7 +26,7 @@ namespace backend.Controller
         {
             if (quizQuestionDto == null)
             {
-                return BadRequest("Quiz question data is required");
+                return BadRequest(new { message = "Quiz question data is required" });
             }
 
             var quizQuestion = _mapper.Map<QuizQuestion>(quizQuestionDto);
@@ -51,7 +51,7 @@ namespace backend.Controller
             var quizQuestion = await _quizQuestionService.GetByIdAsync(id);
             if (quizQuestion == null)
             {
-                return NotFound($"Quiz question with ID {id} not found.");
+                return NotFound(new { message = $"Quiz question with ID {id} not found." });
             }
             var quizQuestionDto = _mapper.Map<QuizQuestionDto>(quizQuestion);
             return Ok(quizQuestionDto);
@@ -63,14 +63,14 @@ namespace backend.Controller
         {
             if (quizQuestionDto == null)
             {
-                return BadRequest("Invalid quiz question data");
+                return BadRequest(new { message = "Invalid quiz question data" });
             }
 
             var quizQuestion = _mapper.Map<QuizQuestion>(quizQuestionDto);
             var updatedQuizQuestion = await _quizQuestionService.UpdateAsync(id, quizQuestion);
             if (updatedQuizQuestion == null)
             {
-                return NotFound($"Quiz question with ID {id} not found.");
+                return NotFound(new { message = $"Quiz question with ID {id} not found." });
             }
             return Ok(_mapper.Map<QuizQuestionDto>(updatedQuizQuestion));
         }
@@ -82,7 +82,7 @@ namespace backend.Controller
             var success = await _quizQuestionService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Quiz question with ID {id} not found.");
+                return NotFound(new { message = $"Quiz question with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
