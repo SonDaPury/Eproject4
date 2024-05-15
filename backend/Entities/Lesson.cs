@@ -25,8 +25,8 @@ namespace backend.Entities
         [Column("video")]
         public string? Video { get; set; }
 
-        [Column("index")]
-        public int Index { get; set; }
+        //[Column("index")]
+        //public int Index { get; set; }
 
         [Column("view")]
         public int View { get; set; }
@@ -38,5 +38,6 @@ namespace backend.Entities
         public int ChapterId { get; set; }
 
         public virtual Chapter? Chapter { get; set; }
+        public ICollection<Serial>? Serials { get; set; }
     }
 }

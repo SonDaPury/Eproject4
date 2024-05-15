@@ -31,9 +31,6 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AttempId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("AttemptId")
                         .HasColumnType("int")
                         .HasColumnName("attempt_id");
@@ -52,7 +49,9 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AttempId");
+                    b.HasIndex("AttemptId")
+                        .IsUnique()
+                        .HasFilter("[attempt_id] IS NOT NULL");
 
                     b.HasIndex("ExamId");
 
@@ -126,10 +125,6 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChapterId")
-                        .HasColumnType("int")
-                        .HasColumnName("chapter_id");
-
                     b.Property<bool>("IsStarted")
                         .HasColumnType("bit")
                         .HasColumnName("is_started");
@@ -137,6 +132,10 @@ namespace backend.Migrations
                     b.Property<int>("MaxQuestion")
                         .HasColumnType("int")
                         .HasColumnName("max_question");
+
+                    b.Property<int>("SourceId")
+                        .HasColumnType("int")
+                        .HasColumnName("source_id");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
@@ -152,7 +151,7 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChapterId");
+                    b.HasIndex("SourceId");
 
                     b.ToTable("Exams");
                 });
@@ -195,10 +194,6 @@ namespace backend.Migrations
                     b.Property<int>("ChapterId")
                         .HasColumnType("int")
                         .HasColumnName("chapter_id");
-
-                    b.Property<int>("Index")
-                        .HasColumnType("int")
-                        .HasColumnName("index");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
@@ -244,7 +239,7 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("answer");
 
-                    b.Property<bool?>("IsCorrect")
+                    b.Property<bool>("IsCorrect")
                         .HasColumnType("bit")
                         .HasColumnName("is_correct");
 
@@ -324,6 +319,35 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("backend.Entities.Serial", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ExamId")
+                        .HasColumnType("int")
+                        .HasColumnName("exam_id");
+
+                    b.Property<int>("Index")
+                        .HasColumnType("int")
+                        .HasColumnName("index");
+
+                    b.Property<int?>("LessonId")
+                        .HasColumnType("int")
+                        .HasColumnName("lesson_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId");
+
+                    b.HasIndex("LessonId");
+
+                    b.ToTable("Serials");
                 });
 
             modelBuilder.Entity("backend.Entities.Source", b =>
@@ -535,8 +559,8 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Entities.Answer", b =>
                 {
                     b.HasOne("backend.Entities.Attemp", "Attemp")
-                        .WithMany("Answers")
-                        .HasForeignKey("AttempId");
+                        .WithOne("Answer")
+                        .HasForeignKey("backend.Entities.Answer", "AttemptId");
 
                     b.HasOne("backend.Entities.Exam", "Exam")
                         .WithMany("Answers")
@@ -575,13 +599,13 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.Exam", b =>
                 {
-                    b.HasOne("backend.Entities.Chapter", "Chapter")
+                    b.HasOne("backend.Entities.Source", "Source")
                         .WithMany("Exams")
-                        .HasForeignKey("ChapterId")
+                        .HasForeignKey("SourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Chapter");
+                    b.Navigation("Source");
                 });
 
             modelBuilder.Entity("backend.Entities.Lesson", b =>
@@ -623,6 +647,17 @@ namespace backend.Migrations
                     b.Navigation("Exam");
 
                     b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("backend.Entities.Serial", b =>
+                {
+                    b.HasOne("backend.Entities.Exam", null)
+                        .WithMany("Serials")
+                        .HasForeignKey("ExamId");
+
+                    b.HasOne("backend.Entities.Lesson", null)
+                        .WithMany("Serials")
+                        .HasForeignKey("LessonId");
                 });
 
             modelBuilder.Entity("backend.Entities.Source", b =>
@@ -675,13 +710,11 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.Attemp", b =>
                 {
-                    b.Navigation("Answers");
+                    b.Navigation("Answer");
                 });
 
             modelBuilder.Entity("backend.Entities.Chapter", b =>
                 {
-                    b.Navigation("Exams");
-
                     b.Navigation("Lessions");
                 });
 
@@ -690,6 +723,13 @@ namespace backend.Migrations
                     b.Navigation("Answers");
 
                     b.Navigation("QuizQuestions");
+
+                    b.Navigation("Serials");
+                });
+
+            modelBuilder.Entity("backend.Entities.Lesson", b =>
+                {
+                    b.Navigation("Serials");
                 });
 
             modelBuilder.Entity("backend.Entities.Question", b =>
@@ -707,6 +747,8 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Entities.Source", b =>
                 {
                     b.Navigation("Chapters");
+
+                    b.Navigation("Exams");
                 });
 
             modelBuilder.Entity("backend.Entities.SubTopic", b =>

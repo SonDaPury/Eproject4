@@ -40,7 +40,6 @@ namespace backend.Service
             lesson.VideoDuration = updatedLesson.VideoDuration;
             lesson.Thumbnail = updatedLesson.Thumbnail;
             lesson.Video = updatedLesson.Video;
-            lesson.Index = updatedLesson.Index;
             lesson.View = updatedLesson.View;
             lesson.Status = updatedLesson.Status;
             lesson.ChapterId = updatedLesson.ChapterId;

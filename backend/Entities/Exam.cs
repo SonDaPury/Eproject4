@@ -32,11 +32,12 @@ namespace backend.Entities
         [Column("is_started")]
         public bool IsStarted { get; set; } = false;
 
-        [Column("chapter_id")]
-        public int ChapterId { get; set; }
-        public virtual Chapter? Chapter { get; set; }
+        [Column("source_id")]
+        public int SourceId { get; set; }
+        public virtual Source? Source { get; set; }
         public ICollection<QuizQuestion>? QuizQuestions { get; set; }
         public ICollection<Answer>? Answers { get; set; }
+        public ICollection<Serial>? Serials { get; set; }
         
     }
 }
