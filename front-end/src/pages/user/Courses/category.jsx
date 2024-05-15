@@ -26,6 +26,7 @@ import "swiper/css/navigation";
 import { useEffect, useState } from "react";
 import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import { ThemeProvider } from "@emotion/react";
+import FilterPanel from "@eproject4/components/FilterPanel";
 
 const Category = () => {
   // Roters
@@ -80,7 +81,7 @@ const Category = () => {
           }}>
           <Typography
             variant="h4"
-            sx={{ textAlign: "center", marginBottom: "30px" , fontWeight: 500 }}>
+            sx={{ textAlign: "center", marginBottom: "30px", fontWeight: 500 }}>
             Khóa Học Bán Chạy Trong {topicName}
           </Typography>
           <Box
@@ -107,7 +108,7 @@ const Category = () => {
           </Box>
         </Box>
         {/* Filter */}
-        <Box sx={{ marginTop: "56px" }}>
+        {/* <Box sx={{ marginTop: "56px" }}>
           <Box
             sx={{
               maxWidth: "450px",
@@ -191,7 +192,6 @@ const Category = () => {
                 maxWidth: "550px",
               },
             }}>
-            {/* Filter */}
             <Box
               sx={{
                 position: "absolute",
@@ -614,7 +614,14 @@ const Category = () => {
               </Box>
             </Box>
           </Box>
-        </Box>
+        </Box> */}
+        <div>
+          <FilterPanel
+            isShowFilter={isShowFilter}
+            topics={topics}
+            handleClickFilter={handleClickFilter}
+          />
+        </div>
         {/* ................ */}
         {/* All list */}
         <Box sx={{ marginTop: "40px", textAlign: "center" }}>
