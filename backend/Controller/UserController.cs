@@ -92,6 +92,20 @@ namespace backend.Controller
                 return BadRequest(new { massage = ex.Message });
             }
         }
+        [HttpPost("register-admin")]
+        public async Task<ActionResult<User>> RegisterAdminAccount([FromBody] UserRegisterDto registerViewModel)
+        {
+            try
+            {
+                var data = _mapper.Map<User>(registerViewModel);
+                var newUser = await _userService.CreateAdminAccount(data);
+                return Ok(newUser);
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(new { massage = ex.Message });
+            }
+        }
         // POST: /user/forgot-password
         [HttpPost("forgot-password")]
         public async Task<ActionResult> SendForgotPasswordEmail([FromBody] ForgotPasswordRequest request)

@@ -25,5 +25,6 @@ namespace backend.Service.Interface
         Task Logout(Tokens tokens);
         Task<List<User>> GetListUsers();
         Task<bool> DeleteUser(int userId);
+        Task<User?> CreateAdminAccount(User registerViewModel);
     }
 }

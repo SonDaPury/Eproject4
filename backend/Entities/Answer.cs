@@ -7,6 +7,7 @@ namespace backend.Entities
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [ForeignKey("Attemps")]
         [Column("id")]
         public int Id { get; set; }
 

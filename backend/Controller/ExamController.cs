@@ -127,7 +127,7 @@ namespace backend.Controller
             }
         }
         [HttpPost("end/{examId}")]
-        public async Task<IActionResult> EndExam(int examId)
+        public async Task<IActionResult> EndExam(ExamSubmissionDto submission,int examId)
         {
             var userId = 3;
             //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
@@ -138,8 +138,8 @@ namespace backend.Controller
 
             try
             {
-                await _examService.EndExam(examId, userId);
-                return Ok(new { message = "Bạn đã hoàn thành bài thi" });
+                var total = await _examService.EndExam(submission.UserAnswers, examId, userId);
+                return Ok(new { message = $"Bạn đã hoàn thành bài thi với kết quả là : {total}%" });
             }
             catch (System.Exception ex)
             {

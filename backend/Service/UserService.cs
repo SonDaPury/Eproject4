@@ -72,6 +72,33 @@ namespace backend.Service
             return newUser;
         }
 
+        public async Task<User?> CreateAdminAccount(User registerViewModel)
+        {
+            var existingUserByUsername = await GetByUsername(registerViewModel.Username ?? "");
+            if (existingUserByUsername != null)
+            {
+                throw new BadRequestException("Username already exists");
+            }
+
+            var existingUserByEmail = await GetByEmail(registerViewModel.Email ?? "");
+            if (existingUserByEmail != null)
+            {
+                throw new BadRequestException("Email already exists");
+            }
+            var newUser = new User
+            {
+                Username = registerViewModel.Username,
+                Password = BCrypt.Net.BCrypt.HashPassword(registerViewModel.Password),
+                Email = registerViewModel.Email,
+                PhoneNumber = registerViewModel.PhoneNumber,
+                Avatar = registerViewModel.Avatar,
+                RoleId = 1
+            };
+
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync();
+            return newUser;
+        }
 
         public async Task<bool> DeleteUser (int userId){
             var user = await _context.Users.FindAsync(userId);
