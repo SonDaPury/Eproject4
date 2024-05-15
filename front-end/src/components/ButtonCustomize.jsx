@@ -11,6 +11,7 @@ const ButtonCustomize = ({
   backgroundColor = "main.primary",
   variant = "contained",
   sx = {},
+
   navigateTo = "/", // Thêm prop này để xác định URL điều hướng
 }) => {
   const navigate = useNavigate();

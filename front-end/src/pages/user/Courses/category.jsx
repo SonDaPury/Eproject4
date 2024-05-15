@@ -1,30 +1,14 @@
-import theme from "@eproject4/theme";
 import seedData from "@eproject4/utils/seedData";
 import { Box, createTheme, Grid, Pagination, Stack } from "@mui/material";
 import { useParams } from "react-router-dom";
 
-import TextField from "@mui/material/TextField";
-import TuneIcon from "@mui/icons-material/Tune";
-import InputAdornment from "@mui/material/InputAdornment";
-import SearchIcon from "@mui/icons-material/Search";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 
 import CardCourse from "@eproject4/components/CardCourse.jsx";
-import Accordion from "@mui/material/Accordion";
-import StarIcon from "@mui/icons-material/Star";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import Checkbox from "@mui/material/Checkbox";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import "swiper/css";
 import "swiper/css/navigation";
 import { useEffect, useState } from "react";
-import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import { ThemeProvider } from "@emotion/react";
 import FilterPanel from "@eproject4/components/FilterPanel";
 
@@ -632,8 +616,9 @@ const Category = () => {
               flexWrap: "wrap",
             }}>
             {filteredData.map((item, i) => (
-              <Grid xs={12} sm={6} md={3} lg={3} key={i}>
+              <Box xs={12} sm={6} md={3} lg={3} key={i}>
                 <CardCourse
+                  path={`/course-detail/${item?.topic}/${encodeURIComponent(item?.title)}`}
                   title={item?.title}
                   category={item?.topic}
                   price={item?.price}
@@ -641,7 +626,7 @@ const Category = () => {
                   image={item?.imageThumbnail}
                   rating={item?.rating}
                 />
-              </Grid>
+              </Box>
             ))}
           </Box>
 

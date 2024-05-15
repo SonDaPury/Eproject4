@@ -1,17 +1,14 @@
 import seedData from "@eproject4/utils/seedData";
 import { Box, createTheme, Grid, Pagination, Stack } from "@mui/material";
 import { useParams } from "react-router-dom";
-
 import CardCourse from "@eproject4/components/CardCourse.jsx";
-
 import "swiper/css";
 import "swiper/css/navigation";
 import { useEffect, useState } from "react";
-
 import { ThemeProvider } from "@emotion/react";
 import FilterPanel from "@eproject4/components/FilterPanel";
 
-const ListCategory = () => {
+const ListCoures = () => {
   // Roters
   const { topicName } = useParams();
   const courseTopics = [];
@@ -73,6 +70,7 @@ const ListCategory = () => {
             {filteredData.map((item, i) => (
               <Grid xs={12} sm={6} md={3} lg={3} key={i}>
                 <CardCourse
+                  path={`/course-detail/${item?.topic}/${encodeURIComponent(item?.title)}`}
                   title={item?.title}
                   category={item?.topic}
                   price={item?.price}
@@ -101,4 +99,4 @@ const ListCategory = () => {
   );
 };
 
-export default ListCategory;
+export default ListCoures;

@@ -68,7 +68,7 @@ function Home() {
                     <Typography
                       variant="h4"
                       sx={{
-                        mb: 2,
+                       
                         color: "#1D2026",
                         fontSize: { md: "72px", sx: "22px" },
                         fontWeight: 600,
@@ -81,6 +81,7 @@ function Home() {
                         fontSize: { md: "24px", sx: "14px" },
                         fontWeight: 400,
                         color: "#4E5566",
+                        margin: "40px 0px",
                       }}
                       variant="subtitle1">
                       {course.title}

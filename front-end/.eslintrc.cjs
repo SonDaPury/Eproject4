@@ -1,6 +1,7 @@
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
+  
   extends: [
     "eslint:recommended",
     "plugin:react/recommended",
@@ -29,9 +30,11 @@ module.exports = {
     "no-multiple-empty-lines": "warn",
     "space-before-blocks": ["error", "always"],
     "object-curly-spacing": ["error", "always"],
+    "no-debugger": "off",  // Thêm dòng này
     indent: ["error", 2],
     semi: ["error", "always"],
     quotes: ["error", "double"],
     "array-bracket-spacing": "warn",
   },
+  
 };
