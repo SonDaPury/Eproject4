@@ -126,7 +126,12 @@ namespace backend.Service
                 await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
             }
         }
-        public async Task EndExam(int examId, int userId)
+
+
+        public async Task<int> EndExam(
+            List<UserAnswer> userAnswers 
+            ,int examId
+            , int userId)
         {
             _continueExam = false;
             var exam = await _context.Exams.FindAsync(examId);
@@ -151,6 +156,17 @@ namespace backend.Service
                 exam.IsStarted = false;
                 await _context.Attemps.AddAsync(attemp);
                 await _context.SaveChangesAsync();
+                var total = await CalculateScore(userAnswers, examId);
+                var answer = new Answer
+                {
+                    Total = total.ToString() + "%",
+                    UserId = userId,
+                    ExamId = examId,
+                    AttemptId = attemp.Id
+                };
+                await _context.Answers.AddAsync(answer);
+                await _context.SaveChangesAsync();
+                return total;
             }
             else
             {
@@ -158,6 +174,60 @@ namespace backend.Service
                 throw new Exception("DisconnectedAt or ConnectedAt not found");
             }
 
+        }
+
+        //tính điểm theo % nếu mỗi câu hỏi có 1 đáp án đúng
+        private async Task<int> CalculateScore(List<UserAnswer> userAnswers, int examId)
+        {
+
+            // Lấy tất cả câu hỏi và câu trả lời đúng cho kỳ thi này
+            var questions = await _context.QuizQuestions
+                .Include(qq => qq.Question)
+                    .ThenInclude(q => q.Options)
+                .Where(qq => qq.ExamId == examId && qq.Question.Options.Any(o => o.IsCorrect))
+                .ToListAsync();
+            int totalQuestions = questions.Count;
+            int correctAnswers = 0;
+            // Kiểm tra từng câu trả lời của người dùng
+            foreach (var userAnswer in userAnswers)
+            {
+                var correctOption = questions
+                    .SelectMany(qq => qq.Question.Options)
+                    .FirstOrDefault(o => o.QuestionId == userAnswer.QuestionId && o.IsCorrect);
+
+                if (correctOption != null && correctOption.Id == userAnswer.OptionId)
+                {
+                    correctAnswers++; // Người dùng chọn đúng, tăng điểm
+                }
+            }
+
+            return (int)correctAnswers / totalQuestions * 100;
+        }
+
+        //tính điểm nếu câu hỏi có nhiều đáp án đúng
+        public async Task<int> CalculateScore1(List<UserAnswer> userAnswers, int examId)
+        {
+            var questions = await _context.QuizQuestions
+                .Include(qq => qq.Question)
+                    .ThenInclude(q => q.Options)
+                .Where(qq => qq.ExamId == examId)
+                .ToListAsync();
+
+            int totalQuestions = questions.Count;
+            int correctAnswers = 0;
+
+            foreach (var question in questions)
+            {
+                var correctOptions = question.Question.Options.Where(o => o.IsCorrect).ToList();
+                var userOptions = userAnswers.Where(ua => ua.QuestionId == question.QuestionId).Select(ua => ua.OptionId).ToList();
+
+                if (correctOptions.All(co => userOptions.Contains(co.Id)) && userOptions.Count == correctOptions.Count)
+                {
+                    correctAnswers++;
+                }
+            }
+
+            return (int)correctAnswers / totalQuestions * 100;
         }
     }
 

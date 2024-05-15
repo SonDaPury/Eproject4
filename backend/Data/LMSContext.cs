@@ -1,4 +1,5 @@
-﻿using backend.Entities;
+﻿using backend.Dtos;
+using backend.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data
@@ -29,6 +30,10 @@ namespace backend.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>().HasIndex(ul => new { ul.Username }).IsUnique();
+            modelBuilder.Entity<Attemp>()
+              .HasOne(a => a.Answer)
+              .WithOne(a => a.Attemp)
+              .HasForeignKey<Answer>(a => a.AttemptId);
         }
     }
 }
