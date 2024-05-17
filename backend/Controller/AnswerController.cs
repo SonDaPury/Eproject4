@@ -4,6 +4,7 @@ using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Nest;
 
 namespace backend.Controller
 {
@@ -13,11 +14,26 @@ namespace backend.Controller
     {
         private readonly IAnswerService _answerService;
         private readonly IMapper _mapper;
+        private readonly IElasticClient _elasticClient;
 
-        public AnswerController(IAnswerService answerService, IMapper mapper)
+        public AnswerController(IAnswerService answerService, IMapper mapper, IElasticClient elasticClient)
         {
             _answerService = answerService;
             _mapper = mapper;
+            _elasticClient = elasticClient;
+        }
+        [HttpGet("check")]
+        public async Task<IActionResult> CheckConnection()
+        {
+            var pingResponse = await _elasticClient.PingAsync();
+            if (pingResponse.IsValid)
+            {
+                return Ok("Connect OK");
+            }
+            else
+            {
+                return StatusCode(500, "Failed .");
+            }
         }
 
         // POST: api/Answers
@@ -84,7 +100,7 @@ namespace backend.Controller
             var updatedAnswer = await _answerService.UpdateAsync(id, answer);
             if (updatedAnswer == null)
             {
-                return NotFound(new { message = $"Answer with ID {id} not found." });
+                return NotFound(new { message = $"Answer with ID {id} n ot found." });
             }
             return Ok(_mapper.Map<AnswerDto>(updatedAnswer));
         }
