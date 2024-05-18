@@ -79,7 +79,7 @@ namespace backend.Controller
             }
         }
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register([FromBody] UserRegisterDto registerViewModel)
+        public async Task<ActionResult<User>> Register([FromForm] UserRegisterDto registerViewModel)
         {
             try
             {
