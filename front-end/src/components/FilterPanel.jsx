@@ -26,8 +26,8 @@ import { useNavigate } from "react-router-dom";
 
 function FilterPanel({ isShowFilter, topics, handleClickFilter }) {
   const navigate = useNavigate();
-  const handleCategoryClick = (topic) => {
-    navigate(`/category-list/${topic}`);
+  const handleCourseClick = (topic) => {
+    navigate(`/course-list/${topic}`);
   };
   return (
     <Box sx={{ marginTop: "56px" }}>
@@ -142,7 +142,7 @@ function FilterPanel({ isShowFilter, topics, handleClickFilter }) {
                     return (
                       <Accordion
                         key={i}
-                        onChange={() => handleCategoryClick(topic)}>
+                        onChange={() => handleCourseClick(topic)}>
                         <AccordionSummary
                           expandIcon={<ExpandMoreIcon />}
                           aria-controls="panel1-content"

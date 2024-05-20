@@ -29,6 +29,7 @@ module.exports = {
     "no-multiple-empty-lines": "warn",
     "space-before-blocks": ["error", "always"],
     "object-curly-spacing": ["error", "always"],
+    "no-debugger": "off", // Thêm dòng này
     indent: ["error", 2],
     semi: ["error", "always"],
     quotes: ["error", "double"],
