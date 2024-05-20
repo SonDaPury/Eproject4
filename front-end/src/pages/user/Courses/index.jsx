@@ -630,6 +630,7 @@ function Courses() {
                           return (
                             <SwiperSlide key={i}>
                               <CardCourse
+                                path={`/course-detail/${item?.topic}/${encodeURIComponent(item?.title)}`}
                                 title={item?.title}
                                 category={item?.topic}
                                 price={item?.price}
@@ -642,7 +643,10 @@ function Courses() {
                         }
                       })}
                     </Swiper>
-                    <ButtonCustomize text="Xem tất cả"  navigateTo={`/category/${topic}`} />
+                    <ButtonCustomize
+                      text="Xem tất cả"
+                      navigateTo={`/category/${topic}`}
+                    />
                   </Box>
                 </Box>
               </Box>
