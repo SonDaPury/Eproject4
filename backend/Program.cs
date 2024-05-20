@@ -2,6 +2,7 @@
 using backend.Extentions;
 using backend.Helper;
 using backend.Middleware;
+using backend.Service.ElasticSearch;
 using backend.Service.Interface;
 using backend.Worker;
 using Elasticsearch.Net;

@@ -6,10 +6,10 @@ namespace backend.Dtos
     public class TopicElasticSearch
     {
         [PropertyName("TopicId")]
-        public int TopicId { get; set; }
+        public int? TopicId { get; set; }
         [PropertyName("TopicName")]
-        public required string TopicName { get; set; }
-        public required List<SubTopcElasticSearch> subTopics { get; set; }
+        public required string? TopicName { get; set; }
+        public List<SubTopcElasticSearch>? subTopics { get; set; } = new List<SubTopcElasticSearch>();
     }
     public class SubTopcElasticSearch
     {
@@ -22,7 +22,7 @@ namespace backend.Dtos
     public class SourcesElasticSearch
     {
         [PropertyName("Id")]
-        public int Id { get;set; }
+        public int Id { get; set; }
         [PropertyName("Title")]
         public string Title { get; set; } = "";
         [PropertyName("Description")]
@@ -42,6 +42,6 @@ namespace backend.Dtos
         [PropertyName("Rating")]
         public string Rating { get; set; } = "";
         [PropertyName("UserId")]
-        public int UserId { get;set; }
+        public int UserId { get; set; }
     }
 }

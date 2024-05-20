@@ -35,39 +35,61 @@ namespace backend.Controller
             //        .MatchAll()
             //    )
             //);
-            var newTopic = new TopicElasticSearch
-            {
-                TopicId = 11,
-                TopicName = "Science2334234234234",
-                subTopics = new List<SubTopcElasticSearch>
-    {
-        new SubTopcElasticSearch
-        {
-            SubTopicId = 101,
-            SubTopicName = "Physics22ewewqewewr",
-            sources = new List<SourcesElasticSearch>
-            {
-                new SourcesElasticSearch
-                {
-                    Id = 1001,
-                    Title = "Quantum Mechanics",
-                    Description = "Introduction to Quantum Mechanics",
-                    Thumbnail = "thumb1.jpg",
-                    Slug = "quantum-mechanics",
-                    Status = 1,
-                    Benefit = "Understand the basics of quantum mechanics",
-                    Video_intro = "video1.mp4",
-                    Price = 49.99,
-                    Rating = "4.5",
-                    UserId = 2001
-                }
-            }
+            //        var newTopic = new TopicElasticSearch
+            //        {
+            //            TopicId = 11,
+            //            TopicName = "Science2334234234234",
+            //            subTopics = new List<SubTopcElasticSearch>
+            //{
+            //    new SubTopcElasticSearch
+            //    {
+            //        SubTopicId = 101,
+            //        SubTopicName = "Physics22ewewqewewr",
+            //        sources = new List<SourcesElasticSearch>
+            //        {
+            //            new SourcesElasticSearch
+            //            {
+            //                Id = 1001,
+            //                Title = "Quantum Mechanics",
+            //                Description = "Introduction to Quantum Mechanics",
+            //                Thumbnail = "thumb1.jpg",
+            //                Slug = "quantum-mechanics",
+            //                Status = 1,
+            //                Benefit = "Understand the basics of quantum mechanics",
+            //                Video_intro = "video1.mp4",
+            //                Price = 49.99,
+            //                Rating = "4.5",
+            //                UserId = 2001
+            //            }
+            //        }
+            //    }
+            //}
+            //        };
+
+            /*          var newSource = new Source
+                      {
+                          Title = "New Source Title",
+                          Description = "New Source Description",
+                          Thumbnail = "thumbnail.jpg",
+                          Slug = "new-source",
+                          Status = true,
+                          Benefit = new string[] { "Benefit1", "Benefit2" },
+                          Requirement = new string[] { "Requirement1", "Requirement2" },
+                          VideoIntro = "intro.mp4",
+                          Price = 99.99,
+                          Rating = "5 stars",
+                          UserId = 12345
+                      };*/
+
+            /*   var data =  _elasticSearchRepository.GetData<TopicElasticSearch>(q => q.Query(
+                   b => b.Bool(m => m.Must(
+                       )))*/
+            var data = _elasticSearchRepository.GetData<TopicElasticSearch>(s => s
+           .Index("sources_index")
+           .Query(q => q.MatchAll())
+           .Size(1000));
+            return Ok(data);
         }
-    }
-            };
-            var addData = _elasticSearchRepository.AddData<TopicElasticSearch>(newTopic, "sources_index", newTopic.TopicId.ToString());
-            return Ok(addData);
-            }
         [HttpGet("check")]
         public async Task<IActionResult> CheckConnection()
         {
@@ -92,10 +114,10 @@ namespace backend.Controller
             }
             try
             {
-            var answer = _mapper.Map<Answer>(answerDto);
-            var createdAnswer = await _answerService.CreateAsync(answer);
-            var createdAnswerDto = _mapper.Map<AnswerDto>(createdAnswer);
-            return CreatedAtAction(nameof(GetAnswer), new { id = createdAnswerDto.Id }, createdAnswerDto);
+                var answer = _mapper.Map<Answer>(answerDto);
+                var createdAnswer = await _answerService.CreateAsync(answer);
+                var createdAnswerDto = _mapper.Map<AnswerDto>(createdAnswer);
+                return CreatedAtAction(nameof(GetAnswer), new { id = createdAnswerDto.Id }, createdAnswerDto);
             }
             catch (ArgumentException ex)
             {
@@ -110,9 +132,9 @@ namespace backend.Controller
         {
             try
             {
-            var answers = await _answerService.GetAllAsync();
-            var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
-            return Ok(answerDtos);
+                var answers = await _answerService.GetAllAsync();
+                var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
+                return Ok(answerDtos);
             }
             catch (ArgumentException ex)
             {

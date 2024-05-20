@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using backend.Dtos;
 using backend.Entities;
+using backend.Service.ElasticSearch;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ namespace backend.Controller
     {
         private readonly ISubTopicService _subTopicService;
         private readonly IMapper _mapper;
+        private readonly ISubtopicsElasticSearch subtopicsElasticSearch;
 
-        public SubTopicController(ISubTopicService subTopicService, IMapper mapper)
+        public SubTopicController(ISubTopicService subTopicService, IMapper mapper, ISubtopicsElasticSearch _subtopicsElasticSearch)
         {
             _subTopicService = subTopicService;
             _mapper = mapper;
+            subtopicsElasticSearch = _subtopicsElasticSearch;
         }
 
         // POST: api/SubTopics
@@ -29,9 +32,11 @@ namespace backend.Controller
                 return BadRequest(new { message = "SubTopic data is required" });
             }
             var subTopic = _mapper.Map<SubTopic>(subTopicDto);
-            var createdSubTopic = await _subTopicService.CreateAsync(subTopic);
-            var createdSubTopicDto = _mapper.Map<SubTopicDto>(createdSubTopic);
-            return CreatedAtAction(nameof(GetSubTopic), new { id = createdSubTopic.Id }, createdSubTopicDto);
+            /*  var createdSubTopic = await _subTopicService.CreateAsync(subTopic);
+              var createdSubTopicDto = _mapper.Map<SubTopicDto>(createdSubTopic);*/
+            //return CreatedAtAction(nameof(GetSubTopic), new { id = createdSubTopic.Id }, createdSubTopicDto);
+            var check = subtopicsElasticSearch.AddSources(subTopicDto);
+            return Ok(check);
         }
 
         // GET: api/SubTopics

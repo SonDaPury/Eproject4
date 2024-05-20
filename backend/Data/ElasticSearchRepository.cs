@@ -40,5 +40,11 @@ namespace backend.Data
         {
             throw new NotImplementedException();
         }
+
+        public bool UpdateData(string Id, Func<UpdateDescriptor<object,object>, IUpdateRequest<object,object>> selector)
+        {
+            var response = _client.Update<object, object>(Id, selector);
+            return response.IsValid;
+        }
     }
 }

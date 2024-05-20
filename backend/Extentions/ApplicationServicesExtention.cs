@@ -1,6 +1,8 @@
 ﻿using backend.Base;
 using backend.Data;
+using backend.Entities;
 using backend.Service;
+using backend.Service.ElasticSearch;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
@@ -11,21 +13,25 @@ namespace backend.Extentions
     {
         public static IServiceCollection AddAppServices(this IServiceCollection services)
         {
-            services.AddScoped<IElasticSearchRepository,ElasticSearchRepository>();
+            services.AddScoped<IElasticSearchRepository, ElasticSearchRepository>();
             services.AddScoped<LMSContext>();
-            services.AddScoped<IAnswerService,AnswerService>();
-            services.AddScoped<IAttempService,AttempService>();
+            services.AddScoped<IAnswerService, AnswerService>();
+            services.AddScoped<IAttempService, AttempService>();
             services.AddScoped<IChapterService, ChapterService>();
-            services.AddScoped<IExamService,ExamService>();
-            services.AddScoped<ILessonService,LessonService>();
-            services.AddScoped<IOptionService,OptionService>();
-            services.AddScoped<IQuestionService,QuestionService>();
-            services.AddScoped<IQuizQuestionService,QuizQuestionService>();
+            services.AddScoped<IExamService, ExamService>();
+            services.AddScoped<ILessonService, LessonService>();
+            services.AddScoped<IOptionService, OptionService>();
+            services.AddScoped<IQuestionService, QuestionService>();
+            services.AddScoped<IQuizQuestionService, QuizQuestionService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ISourceService, SourceService>();
             services.AddScoped<ISubTopicService, SubTopicService>();
             services.AddScoped<ITopicService, TopicService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISourcesElasticSearch, SourcesElasticSearch>();
+            services.AddScoped<ISubtopicsElasticSearch, SubtopicsElasticSearch>();
+            services.AddScoped<ITopicsElasticSearch, TopicsElasticSearch>();
+
             services.AddAutoMapper(typeof(CreateAutoMapper));
 
             services.Configure<ApiBehaviorOptions>(options =>

@@ -2,6 +2,7 @@
 using backend.Attributes;
 using backend.Dtos;
 using backend.Entities;
+using backend.Service.ElasticSearch;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,23 +15,28 @@ namespace backend.Controller
     {
         private readonly ITopicService _topicService;
         private readonly IMapper _mapper;
-        public TopicController(ITopicService topicService, IMapper mapper)
+        private readonly ITopicsElasticSearch topicsElasticSearch;
+        public TopicController(ITopicService topicService, IMapper mapper, ITopicsElasticSearch _topicsElasticSearch)
         {
             _topicService = topicService;
             _mapper = mapper;
+            topicsElasticSearch = _topicsElasticSearch;
         }
 
         // POST: api/Topics
         [HttpPost]
-        public async Task<ActionResult<Topic>> CreateTopic([FromBody] TopicDto topicDto)
+        public async Task<ActionResult<Topic>> CreateTopic([FromBody] TopicElasticSearch topicDto)
         {
             if (topicDto == null)
             {
                 return BadRequest(new { message = "Topic data is required" });
             }
-            var data = _mapper.Map<Topic>(topicDto);
-            var createdTopic = await _topicService.CreateAsync(data);
-            return CreatedAtAction("GetTopic", new { id = createdTopic.Id }, createdTopic);
+            //var data = _mapper.Map<Topic>(topicDto);
+
+            //var createdTopic = await _topicService.CreateAsync(data);
+            //return CreatedAtAction("GetTopic", new { id = createdTopic.Id }, createdTopic);
+            var check = topicsElasticSearch.AddTopic(topicDto);
+            return Ok(check);
         }
 
         // GET: api/Topics
@@ -59,7 +65,7 @@ namespace backend.Controller
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTopic(int id, [FromBody] TopicDto topicDto)
         {
-            if (topicDto == null )
+            if (topicDto == null)
             {
                 return BadRequest(new { message = "Invalid topic data" });
             }
@@ -81,7 +87,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Topic with ID {id} not found." });
             }
-            return Ok(new {mesage = "delete successfuly !!!"});
+            return Ok(new { mesage = "delete successfuly !!!" });
         }
     }
 }
