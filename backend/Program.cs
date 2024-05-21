@@ -2,11 +2,15 @@
 using backend.Extentions;
 using backend.Helper;
 using backend.Middleware;
+using backend.Service.Interface;
 using backend.Worker;
+using Elasticsearch.Net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Nest;
 using System.Net.Mail;
 using System.Text;
 
@@ -14,6 +18,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+var configuration = builder.Configuration;
+
+var elasticsearchUri = new Uri(configuration["ElasticSearch:uri"]);
+var username = configuration["ElasticSearch:username"];
+var password = configuration["ElasticSearch:pass"];
+
+if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || elasticsearchUri == null)
+{
+    throw new InvalidOperationException("Nhập thông tin ElasticSearch.");
+}
+
+// Thiết lập ConnectionSettings với Basic Authentication
+var pool = new ConnectionSettings(elasticsearchUri)
+    .BasicAuthentication(username, password);
+
+var client = new ElasticClient(pool);
+
+// Đăng ký client vào DI container
+builder.Services.AddSingleton<IElasticClient>(client);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
