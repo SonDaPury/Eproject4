@@ -80,7 +80,13 @@ const useAxiosWithLoading = () => {
     };
   }, [request, showSnackbar]);
 
-  const callApi = async (path, method = "get", body = null, message = "") => {
+  const callApi = async (
+    path,
+    method = "get",
+    body = null,
+    message = "",
+    snackbar = true
+  ) => {
     setError(null);
     try {
       const response = await request.request({
@@ -89,7 +95,7 @@ const useAxiosWithLoading = () => {
         data: body,
       });
       if (response.data) {
-        showSnackbar(message, "success");
+        snackbar && showSnackbar(message, "success");
         setSuccess(true);
         setData(response);
         return response;

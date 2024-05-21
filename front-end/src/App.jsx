@@ -32,7 +32,7 @@ function App() {
                   path={route.path}
                   element={
                     <Layout>
-                      <Component/>
+                      <Component />
                     </Layout>
                   }
                 />
@@ -51,10 +51,10 @@ function App() {
                   element={
                     token ? (
                       <Layout>
-                        <Component/>
+                        <Component />
                       </Layout>
                     ) : (
-                      <Navigate to="/dang-nhap"/>
+                      <Navigate to="/dang-nhap" />
                     )
                   }
                 />
@@ -72,13 +72,12 @@ function App() {
                   path={route.path}
                   element={
                     token && roleId === 1 ? (
-                      <Layout>
-                        <Component/>
+                      <Layout name={route?.name}>
+                        <Component />
                       </Layout>
                     ) : (
                       <>
-                        {showSnackbar("Bạn không có quyền truy cập", "error")}
-                        <Navigate to="/dang-nhap"/>
+                        <Navigate to="/dang-nhap" />
                       </>
                     )
                   }
@@ -89,7 +88,7 @@ function App() {
               path="*"
               element={
                 <DefaultLayout>
-                  <NotFound/>
+                  <NotFound />
                 </DefaultLayout>
               }
             />

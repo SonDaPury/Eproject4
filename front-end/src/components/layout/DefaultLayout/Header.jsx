@@ -17,13 +17,13 @@ import { Badge, styled, SvgIcon } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ButtonCustomize from "@eproject4/components/ButtonCustomize";
-import { getToken, signOut } from "@eproject4/helpers/authHelper";
+import { getToken } from "@eproject4/helpers/authHelper";
+import { logout } from "@eproject4/services/auth";
 
 const pages = [
   { text: "Khóa học", path: "/khoa-hoc" },
   { text: "Về chúng tôi", path: "/ve-chung-toi" },
 ];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -38,6 +38,7 @@ function Header() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const token = getToken();
+  const { logoutAction } = logout();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -53,9 +54,9 @@ function Header() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setAnchorElUser(null);
-    signOut();
+    await logoutAction();
   };
 
   return (
@@ -99,7 +100,7 @@ function Header() {
                 aria-haspopup="true"
                 onClick={handleOpenNavMenu}
                 sx={{ color: "#FFFFFF" }}>
-                <MenuIcon/>
+                <MenuIcon />
               </IconButton>
               <Menu
                 id="menu-appbar"
@@ -176,7 +177,7 @@ function Header() {
             </Box>
             <Box sx={{ display: token ? "none" : "flex" }}>
               <Link to={"/dang-ky"}>
-                <ButtonCustomize text="Đăng ký" width="100px"/>
+                <ButtonCustomize text="Đăng ký" width="100px" />
               </Link>
               <Link to={"/dang-nhap"}>
                 <ButtonCustomize
@@ -191,17 +192,17 @@ function Header() {
             <Box sx={{ flexGrow: 0, display: token ? "flex" : "none" }}>
               <Box sx={{ marginRight: "30px" }}>
                 <button className="mr-[10px]">
-                  <FavoriteBorderIcon sx={{ color: "#FFFFFF" }}/>
+                  <FavoriteBorderIcon sx={{ color: "#FFFFFF" }} />
                 </button>
                 <IconButton sx={{ color: "#FFFFFF" }} aria-label="cart">
                   <StyledBadge badgeContent={4} color="secondary">
-                    <ShoppingCartIcon/>
+                    <ShoppingCartIcon />
                   </StyledBadge>
                 </IconButton>
               </Box>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg"/>
+                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
                 </IconButton>
               </Tooltip>
               <Menu

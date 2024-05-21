@@ -7,6 +7,8 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUserInfo } from "@eproject4/redux/slices/userSlice";
+import { signOut } from "@eproject4/helpers/authHelper";
+import { getToken, getRefreshToken } from "@eproject4/helpers/authHelper";
 
 // Register
 export const registerForm = () => {
@@ -54,8 +56,12 @@ export const loginForm = () => {
           password: dataForm?.password,
         };
 
-        const res = await callApi("/User/login", "post", body, "Đăng nhập thành công");
-        console.log(res);
+        const res = await callApi(
+          "/User/login",
+          "post",
+          body,
+          "Đăng nhập thành công"
+        );
 
         const { accessToken, refreshToken } = res.data.item1;
         const user = res?.data?.item2;
@@ -65,11 +71,33 @@ export const loginForm = () => {
         dispatch(setUserInfo({ user, accessToken, refreshToken }));
         navigate(from, { replace: true });
       } catch (err) {
-        console.log(err);
         throw new Error(err);
       }
     }
   };
 
   return { loginFormAction, loading, error, success, data };
+};
+
+// Logout
+export const logout = () => {
+  const { callApi, loading, error, success, data } = useAxiosWithLoading();
+
+  const logoutAction = async () => {
+    try {
+      const accessToken = getToken();
+      const refreshToken = getRefreshToken();
+      await callApi(
+        "/User/logout",
+        "post",
+        { accessToken, refreshToken },
+        "Đăng xuất thành công"
+      );
+      signOut();
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { logoutAction, loading, error, success, data };
 };
