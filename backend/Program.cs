@@ -163,8 +163,6 @@ app.UseHttpsRedirection();
 
 
 app.UseMiddleware<GlobalErrorHandlingMiddleware>();
-
-
 app.MapControllers();
 
 app.Run();

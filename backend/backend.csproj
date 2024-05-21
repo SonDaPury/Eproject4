@@ -31,4 +31,8 @@
     <None Include="wwwroot\htmlpage.html" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Temp\" />
+  </ItemGroup>
+
 </Project>

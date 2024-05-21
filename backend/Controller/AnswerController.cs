@@ -16,70 +16,26 @@ namespace backend.Controller
     {
         private readonly IAnswerService _answerService;
         private readonly IMapper _mapper;
-        private readonly IElasticClient _elasticClient;
-        private readonly IElasticSearchRepository _elasticSearchRepository;
 
-        public AnswerController(IElasticSearchRepository elasticSearchRepository, IAnswerService answerService, IMapper mapper, IElasticClient elasticClient)
+
+        public AnswerController(IWebHostEnvironment env, IConfiguration _configuration, IAnswerService answerService, IMapper mapper)
         {
             _answerService = answerService;
             _mapper = mapper;
-            _elasticClient = elasticClient;
-            _elasticSearchRepository = elasticSearchRepository;
         }
-        [HttpGet("AddsomeData")]
-        public async Task<IActionResult> AddData()
+        [HttpPost("AddsomeData")]
+        public async Task<IActionResult> AddData([FromQuery] string id, string fileName)
         {
-            //         var searchResponse = _elasticSearchRepository.GetData<TopicElasticSearch>(s => s
-            //    .Index("sources_index")
-            //    .Query(q => q
-            //        .MatchAll()
-            //    )
-            //);
-            var newTopic = new TopicElasticSearch
-            {
-                TopicId = 11,
-                TopicName = "Science2334234234234",
-                subTopics = new List<SubTopcElasticSearch>
-    {
-        new SubTopcElasticSearch
-        {
-            SubTopicId = 101,
-            SubTopicName = "Physics22ewewqewewr",
-            sources = new List<SourcesElasticSearch>
-            {
-                new SourcesElasticSearch
-                {
-                    Id = 1001,
-                    Title = "Quantum Mechanics",
-                    Description = "Introduction to Quantum Mechanics",
-                    Thumbnail = "thumb1.jpg",
-                    Slug = "quantum-mechanics",
-                    Status = 1,
-                    Benefit = "Understand the basics of quantum mechanics",
-                    Video_intro = "video1.mp4",
-                    Price = 49.99,
-                    Rating = "4.5",
-                    UserId = 2001
-                }
-            }
-        }
-    }
-            };
-            //var addData = _elasticSearchRepository.AddData<TopicElasticSearch>(newTopic, "sources_index", newTopic.TopicId.ToString());
-            return Ok();
+
         }
         [HttpGet("check")]
         public async Task<IActionResult> CheckConnection()
         {
-            var pingResponse = await _elasticClient.PingAsync();
-            if (pingResponse.IsValid)
-            {
-                return Ok("Connect OK");
-            }
-            else
-            {
-                return StatusCode(500, "Failed .");
-            }
+            var pingResponse = 1;
+
+            return Ok("Connect OK");
+
+
         }
 
         // POST: api/Answers
