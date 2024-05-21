@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Controller;
+using backend.Data;
 using backend.Extentions;
 using backend.Helper;
 using backend.Middleware;
@@ -126,21 +127,18 @@ builder.Services.AddSingleton<SmtpClient>(provider =>
     return smtpClient;
 });
 
-builder.Services.AddSignalR(e =>
-{
-    e.MaximumReceiveMessageSize = 102400000;
-}); ;
 
-builder.Services.AddCors(
-    opt =>
-        opt.AddPolicy(
-            name: "AllowLocalHost",
-            policy =>
-            {
-                policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
-            }
-        )
-);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy",
+        builder => builder
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .SetIsOriginAllowed((host) => true)
+        .AllowCredentials());
+});
+builder.Services.AddSignalR();
+
 builder.Services.AddHostedService<CleanupUserConnectionService>();
 var app = builder.Build();
 
@@ -154,11 +152,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
-app.UseCors("AllowLocalHost");
+app.UseCors("CorsPolicy");
 
 app.UseEndpoints(endpoints =>
 {
-    endpoints.MapHub<ExamHub>("/examHub");
+    endpoints.MapHub<CounterSignalR>("/examHub");
 });
 app.UseHttpsRedirection();
 
