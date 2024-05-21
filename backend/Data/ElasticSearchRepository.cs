@@ -6,7 +6,7 @@ namespace backend.Data
     public class ElasticSearchRepository : IElasticSearchRepository
     {
         private IElasticClient _client;
-        public ElasticSearchRepository(IElasticClient client) 
+        public ElasticSearchRepository(IElasticClient client)
         {
             _client = client;
         }
@@ -37,6 +37,21 @@ namespace backend.Data
         }
 
         public bool RemoveChildrenDocumentByScript()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool AddData<T>(T document, string key) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public T GetData<T>(string id, string key) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<T> SearchData<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class
         {
             throw new NotImplementedException();
         }

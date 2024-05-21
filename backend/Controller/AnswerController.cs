@@ -65,9 +65,9 @@ namespace backend.Controller
         }
     }
             };
-            var addData = _elasticSearchRepository.AddData<TopicElasticSearch>(newTopic, "sources_index", newTopic.TopicId.ToString());
-            return Ok(addData);
-            }
+            //var addData = _elasticSearchRepository.AddData<TopicElasticSearch>(newTopic, "sources_index", newTopic.TopicId.ToString());
+            return Ok();
+        }
         [HttpGet("check")]
         public async Task<IActionResult> CheckConnection()
         {
@@ -92,10 +92,10 @@ namespace backend.Controller
             }
             try
             {
-            var answer = _mapper.Map<Answer>(answerDto);
-            var createdAnswer = await _answerService.CreateAsync(answer);
-            var createdAnswerDto = _mapper.Map<AnswerDto>(createdAnswer);
-            return CreatedAtAction(nameof(GetAnswer), new { id = createdAnswerDto.Id }, createdAnswerDto);
+                var answer = _mapper.Map<Answer>(answerDto);
+                var createdAnswer = await _answerService.CreateAsync(answer);
+                var createdAnswerDto = _mapper.Map<AnswerDto>(createdAnswer);
+                return CreatedAtAction(nameof(GetAnswer), new { id = createdAnswerDto.Id }, createdAnswerDto);
             }
             catch (ArgumentException ex)
             {
@@ -110,9 +110,9 @@ namespace backend.Controller
         {
             try
             {
-            var answers = await _answerService.GetAllAsync();
-            var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
-            return Ok(answerDtos);
+                var answers = await _answerService.GetAllAsync();
+                var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
+                return Ok(answerDtos);
             }
             catch (ArgumentException ex)
             {
