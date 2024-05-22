@@ -36,7 +36,7 @@ namespace backend.Controller
 
         // GET: api/Topics
         [HttpGet]
-        [JwtAuthorize("user")]
+        //[JwtAuthorize("user")]
         public async Task<IActionResult> GetAllTopics()
         {
             var topics = await _topicService.GetAllAsync();
