@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using backend.Attributes;
 using backend.Data;
 using backend.Dtos;
 using backend.Entities;
@@ -12,6 +13,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    [JwtAuthorize("user","admin")]
     public class AnswerController : ControllerBase
     {
         private readonly IAnswerService _answerService;
@@ -26,7 +28,7 @@ namespace backend.Controller
         [HttpPost("AddsomeData")]
         public async Task<IActionResult> AddData([FromQuery] string id, string fileName)
         {
-
+            return Ok();
         }
         [HttpGet("check")]
         public async Task<IActionResult> CheckConnection()

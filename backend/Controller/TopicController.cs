@@ -10,6 +10,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    [JwtAuthorize("user", "admin")]
     public class TopicController : ControllerBase
     {
         private readonly ITopicService _topicService;
@@ -35,7 +36,7 @@ namespace backend.Controller
 
         // GET: api/Topics
         [HttpGet]
-        [JwtAuthorize("user")]
+        //[JwtAuthorize("user")]
         public async Task<IActionResult> GetAllTopics()
         {
             var topics = await _topicService.GetAllAsync();
