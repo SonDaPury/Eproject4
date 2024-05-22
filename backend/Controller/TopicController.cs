@@ -10,6 +10,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    [JwtAuthorize("user", "admin")]
     public class TopicController : ControllerBase
     {
         private readonly ITopicService _topicService;
