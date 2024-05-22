@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using backend.Attributes;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -9,6 +10,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    [JwtAuthorize("user", "admin")]
     public class SubTopicController : ControllerBase
     {
         private readonly ISubTopicService _subTopicService;
