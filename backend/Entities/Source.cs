@@ -50,5 +50,6 @@ namespace backend.Entities
 
 
         public ICollection<Chapter>? Chapters { get; set; }
+        public ICollection<Exam>? Exams { get; set; }
     }
 }

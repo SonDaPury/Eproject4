@@ -5,18 +5,28 @@ using backend.Helper;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Timers;
 
 namespace backend.Service
 {
-    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext) : IExamService
+    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService) : IExamService
     {
         private readonly LMSContext _context = context;
         private readonly IHubContext<ExamHub> _hubContext = hubContext;
+        private readonly ISerialService _serialService = serialService;
         private static volatile bool _continueExam = true;
 
-        public async Task<Exam> CreateAsync(Exam exam)
+        public async Task<Exam> CreateAsync(Exam exam, int index)
         {
-            _context.Exams.Add(exam);
+            await _context.Exams.AddAsync(exam);
+            await _context.SaveChangesAsync();
+            var newSerial = new Serial
+            {
+                Index =index,
+                ExamId = exam.Id,
+                LessonId = null
+            };
+            await _serialService.CreateAsync(newSerial);
             await _context.SaveChangesAsync();
             return exam;
         }
@@ -46,7 +56,7 @@ namespace backend.Service
                     })
                 })
                 .FirstOrDefaultAsync();
-            
+
             return exam ?? throw new NotFoundException($"exam not found with id : {examId} ");
         }
 
@@ -69,7 +79,7 @@ namespace backend.Service
             exam.TimeLimit = updatedExam.TimeLimit;
             exam.MaxQuestion = updatedExam.MaxQuestion;
             exam.Status = updatedExam.Status;
-            exam.ChapterId = updatedExam.ChapterId;
+            exam.SourceId = updatedExam.SourceId;
 
             await _context.SaveChangesAsync();
             return exam;
@@ -112,25 +122,46 @@ namespace backend.Service
             //var endTime = DateTime.UtcNow.AddMinutes(2);
             _continueExam = true;
 
-            while (DateTime.UtcNow < endTime && _continueExam == true)
-            {
-                var remainingTime = endTime - DateTime.UtcNow;
-                var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
-                await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
-                await Task.Delay(1000);
-            }
-            exam.IsStarted = false;
-            await _context.SaveChangesAsync();
-            if (!_continueExam)
-            {
-                await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
-            }
+            //while (DateTime.UtcNow < endTime && _continueExam == true)
+            //{
+            //    var remainingTime = endTime - DateTime.UtcNow;
+            //    var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
+            //    await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
+            //    await Task.Delay(1000);
+            //}
+            //exam.IsStarted = false;
+            //await _context.SaveChangesAsync();
+            //if (!_continueExam)
+            //{
+            //    await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
+            //}
+            System.Timers.Timer timer = new System.Timers.Timer(1000);
+            timer.Elapsed += async (sender, e) => {
+                if (DateTime.UtcNow >= endTime || !_continueExam)
+                {
+                    timer.Stop();
+                    exam.IsStarted = false;
+                    await _context.SaveChangesAsync();
+                    if (!_continueExam)
+                    {
+                        await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
+                    }
+                    timer.Dispose();
+                }
+                else
+                {
+                    var remainingTime = endTime - DateTime.UtcNow;
+                    var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
+                    await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
+                }
+            };
+            timer.Start();
         }
 
 
         public async Task<int> EndExam(
-            List<UserAnswer> userAnswers 
-            ,int examId
+            List<UserAnswer> userAnswers
+            , int examId
             , int userId)
         {
             _continueExam = false;

@@ -59,12 +59,7 @@ namespace backend.Service
                 _context.Lessons.RemoveRange(list_lession);
             }
 
-            // xóa exam theo chapter
-            var list_exam = await _context.Exams.Where(l => l.ChapterId == id).ToListAsync();
-            if (list_exam != null)
-            {
-                _context.Exams.RemoveRange(list_exam);
-            }
+            
             _context.Chapters.Remove(chapter);
             await _context.SaveChangesAsync();
             return true;

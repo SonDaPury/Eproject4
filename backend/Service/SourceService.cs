@@ -60,7 +60,18 @@ namespace backend.Service
         {
             var source = await _context.Sources.FindAsync(id);
             if (source == null) return false;
-
+            // xóa exam theo source
+            var list_exam = await _context.Exams.Where(l => l.SourceId == id).ToListAsync();
+            if (list_exam != null)
+            {
+                _context.Exams.RemoveRange(list_exam);
+            }
+            // xóa exam theo chapter
+            var list_chapter = await _context.Chapters.Where(l => l.SourceId == id).ToListAsync();
+            if (list_chapter != null)
+            {
+                _context.Chapters.RemoveRange(list_chapter);
+            }
             _context.Sources.Remove(source);
             await _context.SaveChangesAsync();
             return true;

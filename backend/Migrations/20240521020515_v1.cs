@@ -89,7 +89,7 @@ namespace backend.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     answer = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    is_correct = table.Column<bool>(type: "bit", nullable: true),
+                    is_correct = table.Column<bool>(type: "bit", nullable: false),
                     question_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -254,15 +254,15 @@ namespace backend.Migrations
                     max_question = table.Column<int>(type: "int", nullable: false),
                     status = table.Column<bool>(type: "bit", nullable: false),
                     is_started = table.Column<bool>(type: "bit", nullable: false),
-                    chapter_id = table.Column<int>(type: "int", nullable: false)
+                    source_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Exams", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Exams_Chapters_chapter_id",
-                        column: x => x.chapter_id,
-                        principalTable: "Chapters",
+                        name: "FK_Exams_Sources_source_id",
+                        column: x => x.source_id,
+                        principalTable: "Sources",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -278,7 +278,6 @@ namespace backend.Migrations
                     video_duration = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     thumbnail = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     video = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    index = table.Column<int>(type: "int", nullable: false),
                     view = table.Column<int>(type: "int", nullable: false),
                     status = table.Column<bool>(type: "bit", nullable: false),
                     chapter_id = table.Column<int>(type: "int", nullable: false)
@@ -303,15 +302,14 @@ namespace backend.Migrations
                     total = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     exam_id = table.Column<int>(type: "int", nullable: true),
                     user_id = table.Column<int>(type: "int", nullable: true),
-                    attempt_id = table.Column<int>(type: "int", nullable: true),
-                    AttempId = table.Column<int>(type: "int", nullable: true)
+                    attempt_id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Answers", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Answers_Attemps_AttempId",
-                        column: x => x.AttempId,
+                        name: "FK_Answers_Attemps_attempt_id",
+                        column: x => x.attempt_id,
                         principalTable: "Attemps",
                         principalColumn: "id");
                     table.ForeignKey(
@@ -352,10 +350,37 @@ namespace backend.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Serials",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    index = table.Column<int>(type: "int", nullable: false),
+                    lesson_id = table.Column<int>(type: "int", nullable: true),
+                    exam_id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Serials", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Serials_Exams_exam_id",
+                        column: x => x.exam_id,
+                        principalTable: "Exams",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_Serials_Lessons_lesson_id",
+                        column: x => x.lesson_id,
+                        principalTable: "Lessons",
+                        principalColumn: "id");
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_Answers_AttempId",
+                name: "IX_Answers_attempt_id",
                 table: "Answers",
-                column: "AttempId");
+                column: "attempt_id",
+                unique: true,
+                filter: "[attempt_id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Answers_exam_id",
@@ -378,9 +403,9 @@ namespace backend.Migrations
                 column: "source_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Exams_chapter_id",
+                name: "IX_Exams_source_id",
                 table: "Exams",
-                column: "chapter_id");
+                column: "source_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Lessons_chapter_id",
@@ -401,6 +426,16 @@ namespace backend.Migrations
                 name: "IX_QuizQuestions_question_id",
                 table: "QuizQuestions",
                 column: "question_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Serials_exam_id",
+                table: "Serials",
+                column: "exam_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Serials_lesson_id",
+                table: "Serials",
+                column: "lesson_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sources_sub_topic_id",
@@ -444,13 +479,13 @@ namespace backend.Migrations
                 name: "ForgotPasswordRequests");
 
             migrationBuilder.DropTable(
-                name: "Lessons");
-
-            migrationBuilder.DropTable(
                 name: "Options");
 
             migrationBuilder.DropTable(
                 name: "QuizQuestions");
+
+            migrationBuilder.DropTable(
+                name: "Serials");
 
             migrationBuilder.DropTable(
                 name: "UserConnections");
@@ -462,10 +497,13 @@ namespace backend.Migrations
                 name: "Attemps");
 
             migrationBuilder.DropTable(
+                name: "Questions");
+
+            migrationBuilder.DropTable(
                 name: "Exams");
 
             migrationBuilder.DropTable(
-                name: "Questions");
+                name: "Lessons");
 
             migrationBuilder.DropTable(
                 name: "Chapters");

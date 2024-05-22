@@ -28,6 +28,7 @@ namespace backend.Extentions
             /*            services.AddScoped<IChukedFileService, ChunkedFileService>();
             */
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISerialService, SerialService>();
             services.AddAutoMapper(typeof(CreateAutoMapper));
 
             services.Configure<ApiBehaviorOptions>(options =>
