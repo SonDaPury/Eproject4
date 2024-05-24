@@ -41,9 +41,9 @@ namespace backend.Entities
         public string? Rating { get; set; }
 
 
-        [Column("static_folder")]
-        [StringLength(20)]
-        public string? StaticFolder { get; set; }
+        //[Column("static_folder")]
+        //[StringLength(20)]
+        //public string? StaticFolder { get; set; }
 
         [Column("user_id")]
         public int UserId { get; set; }

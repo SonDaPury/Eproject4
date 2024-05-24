@@ -61,7 +61,7 @@ namespace backend.Service
             lesson.View = update.View;
             lesson.Status = update.Status;
             lesson.ChapterId = update.ChapterId;
-            lesson.StaticFolder = update.StaticFolder;
+            //lesson.StaticFolder = update.StaticFolder;
 
             await _context.SaveChangesAsync();
             return updatedLesson;
