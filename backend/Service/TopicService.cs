@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -18,9 +19,14 @@ namespace backend.Service
         }
 
         // Lấy danh sách tất cả topics
-        public async Task<List<Topic>> GetAllAsync()
+        public async Task<(List<Topic>,int)> GetAllAsync(Pagination pagination)
         {
-            return await _context.Topics.ToListAsync();
+            var topics = await _context.Topics
+                .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                .ToListAsync();
+            var count = await _context.Topics.CountAsync();
+            return (topics, count);
         }
 
         // Lấy thông tin một topic theo ID

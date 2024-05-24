@@ -13,8 +13,6 @@ namespace backend.Controller
 {
     public class CounterSignalR : Hub
     {
-        private static Timer _timer;
-        private static int _counter;
         public async Task SendTimer(int CounterTime)
         {
             string connectionId = Context.ConnectionId;

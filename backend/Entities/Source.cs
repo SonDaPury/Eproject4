@@ -57,4 +57,9 @@ namespace backend.Entities
         public ICollection<Chapter>? Chapters { get; set; }
         public ICollection<Exam>? Exams { get; set; }
     }
+    public class SourceWithTopicId
+    {
+        public Source? Source { get; set; }
+        public int? TopicId { get; set; }
+    }
 }

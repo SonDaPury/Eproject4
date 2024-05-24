@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -117,6 +118,11 @@ namespace backend.Service
                     return false;
                 }
             }
+        }
+
+        public Task<(List<Serial>, int)> GetAllAsync(Pagination pagination)
+        {
+            throw new NotImplementedException();
         }
 
         //public async Task UpdateIndexHightoLow (int index, int indexhigher)

@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -16,9 +17,14 @@ namespace backend.Service
             return subTopic;
         }
 
-        public async Task<List<SubTopic>> GetAllAsync()
+        public async Task<(List<SubTopic>,int)> GetAllAsync(Pagination pagination)
         {
-            return await _context.SubTopics.Include(st => st.Topic).ToListAsync();
+            var stps = await _context.SubTopics.Include(st => st.Topic)
+                 .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                .ToListAsync();
+            var count = await _context.SubTopics.CountAsync();
+            return (stps, count);
         }
 
         public async Task<SubTopic?> GetByIdAsync(int id)

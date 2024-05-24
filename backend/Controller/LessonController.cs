@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -39,11 +40,11 @@ namespace backend.Controller
 
         // GET: api/Lessons
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<LessonDto>>> GetAllLessons()
+        public async Task<ActionResult<IEnumerable<LessonDto>>> GetAllLessons([FromQuery] Pagination pagination)
         {
-            var lessons = await _lessonService.GetAllAsync();
-            var lessonDtos = _mapper.Map<List<LessonDto>>(lessons);
-            return Ok(lessonDtos);
+            var lessons = await _lessonService.GetAllAsync(pagination);
+            var lessonDtos = _mapper.Map<List<LessonDto>>(lessons.Item1);
+            return Ok(new { TotalCount = lessons.Item2 , Lessons = lessonDtos });
         }
 
         // GET: api/Lessons/5

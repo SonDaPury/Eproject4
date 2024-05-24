@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace backend.Controller
 {
@@ -39,11 +41,11 @@ namespace backend.Controller
 
         // GET: api/Questions
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<QuestionDto>>> GetAllQuestions()
+        public async Task<ActionResult<IEnumerable<QuestionDto>>> GetAllQuestions([FromQuery] Pagination pagination)
         {
-            var questions = await _questionService.GetAllAsync();
-            var questionDtos = _mapper.Map<List<QuestionDto>>(questions);
-            return Ok(questionDtos);
+            var questions = await _questionService.GetAllAsync(pagination);
+            var questionDtos = _mapper.Map<List<QuestionDto>>(questions.Item1);
+            return Ok(new { TotalCount = questions.Item2, Items = questionDtos });
         }
 
         // GET: api/Questions/5

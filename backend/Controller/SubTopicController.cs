@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -38,11 +39,11 @@ namespace backend.Controller
 
         // GET: api/SubTopics
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SubTopicDto>>> GetAllSubTopics()
+        public async Task<ActionResult<IEnumerable<SubTopicDto>>> GetAllSubTopics([FromQuery] Pagination pagination)
         {
-            var subTopics = await _subTopicService.GetAllAsync();
-            var subTopicDtos = _mapper.Map<List<SubTopicDto>>(subTopics);
-            return Ok(subTopicDtos);
+            var subTopics = await _subTopicService.GetAllAsync(pagination);
+            var subTopicDtos = _mapper.Map<List<SubTopicDto>>(subTopics.Item1);
+            return Ok(new { TotalCount = subTopics.Item2, Items = subTopicDtos });
         }
 
         // GET: api/SubTopics/5

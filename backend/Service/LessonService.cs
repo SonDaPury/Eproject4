@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +17,15 @@ namespace backend.Service
             return lesson;
         }
 
-        public async Task<List<Lesson>> GetAllAsync()
+        public async Task<(List<Lesson>,int)> GetAllAsync(Pagination pagination)
         {
-            return await _context.Lessons
+            var lessons = await _context.Lessons
                 //.Include(l => l.Chapter) // Include the chapter details
+                 .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .ToListAsync();
+            var count = await _context.Lessons.CountAsync();
+            return (lessons,count);
         }
 
         public async Task<Lesson?> GetByIdAsync(int id)

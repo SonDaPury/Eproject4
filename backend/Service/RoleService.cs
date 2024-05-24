@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,11 @@ namespace backend.Service
             _context.Roles.Remove(role);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public Task<(List<Role>, int)> GetAllAsync(Pagination pagination)
+        {
+            throw new NotImplementedException();
         }
     }
 }

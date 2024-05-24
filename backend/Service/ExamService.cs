@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Exceptions;
 using backend.Helper;
@@ -31,13 +32,17 @@ namespace backend.Service
             return exam;
         }
 
-        public async Task<List<Exam>> GetAllAsync()
+        public async Task<(List<Exam>,int)> GetAllAsync(Pagination pagination)
         {
-            return await _context.Exams
+            var exams = await _context.Exams
                 //.Include(e => e.Chapter) // Include the chapter details
                 //.Include(e => e.QuizQuestions) // Include associated quiz questions
                 //.Include(e => e.Answers) // Include associated answers
+                .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .ToListAsync();
+            var count = await _context.Exams.CountAsync(); 
+            return (exams, count);
         }
 
         public async Task<dynamic> GetDetailsExam(int examId)
