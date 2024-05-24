@@ -35,7 +35,7 @@ namespace backend.Controller
             var option = _mapper.Map<Option>(optionDto);
             var createdOption = await _optionService.CreateAsync(option);
             var createdOptionDto = _mapper.Map<OptionDto>(createdOption);
-            return CreatedAtAction(nameof(GetOption), new { id = createdOptionDto.Id }, createdOptionDto);
+            return CreatedAtAction(nameof(GetOption), new { id = createdOption.Id }, createdOptionDto);
         }
 
         // GET: api/Options

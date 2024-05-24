@@ -34,8 +34,8 @@ namespace backend.Controller
 
             //var lesson = _mapper.Map<Lesson>(lessonDto);
             var createdLesson = await _lessonService.CreateAsync(lessonDto);
-            var createdLessonDto = _mapper.Map<LessonDto>(createdLesson);
-            return CreatedAtAction(nameof(GetLesson), new { id = createdLessonDto.Id }, createdLessonDto);
+            //var createdLessonDto = _mapper.Map<LessonDto>(createdLesson);
+            return CreatedAtAction(nameof(GetLesson), new { id = createdLesson.Id }, createdLesson);
         }
 
         // GET: api/Lessons
@@ -82,7 +82,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Lesson with ID {id} not found." });
             }
-            return Ok(_mapper.Map<LessonDto>(updatedLesson));
+            return Ok(updatedLesson);
         }
 
         // DELETE: api/Lessons/5
