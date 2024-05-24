@@ -125,5 +125,19 @@ namespace backend.Controller
             }
             return Ok(new { message = "Delete successfuly!!!" });
         }
+
+        //update view 
+        [HttpPut("updateview/{lessonId}")]
+        public async Task<IActionResult> UpdateView (int lessonId )
+        {
+            try
+            {
+                var lesson = await _lessonService.UpdateView(lessonId);
+                return CreatedAtAction(nameof(GetLesson), new { id = lessonId }, lesson);
+            }catch (Exception ex)
+            {
+                return BadRequest(new {message = ex.Message});
+            }
+        }
     }
 }

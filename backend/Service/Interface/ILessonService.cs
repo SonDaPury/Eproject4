@@ -12,5 +12,6 @@ namespace backend.Service.Interface
         Task<object> GetAllAsync(int chapterID);
         Task<LessonDto?> GetByIdAsync(int id);
         Task<LessonDto?> UpdateAsync(int id, LessonDtoUpdate updatedLesson);
+        Task<LessonDto> UpdateView(int lessonId);
     }
 }
