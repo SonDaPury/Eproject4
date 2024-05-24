@@ -64,6 +64,14 @@
         }
 
         function startExam() {
+            if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+                setupSignalRConnection();
+            } else {
+                invokeStartExam();
+            }
+        }
+
+        function invokeStartExam() {
             let examId = 3; // Adjust exam ID as necessary
             connection.invoke("StartExam", examId)
                 .then(() => {
@@ -99,11 +107,9 @@
         }
 
         document.getElementById("startExam").addEventListener("click", function () {
-            if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
-                setupSignalRConnection();
-            } else {
+            
                 startExam();
-            }
+            
         });
 
         document.getElementById("endExam").addEventListener("click", function () {
@@ -117,7 +123,7 @@
             disconnectSignalR();
         });
         // Setup SignalR connection on page load
-        setupSignalRConnection();
+        //setupSignalRConnection();
     </script>
 </body>
 </html>
