@@ -28,15 +28,21 @@ namespace backend.Controller
         [HttpPost]
         public async Task<IActionResult> CreateQuestion([FromForm] QuestionDto questionDto)
         {
-            if (questionDto == null)
+            try
             {
-                return BadRequest(new { message = "Question data is required" });
-            }
+                if (questionDto == null)
+                {
+                    return BadRequest(new { message = "Question data is required" });
+                }
 
-            //var question = _mapper.Map<Question>(questionDto);
-            var createdQuestion = await _questionService.CreateAsync(questionDto);
-            var createdQuestionDto = _mapper.Map<QuestionViewModel>(createdQuestion);
-            return Ok(createdQuestionDto);
+                //var question = _mapper.Map<Question>(questionDto);
+                var createdQuestion = await _questionService.CreateAsync(questionDto);
+                var createdQuestionDto = _mapper.Map<QuestionViewModel>(createdQuestion);
+                return Ok(createdQuestionDto);
+            }catch (Exception ex)
+            {
+                return BadRequest(new {message =  ex.Message});
+            }
         }
 
         // GET: api/Questions

@@ -6,6 +6,8 @@ namespace backend.Service
     {
         private readonly IWebHostEnvironment _env;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+        private static readonly string[] AllowedVideoExtensions = { ".mp4", ".avi", ".mov", ".wmv" };
         public ImageServices(IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             _env = env;
@@ -109,6 +111,17 @@ namespace backend.Service
             {
                 throw new FileNotFoundException($"File not found at the specified path.{ fullPath}");
             }
+        }
+        public bool IsImage(IFormFile file)
+        {
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            return AllowedImageExtensions.Contains(extension);
+        }
+
+        public bool IsVideo(IFormFile file)
+        {
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            return AllowedVideoExtensions.Contains(extension);
         }
     }
 }

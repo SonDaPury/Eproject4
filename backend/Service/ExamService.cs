@@ -230,51 +230,39 @@ namespace backend.Service
              int examId
             , int userId)
         {
-            using (var scope = _scopeFactory.CreateScope())
+
+
+            //_continueExam = false;
+            var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId);
+            var userConnection = await _context.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
+            if (exam == null || userConnection == null) throw new Exception("Exam or User not found");
+            await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
+            //await _hubContext.Clients.Group($"Exam-{examId}").SendAsync("ReceiveExamEnd", "The exam has ended.");
+            userConnection.DisconnectedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            if (userConnection.DisconnectedAt.HasValue)
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<LMSContext>();
-                //_continueExam = false;
-                var exam = await dbContext.Exams.FindAsync(examId);
-                var userConnection = await dbContext.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
-                if (exam == null || userConnection == null) throw new Exception("Exam or User not found");
-                await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
-                //await _hubContext.Clients.Group($"Exam-{examId}").SendAsync("ReceiveExamEnd", "The exam has ended.");
-                userConnection.DisconnectedAt = DateTime.UtcNow;
-                await dbContext.SaveChangesAsync();
-                if (userConnection.DisconnectedAt.HasValue)
+                var timeTaken = userConnection.DisconnectedAt.Value - userConnection.ConnectedAt;
+                var formattedTakenTime = $"{timeTaken.Minutes:D2}:{timeTaken.Seconds:D2}";
+                // Tìm giá trị Index lớn nhất hiện tại
+                int? maxIndex = await _context.Attemps.MaxAsync(a => (int?)a.Index) ?? 0;
+                Attemp attemp = new Attemp()
                 {
-                    var timeTaken = userConnection.DisconnectedAt.Value - userConnection.ConnectedAt;
-                    var formattedTakenTime = $"{timeTaken.Minutes:D2}:{timeTaken.Seconds:D2}";
-                    // Tìm giá trị Index lớn nhất hiện tại
-                    int? maxIndex = await dbContext.Attemps.MaxAsync(a => (int?)a.Index) ?? 0;
-                    Attemp attemp = new Attemp()
-                    {
-                        Index = maxIndex + 1,
-                        TimeTaken = formattedTakenTime,
-                        UserId = userId
-                    };
-                    exam.IsStarted = false;
-                    await dbContext.Attemps.AddAsync(attemp);
-                    await dbContext.SaveChangesAsync();
-                    var total = 100;
-                    //await CalculateScore(userAnswers, examId);
-                    var answer = new Answer
-                    {
-                        Total = total.ToString() + "%",
-                        UserId = userId,
-                        ExamId = examId,
-                        AttemptId = attemp.Id
-                    };
-                    await dbContext.Answers.AddAsync(answer);
-                    await dbContext.SaveChangesAsync();
-                    return total;
-                }
-                else
-                {
-                    // Xử lý trường hợp DisconnectedAt hoặc ConnectedAt không có giá trị
-                    throw new Exception("DisconnectedAt or ConnectedAt not found");
-                }
+                    Index = maxIndex + 1,
+                    TimeTaken = formattedTakenTime,
+                    UserId = userId
+                };
+                exam.IsStarted = false;
+                await _context.Attemps.AddAsync(attemp);
+                await _context.SaveChangesAsync();
+                return attemp.Id;
             }
+            else
+            {
+                // Xử lý trường hợp DisconnectedAt hoặc ConnectedAt không có giá trị
+                throw new Exception("DisconnectedAt or ConnectedAt not found");
+            }
+
 
         }
 

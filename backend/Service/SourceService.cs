@@ -26,12 +26,20 @@ namespace backend.Service
             // Kiểm tra và xử lý tải lên thumbnail
             if (sourceDto.Thumbnail != null)
             {
+                if (!_imageServices.IsImage(sourceDto.Thumbnail))
+                {
+                    throw new Exception("Invalid image format. Only JPG, JPEG, PNG, and GIF are allowed.");
+                }
                 string thumbnailPath = _imageServices.AddFile(sourceDto.Thumbnail, "sources", "thumbnails");
                 source.Thumbnail = thumbnailPath;
             }
             // Kiểm tra và xử lý tải lên video giới thiệu
             if (sourceDto.VideoIntro != null)
             {
+                if (!_imageServices.IsVideo(sourceDto.VideoIntro))
+                {
+                    throw new Exception("Invalid video format. Only MP4, AVI, MOV, and WMV are allowed.");
+                }
                 string videoPath = _imageServices.AddFile(sourceDto.VideoIntro, "sources", "videos");
                 source.VideoIntro = videoPath;
             }

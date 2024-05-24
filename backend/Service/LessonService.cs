@@ -17,10 +17,15 @@ namespace backend.Service
         private readonly IWebHostEnvironment _env = env;
         private readonly IimageServices _imageServices = iimageServices;
         private readonly ISerialService _serialService = serialService;
+        private static readonly string[] AllowedVideoExtensions = { ".mp4", ".avi", ".mov", ".wmv" };
         private void ProcessVideoFile(string fileVideoNameSource)
         {
             if (!string.IsNullOrEmpty(fileVideoNameSource))
             {
+                if (!IsValidVideoFile(fileVideoNameSource))
+                {
+                    throw new Exception("Invalid video file.");
+                }
                 string tempPath = Path.Combine(_env.WebRootPath, "Temp");
                 string newPath = Path.Combine(tempPath, fileVideoNameSource);
                 string[] filePaths = Directory.GetFiles(tempPath).Where(p => p.Contains(fileVideoNameSource)).OrderBy(p => Int32.Parse(p.Replace(fileVideoNameSource, "$").Split('$')[1])).ToArray();
@@ -31,6 +36,12 @@ namespace backend.Service
                 System.IO.File.Move(Path.Combine(tempPath, fileVideoNameSource), Path.Combine(_env.WebRootPath, fileVideoNameSource));
             }
         }
+        private bool IsValidVideoFile(string fileName)
+        {
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            return AllowedVideoExtensions.Contains(extension);
+        }
+
         private static void MergeChunks(string chunk1, string chunk2)
         {
             FileStream fs1 = null;

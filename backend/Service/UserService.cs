@@ -13,6 +13,7 @@ using backend.Service.Interface;
 using backend.Dtos.UserDto;
 using System.Security.Cryptography;
 using AutoMapper;
+using backend.Dtos;
 
 namespace backend.Service
 {
@@ -73,8 +74,11 @@ namespace backend.Service
                 throw new BadRequestException("Email already exists");
             }
 
-            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.ToLower().Equals( "user")); 
-
+            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.ToLower().Equals( "user"));
+            if (registerViewModel.Avatar != null && !_imageServices.IsImage(registerViewModel.Avatar))
+            {
+                throw new Exception("Invalid image format. Only JPG, JPEG, PNG, and GIF are allowed.");
+            }
             var newUser = new User
             {
                 Username = registerViewModel.Username,
@@ -104,6 +108,10 @@ namespace backend.Service
                 throw new BadRequestException("Email already exists");
             }
             var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.ToLower().Equals("admin"));
+            if (registerViewModel.Avatar != null && !_imageServices.IsImage(registerViewModel.Avatar))
+            {
+                throw new Exception("Invalid image format. Only JPG, JPEG, PNG, and GIF are allowed.");
+            }
             var newUser = new User
             {
                 Username = registerViewModel.Username,

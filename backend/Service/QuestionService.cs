@@ -23,6 +23,11 @@ namespace backend.Service
 
         public async Task<Question> CreateAsync(QuestionDto questionDto)
         {
+
+            if (questionDto.Image != null && !_imageServices.IsImage(questionDto.Image))
+            {
+                throw new Exception("Invalid image format. Only JPG, JPEG, PNG, and GIF are allowed.");
+            }
             var question = new Question
             {
                 Content = questionDto.Content,
@@ -36,7 +41,7 @@ namespace backend.Service
         public async Task<List<Question>> AddRange(List<QuestionDto> questionDtos)
         {
             List<Question> result = [];
-            foreach(var questionDto in questionDtos)
+            foreach (var questionDto in questionDtos)
             {
                 var question = new Question
                 {
@@ -46,9 +51,11 @@ namespace backend.Service
                 result.Add(question);
             }
             await _context.Questions.AddRangeAsync(result);
-            await _context.SaveChangesAsync();  
+            await _context.SaveChangesAsync();
             return result;
         }
+
+        
 
         public async Task<List<QuestionViewModel>> GetAllAsync()
         {
@@ -61,9 +68,9 @@ namespace backend.Service
                     Image = q.Image != null ? _imageServices.GetFile(q.Image) : null,
                 })
                 .ToListAsync();
-            return _mapper.Map<List<QuestionViewModel>>(questions);   
+            return _mapper.Map<List<QuestionViewModel>>(questions);
         }
-        public async Task<(List<QuestionViewModel>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<QuestionViewModel>, int)> GetAllAsync(Pagination pagination)
         {
             var questions = await _context.Questions
                  //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
@@ -77,7 +84,7 @@ namespace backend.Service
                  .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Questions.CountAsync();
-            return (_mapper.Map<List<QuestionViewModel>>(questions),count);
+            return (_mapper.Map<List<QuestionViewModel>>(questions), count);
         }
         public async Task<QuestionViewModel?> GetByIdAsync(int id)
         {
@@ -95,7 +102,7 @@ namespace backend.Service
             if (question == null) return null;
 
             question.Content = updatedQuestion.Content;
-            question.Image = _imageServices.UpdateFile(updatedQuestion.Image,question.Image,"Questions","Image");
+            question.Image = _imageServices.UpdateFile(updatedQuestion.Image, question.Image, "Questions", "Image");
             //question.StaticFolder = updatedQuestion.StaticFolder;
             // Ensure options and quiz questions are handled if necessary, might require additional logic
 
@@ -118,7 +125,7 @@ namespace backend.Service
             {
                 _context.Options.RemoveRange(options);
             }
-            if(question.Image != null)
+            if (question.Image != null)
             {
                 _imageServices.DeleteFile(question.Image);
             }

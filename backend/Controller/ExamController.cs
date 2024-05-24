@@ -172,7 +172,7 @@ namespace backend.Controller
                 var total = await _examService.EndExam(
                     //submission.UserAnswers, 
                     examId, userId);
-                return Ok(new { message = $"Bạn đã hoàn thành bài thi với kết quả là : {total}%" });
+                return Ok(new { message = $"attemId : {total}%" });
             }
             catch (System.Exception ex)
             {
