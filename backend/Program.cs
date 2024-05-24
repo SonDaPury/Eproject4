@@ -157,7 +157,7 @@ app.UseCors("CorsPolicy");
 
 app.UseEndpoints(endpoints =>
 {
-    endpoints.MapHub<CounterSignalR>("/examHub");
+    endpoints.MapHub<ExamHub>("/examHub");
 });
 app.UseHttpsRedirection();
 

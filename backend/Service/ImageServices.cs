@@ -101,12 +101,13 @@ namespace backend.Service
 
                 // Loại bỏ phần 'wwwroot' khỏi đường dẫn tập tin để tạo URL
                 //string cleanedPath = fullPath.Replace(_env.WebRootPath + "\\", "").Replace('\\', '/');
-                string cleanedPath = fullPath.Replace(_env.WebRootPath + Path.DirectorySeparatorChar, "").Replace(Path.DirectorySeparatorChar, '/');
+                //string cleanedPath = fullPath.Replace(_env.WebRootPath + Path.DirectorySeparatorChar, "").Replace(Path.DirectorySeparatorChar, '/');
+                string cleanedPath = fullPath.Substring(_env.WebRootPath.Length + 1).Replace(Path.DirectorySeparatorChar, '/');
                 return $"{baseUrl}/{cleanedPath}";
             }
             else
             {
-                throw new FileNotFoundException("File not found at the specified path.", fullPath);
+                throw new FileNotFoundException($"File not found at the specified path.{ fullPath}");
             }
         }
     }

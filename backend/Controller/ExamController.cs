@@ -11,7 +11,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
+    //[JwtAuthorize("user", "admin")]
     public class ExamController : ControllerBase
     {
         private readonly IExamService _examService;
@@ -54,6 +54,20 @@ namespace backend.Controller
             var createdExam = await _examService.CreateAsync(exam,index);
             var createdExamDto = _mapper.Map<ExamDto>(createdExam);
             return CreatedAtAction(nameof(GetExam), new { id = createdExam.Id }, createdExamDto);
+        }
+
+        [HttpPost("createquestion")]
+        public async Task<IActionResult> CreateQuestions([FromForm] QuestionForExamDto questions, int examId )
+        {
+            var createdQuestion = await _examService.CreateQuestionsForExamAsync(questions,examId);
+            return Ok(createdQuestion);
+        }
+
+        [HttpPost("createquestion1")]
+        public async Task<IActionResult> CreateQuestions1([FromForm] QuestionForExamDto questions)
+        {
+            
+            return Ok();
         }
 
         // GET: api/Exams
@@ -116,30 +130,32 @@ namespace backend.Controller
         }
 
 
-        [HttpPost("start/{examId}")]
-        public async Task<IActionResult> StartExam(int examId)
-        {
-            var userId = 3;
-                //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
-            if (userId == 0)
-            {
-                return Unauthorized(new { message = "User is not identified" });
-            }
+        //[HttpPost("start/{examId}")]
+        //public async Task<IActionResult> StartExam(int examId)
+        //{
+        //    var userId = 1;
+        //        //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
+        //    if (userId == 0)
+        //    {
+        //        return Unauthorized(new { message = "User is not identified" });
+        //    }
 
-            try
-            {
-                await _examService.StartExam(examId, userId);
-                return Ok(new { message = "Exam started successfully. Time updates are being sent." });
-            }
-            catch (System.Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
+        //    try
+        //    {
+        //        await _examService.StartExam(examId);
+        //        return Ok(new { message = "Exam started successfully. Time updates are being sent." });
+        //    }
+        //    catch (System.Exception ex)
+        //    {
+        //        return BadRequest(new { message = ex.Message });
+        //    }
+        //}
         [HttpPost("end/{examId}")]
-        public async Task<IActionResult> EndExam(ExamSubmissionDto submission,int examId)
+        public async Task<IActionResult> EndExam(
+            //ExamSubmissionDto submission,
+            int examId)
         {
-            var userId = 3;
+            var userId = 1;
             //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
             if (userId == 0)
             {
@@ -148,7 +164,9 @@ namespace backend.Controller
 
             try
             {
-                var total = await _examService.EndExam(submission.UserAnswers, examId, userId);
+                var total = await _examService.EndExam(
+                    //submission.UserAnswers, 
+                    examId, userId);
                 return Ok(new { message = $"Bạn đã hoàn thành bài thi với kết quả là : {total}%" });
             }
             catch (System.Exception ex)

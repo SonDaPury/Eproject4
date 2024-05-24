@@ -23,6 +23,13 @@ namespace backend.Service
             return option;
         }
 
+        public async Task<List<Option>> AddRange(List<Option> options)
+        {
+            await _context.Options.AddRangeAsync(options);
+            await _context.SaveChangesAsync();
+            return options;
+        }
+
         public async Task<List<Option>> GetAllAsync()
         {
             return await _context.Options.ToListAsync();

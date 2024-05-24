@@ -184,34 +184,34 @@ namespace backend.Service
             //source.StaticFolder = updatedSource.StaticFolder;
 
             // Update thumbnail file if a new file is provided
-            if (updatedSource.Thumbnail != null && !string.IsNullOrWhiteSpace(updatedSource.Thumbnail.FileName))
-            {
-                if (!string.IsNullOrWhiteSpace(source.Thumbnail))
-                {
+            //if (updatedSource.Thumbnail != null && !string.IsNullOrWhiteSpace(updatedSource.Thumbnail.FileName))
+            //{
+            //    if (!string.IsNullOrWhiteSpace(source.Thumbnail))
+            //    {
                     // Assuming Thumbnail stores a relative path under wwwroot
-                    string existingThumbnailPath = Path.Combine("wwwroot", source.Thumbnail);
+                    string existingThumbnailPath =  source.Thumbnail;
                     source.Thumbnail = _imageServices.UpdateFile(updatedSource.Thumbnail, existingThumbnailPath, "sources", "thumbnails");
-                }
-                else
-                {
-                    source.Thumbnail = _imageServices.AddFile(updatedSource.Thumbnail, "sources", "thumbnails");
-                }
-            }
+            //    }
+            //    else
+            //    {
+            //        source.Thumbnail = _imageServices.AddFile(updatedSource.Thumbnail, "sources", "thumbnails");
+            //    }
+            //}
 
             // Update video file if a new file is provided
-            if (updatedSource.VideoIntro != null && !string.IsNullOrWhiteSpace(updatedSource.VideoIntro.FileName))
-            {
-                if (!string.IsNullOrWhiteSpace(source.VideoIntro))
-                {
+            //if (updatedSource.VideoIntro != null && !string.IsNullOrWhiteSpace(updatedSource.VideoIntro.FileName))
+            //{
+            //    if (!string.IsNullOrWhiteSpace(source.VideoIntro))
+            //    {
                     // Assuming VideoIntro stores a relative path under wwwroot
-                    string existingVideoPath = Path.Combine("wwwroot", source.VideoIntro);
+                    string existingVideoPath =  source.VideoIntro;
                     source.VideoIntro = _imageServices.UpdateFile(updatedSource.VideoIntro, existingVideoPath, "sources", "videos");
-                }
-                else
-                {
-                    source.VideoIntro = _imageServices.AddFile(updatedSource.VideoIntro, "sources", "videos");
-                }
-            }
+            //    }
+            //    else
+            //    {
+            //        source.VideoIntro = _imageServices.AddFile(updatedSource.VideoIntro, "sources", "videos");
+            //    }
+            //}
             // Lưu các thay đổi vào cơ sở dữ liệu
             int check = await _context.SaveChangesAsync();
             if (check > 0)
