@@ -57,7 +57,7 @@ namespace backend.Controller
         }
 
         // GET: api/Exams
-        [HttpGet]
+        [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExams([FromQuery] Pagination pagination)
         {
             var exams = await _examService.GetAllAsync(pagination);
@@ -65,6 +65,13 @@ namespace backend.Controller
             return Ok(new { TotalCount = exams.Item2, Exams = examDtos });
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExams()
+        {
+            var exams = await _examService.GetAllAsync();
+            var examDtos = _mapper.Map<List<ExamDto>>(exams);
+            return Ok( examDtos );
+        }
         // GET: api/Exams/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ExamDto>> GetExam(int id)

@@ -17,6 +17,19 @@ namespace backend.Service
             return source;
         }
 
+        public async Task<List<SourceWithTopicId>> GetAllAsync()
+        {
+            return await _context.Sources
+                 //.Include(s => s.User)
+                 .Include(s => s.SubTopic)
+                 .Select(s => new SourceWithTopicId
+                 {
+                     Source = s,
+                     TopicId = s.SubTopic.TopicId
+                 })
+                 .ToListAsync();
+        }
+
         public async Task<(List<SourceWithTopicId>,int)> GetAllAsync(Pagination pagination)
         {
             var sources = await _context.Sources
@@ -28,8 +41,8 @@ namespace backend.Service
                      TopicId = s.SubTopic.TopicId
                  })
                  //.Include(s => s.Chapters)
-                 .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                 .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Sources.CountAsync();
             return (sources, count);
@@ -99,6 +112,11 @@ namespace backend.Service
         }
 
         Task<Source?> IService<Source>.GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<List<Source>> IService<Source>.GetAllAsync()
         {
             throw new NotImplementedException();
         }

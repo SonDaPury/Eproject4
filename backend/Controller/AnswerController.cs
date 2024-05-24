@@ -64,7 +64,7 @@ namespace backend.Controller
         }
 
         // GET: api/Answers
-        [HttpGet]
+        [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<AnswerDto>>> GetAllAnswers([FromQuery] Pagination pagination)
         {
             try
@@ -72,6 +72,21 @@ namespace backend.Controller
                 var (answers, totalCount) = await _answerService.GetAllAsync(pagination);
                 var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
                 return Ok(new { TotalCount = totalCount, Items = answerDtos });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet()]
+        public async Task<ActionResult<IEnumerable<AnswerDto>>> GetAllAnswers()
+        {
+            try
+            {
+                var answers = await _answerService.GetAllAsync();
+                var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
+                return Ok(answerDtos);
             }
             catch (ArgumentException ex)
             {

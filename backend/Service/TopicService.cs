@@ -17,13 +17,18 @@ namespace backend.Service
             await _context.SaveChangesAsync();
             return topic;
         }
+        public Task<List<Topic>> GetAllAsync()
+        {
+            return _context.Topics.ToListAsync();
+        }
 
         // Lấy danh sách tất cả topics
         public async Task<(List<Topic>,int)> GetAllAsync(Pagination pagination)
         {
             var topics = await _context.Topics
-                .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                
                 .ToListAsync();
             var count = await _context.Topics.CountAsync();
             return (topics, count);

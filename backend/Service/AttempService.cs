@@ -28,8 +28,8 @@ namespace backend.Service
             var attemps = await _context.Attemps
                 //.Include(a => a.User) // Includes the User associated with the Attemp
                 //.Include(a => a.Answers) // Includes Answers related to the Attemp
-                .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Attemps.CountAsync();
             return (attemps,count);
@@ -69,6 +69,11 @@ namespace backend.Service
             _context.Attemps.Remove(attempt);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<Attemp>> GetAllAsync()
+        {
+            return await _context.Attemps.ToListAsync();
         }
     }
 

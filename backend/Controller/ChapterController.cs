@@ -40,7 +40,7 @@ namespace backend.Controller
         }
 
         // GET: api/Chapters
-        [HttpGet]
+        [HttpGet("pagination")]
         public async Task<ActionResult<List<ChapterDto>>> GetAllChapters([FromQuery] Pagination pagination)
         {
             var (chapters, totalCount) = await _chapterService.GetAllAsync(pagination);
@@ -48,6 +48,13 @@ namespace backend.Controller
             return Ok(new { TotalCount = totalCount, Items = chapterDtos });
         }
 
+        [HttpGet()]
+        public async Task<ActionResult<List<ChapterDto>>> GetAllChapters()
+        {
+            var chapters = await _chapterService.GetAllAsync();
+            var chapterDtos = _mapper.Map<List<ChapterDto>>(chapters);
+            return Ok( chapterDtos );
+        }
         // GET: api/Chapters/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ChapterDto>> GetChapter(int id)

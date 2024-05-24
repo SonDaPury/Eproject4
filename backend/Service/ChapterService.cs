@@ -17,14 +17,18 @@ namespace backend.Service
             return chapter;
         }
 
+        public async Task<List<Chapter>> GetAllAsync()
+        {
+            return await _context.Chapters.ToListAsync();
+        }
         public async Task<(List<Chapter>, int)> GetAllAsync(Pagination pagination)
         {
             var chapters = await _context.Chapters
                 //.Include(c => c.Source) // Includes the source of the chapter
                 //.Include(c => c.Lessions) // Includes all lessons in the chapter
                 //.Include(c => c.Exams) // Includes all exams in the chapter
-                .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Chapters.CountAsync();
             return (chapters, count);

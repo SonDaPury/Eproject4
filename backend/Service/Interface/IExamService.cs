@@ -13,5 +13,6 @@ namespace backend.Service.Interface
         Task<Exam?> GetByIdAsync(int id);
         Task<Exam?> UpdateAsync(int id, Exam updatedItem);
         Task<bool> DeleteAsync(int id);
+        Task<List<Exam>> GetAllAsync();
     }
 }

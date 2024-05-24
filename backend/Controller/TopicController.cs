@@ -38,7 +38,7 @@ namespace backend.Controller
         }
 
         // GET: api/Topics
-        [HttpGet]
+        [HttpGet("pagination")]
         //[JwtAuthorize("user")]
         public async Task<IActionResult> GetAllTopics([FromQuery]Pagination pagination)
         {
@@ -46,7 +46,14 @@ namespace backend.Controller
             var topicDto = _mapper.Map<List<TopicDto>>(topics.Item1);
             return Ok(new { TotalCount = topics.Item2, Items = topicDto });
         }
-
+        [HttpGet]
+        //[JwtAuthorize("user")]
+        public async Task<IActionResult> GetAllTopics()
+        {
+            var topics = await _topicService.GetAllAsync();
+            var topicDto = _mapper.Map<List<TopicDto>>(topics);
+            return Ok(new { Items = topicDto });
+        }
         // GET: api/Topics/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Topic>> GetTopic(int id)

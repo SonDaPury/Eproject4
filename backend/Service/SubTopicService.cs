@@ -17,11 +17,15 @@ namespace backend.Service
             return subTopic;
         }
 
+        public Task<List<SubTopic>> GetAllAsync()
+        {
+            return _context.SubTopics.Include(st => st.Topic).ToListAsync();
+        }
         public async Task<(List<SubTopic>,int)> GetAllAsync(Pagination pagination)
         {
             var stps = await _context.SubTopics.Include(st => st.Topic)
-                 .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                 .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.SubTopics.CountAsync();
             return (stps, count);
