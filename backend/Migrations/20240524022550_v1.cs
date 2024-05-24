@@ -33,7 +33,8 @@ namespace backend.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    image = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -114,6 +115,7 @@ namespace backend.Migrations
                     email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     phone_number = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     role_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -202,6 +204,7 @@ namespace backend.Migrations
                     video_intro = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     price = table.Column<double>(type: "float", nullable: false),
                     rating = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     user_id = table.Column<int>(type: "int", nullable: false),
                     sub_topic_id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -254,6 +257,7 @@ namespace backend.Migrations
                     max_question = table.Column<int>(type: "int", nullable: false),
                     status = table.Column<bool>(type: "bit", nullable: false),
                     is_started = table.Column<bool>(type: "bit", nullable: false),
+                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     source_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -280,6 +284,7 @@ namespace backend.Migrations
                     video = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     view = table.Column<int>(type: "int", nullable: false),
                     status = table.Column<bool>(type: "bit", nullable: false),
+                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     chapter_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

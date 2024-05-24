@@ -51,6 +51,7 @@ namespace backend.Service
             source.Rating = updatedSource.Rating;
             source.UserId = updatedSource.UserId;
             source.SubTopicId = updatedSource.SubTopicId;
+            source.StaticFolder = updatedSource.StaticFolder;
 
             await _context.SaveChangesAsync();
             return source;
