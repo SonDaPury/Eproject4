@@ -92,6 +92,11 @@ namespace backend.Service
                      TopicId = s.SubTopic.TopicId ?? null
                  })
                  .ToListAsync();
+            foreach (var source in sources)
+            {
+                source.Source.Thumbnail = _imageServices.GetFile(source.Source.Thumbnail);
+                source.Source.VideoIntro = _imageServices.GetFile(source.Source.VideoIntro);
+            }
             return sources;
         }
 
@@ -110,6 +115,11 @@ namespace backend.Service
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                  .Take(pagination.PageSize)
                 .ToListAsync();
+            foreach (var source in sources)
+            {
+                source.Source.Thumbnail = _imageServices.GetFile(source.Source.Thumbnail);
+                source.Source.VideoIntro = _imageServices.GetFile(source.Source.VideoIntro);
+            }
             //var sourceview = _mapper.Map<List<SourceViewDto>>(sources);
             var count = await _context.Sources.CountAsync();
             return (sources, count);
@@ -127,9 +137,12 @@ namespace backend.Service
                 //})
                 //.Include(s => s.Chapters)
                 .FirstOrDefaultAsync(s => s.Id == id);
+            source.Thumbnail = _imageServices.GetFile(source.Thumbnail);
+            source.VideoIntro = _imageServices.GetFile(source.VideoIntro);
             SourceViewDto sourceViewDto = _mapper.Map<SourceViewDto>(source);           
 
             sourceViewDto.TopicId = source.SubTopic != null ? source.SubTopic.TopicId : null;
+
             
             return sourceViewDto;
         }
