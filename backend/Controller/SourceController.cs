@@ -32,52 +32,76 @@ namespace backend.Controller
         [AllowAnonymous]
         public async Task<IActionResult> CreateSource( [FromForm] SourceDto sourceDto)
         {
-            if (sourceDto == null)
+            try
             {
-                return BadRequest(new { message = "Source data is required" });
-            }
 
-            var createdSource = await _sourceService.CreateAsync(sourceDto);
-            var createdSourceDto = _mapper.Map<SourceViewDto>(createdSource);
-            return CreatedAtAction(nameof(GetSource), new { id = createdSource.Id }, createdSourceDto);
+                if (sourceDto == null)
+                {
+                    return BadRequest(new { message = "Source data is required" });
+                }
+
+                var createdSource = await _sourceService.CreateAsync(sourceDto);
+                var createdSourceDto = _mapper.Map<SourceViewDto>(createdSource);
+                return CreatedAtAction(nameof(GetSource), new { id = createdSource.Id }, createdSourceDto);
+            }catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // GET: api/Sources
         [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<SourceWithTopicId>>> GetAllSources([FromQuery] Pagination pagination)
         {
-            var (sources, totalCount) = await _sourceService.GetAllAsync(pagination);
+            try
+            {
+                var (sources, totalCount) = await _sourceService.GetAllAsync(pagination);
 
-            // Ánh xạ từ danh sách sources sang danh sách SourceDto
-            //var sourceDtos = _mapper.Map<List<SourceViewDto>>(sources);
+                // Ánh xạ từ danh sách sources sang danh sách SourceDto
+                //var sourceDtos = _mapper.Map<List<SourceViewDto>>(sources);
 
-            // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
-            return Ok(new { TotalCount = totalCount, Items = sources });
+                // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
+                return Ok(new { TotalCount = totalCount, Items = sources });
+            }catch (Exception ex) { 
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SourceWithTopicId>>> GetAllSources()
         {
-            var sources = await _sourceService.GetAllAsync();
+            try
+            {
+                var sources = await _sourceService.GetAllAsync();
 
-            // Ánh xạ từ danh sách sources sang danh sách SourceDto
-            //var sourceDtos = _mapper.Map<List<SourceViewDto>>(sources);
+                // Ánh xạ từ danh sách sources sang danh sách SourceDto
+                //var sourceDtos = _mapper.Map<List<SourceViewDto>>(sources);
 
-            // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
-            return Ok(sources);
+                // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
+                return Ok(sources);
+            }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // GET: api/Sources/5
         [HttpGet("{id}")]
         public async Task<ActionResult<SourceViewDto>> GetSource(int id)
         {
-            var source = await _sourceService.GetByIdAsync(id);
-            if (source == null)
+            try
             {
-                return NotFound(new { message = $"Source with ID {id} not found." });
+                var source = await _sourceService.GetByIdAsync(id);
+                if (source == null)
+                {
+                    return NotFound(new { message = $"Source with ID {id} not found." });
+                }
+                //var sourceDto = _mapper.Map<SourceViewDto>(source);
+                return Ok(source);
+            }catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
-            //var sourceDto = _mapper.Map<SourceViewDto>(source);
-            return Ok(source);
         }
 
         // PUT: api/Sources/5
@@ -148,12 +172,18 @@ namespace backend.Controller
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSource(int id)
         {
-            var success = await _sourceService.DeleteAsync(id);
-            if (!success)
+            try
             {
-                return NotFound(new { message = $"Source with ID {id} not found." });
+                var success = await _sourceService.DeleteAsync(id);
+                if (!success)
+                {
+                    return NotFound(new { message = $"Source with ID {id} not found." });
+                }
+                return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
+            }catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
-            return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
     }
 }

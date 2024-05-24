@@ -99,7 +99,8 @@ namespace backend.Service
                 string baseUrl = $"{request.Scheme}://{request.Host}";
 
                 // Loại bỏ phần 'wwwroot' khỏi đường dẫn tập tin để tạo URL
-                string cleanedPath = fullPath.Replace(_env.WebRootPath + "\\", "").Replace('\\', '/');
+                //string cleanedPath = fullPath.Replace(_env.WebRootPath + "\\", "").Replace('\\', '/');
+                string cleanedPath = fullPath.Replace(_env.WebRootPath + Path.DirectorySeparatorChar, "").Replace(Path.DirectorySeparatorChar, '/');
                 return $"{baseUrl}/{cleanedPath}";
             }
             else
