@@ -28,13 +28,19 @@ namespace backend.Controller
         [AllowAnonymous]
         public async Task<ActionResult<Topic>> CreateTopic([FromBody] TopicDto topicDto)
         {
-            if (topicDto == null)
+            try
             {
-                return BadRequest(new { message = "Topic data is required" });
+                if (topicDto == null)
+                {
+                    return BadRequest(new { message = "Topic data is required" });
+                }
+                var data = _mapper.Map<Topic>(topicDto);
+                var createdTopic = await _topicService.CreateAsync(data);
+                return CreatedAtAction("GetTopic", new { id = createdTopic.Id }, createdTopic);
+            }catch (Exception ex)
+            {
+                return BadRequest(new {message = ex.Message});
             }
-            var data = _mapper.Map<Topic>(topicDto);
-            var createdTopic = await _topicService.CreateAsync(data);
-            return CreatedAtAction("GetTopic", new { id = createdTopic.Id }, createdTopic);
         }
 
         // GET: api/Topics
