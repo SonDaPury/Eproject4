@@ -105,6 +105,11 @@ namespace backend.Service
             {
                 _context.QuizQuestions.RemoveRange(quiz_question);
             }
+            var serials = await _context.Serials.Where(q => q.ExamId == id).ToListAsync();
+            if (serials != null)
+            {
+                _context.Serials.RemoveRange(serials);
+            }
 
             var answer = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
             if (answer != null)

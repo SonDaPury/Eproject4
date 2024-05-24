@@ -5,6 +5,7 @@ using backend.Data;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[JwtAuthorize("user", "admin")]
     public class SourceController : ControllerBase
     {
         private readonly ISourceService _sourceService;
@@ -27,56 +29,55 @@ namespace backend.Controller
 
         // POST: api/Sources
         [HttpPost]
-        public async Task<ActionResult<SourceDto>> CreateSource([FromForm] SourceDto sourceDto)
+        [AllowAnonymous]
+        public async Task<IActionResult> CreateSource( [FromForm] SourceDto sourceDto)
         {
             if (sourceDto == null)
             {
                 return BadRequest(new { message = "Source data is required" });
             }
 
-            var source = _mapper.Map<Source>(sourceDto);
-            var createdSource = await _sourceService.CreateAsync(source);
-            var createdSourceDto = _mapper.Map<SourceDto>(createdSource);
-
+            var createdSource = await _sourceService.CreateAsync(sourceDto);
+            var createdSourceDto = _mapper.Map<SourceViewDto>(createdSource);
             return CreatedAtAction(nameof(GetSource), new { id = createdSource.Id }, createdSourceDto);
         }
 
         // GET: api/Sources
         [HttpGet("pagination")]
-        public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources([FromQuery] Pagination pagination)
+        public async Task<ActionResult<IEnumerable<SourceWithTopicId>>> GetAllSources([FromQuery] Pagination pagination)
         {
             var (sources, totalCount) = await _sourceService.GetAllAsync(pagination);
 
             // Ánh xạ từ danh sách sources sang danh sách SourceDto
-            var sourceDtos = _mapper.Map<List<SourceDto>>(sources);
+            //var sourceDtos = _mapper.Map<List<SourceViewDto>>(sources);
 
             // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
-            return Ok(new { TotalCount = totalCount, Items = sourceDtos });
+            return Ok(new { TotalCount = totalCount, Items = sources });
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources()
+        public async Task<ActionResult<IEnumerable<SourceWithTopicId>>> GetAllSources()
         {
             var sources = await _sourceService.GetAllAsync();
 
             // Ánh xạ từ danh sách sources sang danh sách SourceDto
-            var sourceDtos = _mapper.Map<List<SourceDto>>(sources);
+            //var sourceDtos = _mapper.Map<List<SourceViewDto>>(sources);
 
             // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
-            return Ok(sourceDtos);
+            return Ok(sources);
         }
 
         // GET: api/Sources/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<SourceDto>> GetSource(int id)
+        public async Task<ActionResult<SourceViewDto>> GetSource(int id)
         {
             var source = await _sourceService.GetByIdAsync(id);
             if (source == null)
             {
                 return NotFound(new { message = $"Source with ID {id} not found." });
             }
-            var sourceDto = _mapper.Map<SourceDto>(source);
-            return Ok(sourceDto);
+            //var sourceDto = _mapper.Map<SourceViewDto>(source);
+            return Ok(source);
         }
 
         // PUT: api/Sources/5
@@ -87,8 +88,8 @@ namespace backend.Controller
             {
                 return BadRequest(new { message = "Invalid Source data" });
             }
-            var source = _mapper.Map<Source>(sourceDto);
-            var updatedSource = await _sourceService.UpdateAsync(id, source);
+            //var source = _mapper.Map<Source>(sourceDto);
+            var updatedSource = await _sourceService.UpdateAsync(id, sourceDto);
             if (updatedSource == null)
             {
                 return NotFound(new { message = $"Source with ID {id} not found." });

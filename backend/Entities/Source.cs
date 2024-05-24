@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using backend.Dtos;
 
 namespace backend.Entities
 {
@@ -46,7 +47,7 @@ namespace backend.Entities
         //public string? StaticFolder { get; set; }
 
         [Column("user_id")]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public virtual User? User { get; set; }
 
         [Column("sub_topic_id")]
@@ -59,7 +60,7 @@ namespace backend.Entities
     }
     public class SourceWithTopicId
     {
-        public Source? Source { get; set; }
+        public SourceViewDto? Source { get; set; }
         public int? TopicId { get; set; }
     }
 }

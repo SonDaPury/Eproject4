@@ -21,10 +21,10 @@ namespace backend.Service
         private readonly IConfiguration _config;
         private readonly SmtpClient _smtpClient;
         private readonly LMSContext _context;
-        private readonly IimageServiecs _imageServiecs;
+        private readonly IimageServices _imageServiecs;
         private readonly IMapper _mapper;
 
-        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context, IimageServiecs imageServiecs, IMapper mapper)
+        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context, IimageServices imageServiecs, IMapper mapper)
         {
             _config = configuration;
             _smtpClient = new SmtpClient
