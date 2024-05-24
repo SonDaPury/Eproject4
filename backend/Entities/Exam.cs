@@ -32,6 +32,11 @@ namespace backend.Entities
         [Column("is_started")]
         public bool IsStarted { get; set; } = false;
 
+
+        [Column("static_folder")]
+        [StringLength(20)]
+        public string? StaticFolder { get; set; }
+
         [Column("source_id")]
         public int SourceId { get; set; }
         public virtual Source? Source { get; set; }

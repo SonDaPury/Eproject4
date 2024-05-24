@@ -137,6 +137,11 @@ namespace backend.Migrations
                         .HasColumnType("int")
                         .HasColumnName("source_id");
 
+                    b.Property<string>("StaticFolder")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("static_folder");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
                         .HasColumnName("status");
@@ -194,6 +199,11 @@ namespace backend.Migrations
                     b.Property<int>("ChapterId")
                         .HasColumnType("int")
                         .HasColumnName("chapter_id");
+
+                    b.Property<string>("StaticFolder")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("static_folder");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
@@ -270,6 +280,11 @@ namespace backend.Migrations
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("image");
+
+                    b.Property<string>("StaticFolder")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("static_folder");
 
                     b.HasKey("Id");
 
@@ -383,6 +398,11 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("slug");
 
+                    b.Property<string>("StaticFolder")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("static_folder");
+
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
                         .HasColumnName("status");
@@ -491,6 +511,11 @@ namespace backend.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int")
                         .HasColumnName("role_id");
+
+                    b.Property<string>("StaticFolder")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("static_folder");
 
                     b.Property<string>("Username")
                         .IsRequired()

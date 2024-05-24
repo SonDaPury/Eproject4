@@ -44,6 +44,7 @@ namespace backend.Service
 
             question.Content = updatedQuestion.Content;
             question.Image = updatedQuestion.Image;
+            question.StaticFolder = updatedQuestion.StaticFolder;
             // Ensure options and quiz questions are handled if necessary, might require additional logic
 
             await _context.SaveChangesAsync();

@@ -34,6 +34,10 @@ namespace backend.Entities
         [Column("status")]
         public bool Status { get; set; }
 
+        [Column("static_folder")]
+        [StringLength(20)]
+        public string? StaticFolder { get; set; }
+
         [Column("chapter_id")]
         public int ChapterId { get; set; }
 

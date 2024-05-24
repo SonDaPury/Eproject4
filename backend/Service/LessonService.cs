@@ -43,6 +43,7 @@ namespace backend.Service
             lesson.View = updatedLesson.View;
             lesson.Status = updatedLesson.Status;
             lesson.ChapterId = updatedLesson.ChapterId;
+            lesson.StaticFolder = updatedLesson.StaticFolder;
 
             await _context.SaveChangesAsync();
             return lesson;

@@ -35,6 +35,10 @@ namespace backend.Entities
         [Column("avatar")]
         public string? Avatar { get; set; }
 
+        [Column("static_folder")]
+        [StringLength(20)]
+        public string? StaticFolder { get; set; }
+
         [Column("role_id")]
         public int RoleId { get; set; }
 
