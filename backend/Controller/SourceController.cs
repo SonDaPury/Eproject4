@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using backend.Attributes;
 using backend.Base;
+using backend.Data;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -11,16 +12,17 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
     public class SourceController : ControllerBase
     {
         private readonly ISourceService _sourceService;
         private readonly IMapper _mapper;
+        private readonly IElasticSearchRepository _elasticsearchRepository;
 
-        public SourceController(ISourceService sourceService, IMapper mapper)
+        public SourceController(ISourceService sourceService, IMapper mapper, IElasticSearchRepository elasticSearchRepository)
         {
             _sourceService = sourceService;
             _mapper = mapper;
+            _elasticsearchRepository = elasticSearchRepository;
         }
 
         // POST: api/Sources
@@ -35,6 +37,7 @@ namespace backend.Controller
             var source = _mapper.Map<Source>(sourceDto);
             var createdSource = await _sourceService.CreateAsync(source);
             var createdSourceDto = _mapper.Map<SourceDto>(createdSource);
+
             return CreatedAtAction(nameof(GetSource), new { id = createdSource.Id }, createdSourceDto);
         }
 
@@ -54,13 +57,13 @@ namespace backend.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources()
         {
-            var sources= await _sourceService.GetAllAsync();
+            var sources = await _sourceService.GetAllAsync();
 
             // Ánh xạ từ danh sách sources sang danh sách SourceDto
             var sourceDtos = _mapper.Map<List<SourceDto>>(sources);
 
             // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
-            return Ok( sourceDtos );
+            return Ok(sourceDtos);
         }
 
         // GET: api/Sources/5
@@ -90,6 +93,53 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Source with ID {id} not found." });
             }
+            var script = @"
+  for (int i = 0; i < ctx._source.subTopics.size(); i++) {
+    if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) {
+      for (int j = 0; j < ctx._source.subTopics[i].sources.size(); j++) {
+        if (ctx._source.subTopics[i].sources[j].Id == params.id) {
+          ctx._source.subTopics[i].sources[j].Title = params.Title;
+          ctx._source.subTopics[i].sources[j].Description = params.Description;
+          ctx._source.subTopics[i].sources[j].Thumbnail = params.Thumbnail;
+          ctx._source.subTopics[i].sources[j].Slug = params.Slug;
+          ctx._source.subTopics[i].sources[j].Status = params.Status;
+          ctx._source.subTopics[i].sources[j].Benefit = params.Benefit;
+          ctx._source.subTopics[i].sources[j].Video_intro = params.Video_intro;
+          ctx._source.subTopics[i].sources[j].Price = params.Price;
+          ctx._source.subTopics[i].sources[j].Rating = params.Rating;
+          ctx._source.subTopics[i].sources[j].UserId = params.UserId;
+          break;
+        }
+      }
+      break;
+    }
+  }
+";
+
+            var scriptParams = new Dictionary<string, object>
+{
+    { "SubTopicId", 102 },
+    { "id", 1008 },
+    { "Title", "Demo5 Title" },
+    { "Description", "Demo2 Description" },
+    { "Thumbnail", "demo-thumbnail.jpg" },
+    { "Slug", "demo3-slug" },
+    { "Status", 2 },
+    { "Benefit", "Demo Benefit" },
+    { "Video_intro", "demo-intro.mp4" },
+    { "Price", 0 },
+    { "Rating", "3" },
+    { "UserId", 2003 }
+};
+
+            var updateResponse = _elasticsearchRepository.UpdateScript(id.ToString(), u => u
+               .Index("sources_index")
+               .Script(s => s
+                  .Source(script)
+                  .Params(scriptParams)
+               )
+            );
+
             return Ok(_mapper.Map<SourceDto>(updatedSource));
         }
 

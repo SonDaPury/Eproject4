@@ -8,8 +8,8 @@ namespace backend.Dtos
         [PropertyName("TopicId")]
         public int TopicId { get; set; }
         [PropertyName("TopicName")]
-        public required string TopicName { get; set; }
-        public required List<SubTopcElasticSearch> subTopics { get; set; }
+        public string TopicName { get; set; }
+        public List<SubTopcElasticSearch> subTopics { get; set; }
     }
     public class SubTopcElasticSearch
     {
@@ -17,12 +17,12 @@ namespace backend.Dtos
         public int SubTopicId { get; set; }
         [PropertyName("SubTopicName")]
         public required string SubTopicName { get; set; }
-        public required List<SourcesElasticSearch> sources { get; set; }
+        public List<SourcesElasticSearch>? sources { get; set; }
     }
     public class SourcesElasticSearch
     {
         [PropertyName("Id")]
-        public int Id { get;set; }
+        public int Id { get; set; }
         [PropertyName("Title")]
         public string Title { get; set; } = "";
         [PropertyName("Description")]
@@ -32,16 +32,16 @@ namespace backend.Dtos
         [PropertyName("Slug")]
         public string Slug { get; set; } = "";
         [PropertyName("Status")]
-        public int Status { get; set; }
+        public int? Status { get; set; }
         [PropertyName("Benefit")]
-        public string Benefit { get; set; } = "";
+        public string? Benefit { get; set; } = "abc";
         [PropertyName("Video_intro")]
         public string Video_intro { get; set; } = "";
         [PropertyName("Price")]
-        public double Price { get; set; }
+        public double? Price { get; set; }
         [PropertyName("Rating")]
         public string Rating { get; set; } = "";
         [PropertyName("UserId")]
-        public int UserId { get;set; }
+        public int UserId { get; set; }
     }
 }

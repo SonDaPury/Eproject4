@@ -1,8 +1,11 @@
 ﻿using backend.Base;
 using backend.Data;
+using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
+using Nest;
+using System.Reflection.Metadata;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text;
@@ -11,9 +14,10 @@ using AutoMapper;
 
 namespace backend.Service
 {
-    public class SourceService(LMSContext context, IMapper mapper) : ISourceService
+    public class SourceService(LMSContext context, IElasticSearchRepository elasticsearchRepository, IMapper mapper) : ISourceService
     {
         private readonly LMSContext _context = context;
+        private readonly IElasticSearchRepository _elasticsearchRepository = elasticsearchRepository;
         private readonly IMapper _mapper = mapper;
 
         public async Task<Source> CreateAsync(SourceDto sourceDto)
@@ -21,7 +25,47 @@ namespace backend.Service
             sourceDto.Slug = GenerateSlug(sourceDto.Title);
             var source = _mapper.Map<Source>(sourceDto);
             _context.Sources.Add(source);
-            await _context.SaveChangesAsync();
+            try
+            {
+                int check = await _context.SaveChangesAsync();
+                if (check <= 0)
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            var result = await GetByIdAsync(source.Id);
+
+            var scirptSource = @"for (int i = 0; i < ctx._source.subTopics.size(); i++) { if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) { ctx._source.subTopics[i].sources.add(params.sources); } }";
+            var scriptParams = new Dictionary<string, object>
+{
+    { "SubTopicId", source.SubTopicId },
+                {"sources", new SourcesElasticSearch
+                {
+                    Id = result.Source.Id,
+                    Title = result.Source.Title,
+                    Description = result.Source.Description,
+                    Thumbnail = result.Source.Thumbnail,
+                    Slug = result.Source.Slug,
+                    Status = result.Source.Status? 1 : 0,
+                    Video_intro = result.Source.VideoIntro,
+                    Price = result.Source.Price,
+                    Rating = result.Source.Rating,
+                    UserId = result.Source.UserId,
+                }
+                }
+
+};
+            var CreateResponse = _elasticsearchRepository.UpdateScript(result.TopicId.ToString(), u => u
+ .Index("sources_index")
+ .Script(s => s
+     .Source(scirptSource)
+     .Params(scriptParams)
+ )
+);
             return source;
         }
 
@@ -75,6 +119,7 @@ namespace backend.Service
             var source = await _context.Sources.FindAsync(id);
             if (source == null) return null;
 
+            // Cập nhật thông tin từ updatedSource vào source
             source.Title = updatedSource.Title;
             source.Description = updatedSource.Description;
             source.Thumbnail = updatedSource.Thumbnail;
@@ -89,13 +134,67 @@ namespace backend.Service
             source.SubTopicId = updatedSource.SubTopicId;
             //source.StaticFolder = updatedSource.StaticFolder;
 
-            await _context.SaveChangesAsync();
+            // Lưu các thay đổi vào cơ sở dữ liệu
+            int check = await _context.SaveChangesAsync();
+            if (check > 0)
+            {
+                // Lấy thông tin về Source đã được cập nhật từ cơ sở dữ liệu
+                var result = await GetByIdAsync(source.Id);
+
+                var scriptSource = @"
+        for (int i = 0; i < ctx._source.subTopics.size(); i++) {
+            if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) {
+                for (int j = 0; j < ctx._source.subTopics[i].sources.size(); j++) {
+                    if (ctx._source.subTopics[i].sources[j].Id == params.id) {
+                        ctx._source.subTopics[i].sources[j].Title = params.Title;
+                        ctx._source.subTopics[i].sources[j].Description = params.Description;
+                        ctx._source.subTopics[i].sources[j].Thumbnail = params.Thumbnail;
+                        ctx._source.subTopics[i].sources[j].Slug = params.Slug;
+                        ctx._source.subTopics[i].sources[j].Status = params.Status;
+                        ctx._source.subTopics[i].sources[j].Video_intro = params.Video_intro;
+                        ctx._source.subTopics[i].sources[j].Price = params.Price;
+                        ctx._source.subTopics[i].sources[j].Rating = params.Rating;
+                        ctx._source.subTopics[i].sources[j].UserId = params.UserId;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    ";
+                var scriptParams = new Dictionary<string, object>
+    {
+        { "SubTopicId", source.SubTopicId },
+        { "id", source.Id },
+        { "Title", source.Title },
+        { "Description", source.Description },
+        { "Thumbnail", source.Thumbnail },
+        { "Slug", source.Slug },
+        { "Status", source.Status ? 1 : 0 },
+        { "Video_intro", source.VideoIntro },
+        { "Price", source.Price },
+        { "Rating", source.Rating },
+        { "UserId", source.UserId }
+    };
+
+                // Cập nhật thông tin trong Elasticsearch
+                var updateResponse = _elasticsearchRepository.UpdateScript(result.TopicId.ToString(), u => u
+                    .Index("sources_index")
+                    .Script(s => s
+                        .Source(scriptSource)
+                        .Params(scriptParams)
+                    )
+                );
+            }
             return source;
         }
 
+
         public async Task<bool> DeleteAsync(int id)
         {
+
             var source = await _context.Sources.FindAsync(id);
+
             if (source == null) return false;
             // xóa exam theo source
             var list_exam = await _context.Exams.Where(l => l.SourceId == id).ToListAsync();
@@ -110,8 +209,22 @@ namespace backend.Service
                 _context.Chapters.RemoveRange(list_chapter);
             }
             _context.Sources.Remove(source);
-            await _context.SaveChangesAsync();
-            return true;
+            int check = await _context.SaveChangesAsync();
+            if (check > 0)
+            {
+                var result = await GetByIdAsync(source.Id);
+                var scriptSource = @"ctx._source.subTopics.forEach(subTopic -> { subTopic.sources.removeIf(source -> source.Id == params.id); })";
+                var updateResponse = _elasticsearchRepository.UpdateScript(result.TopicId.ToString(), u => u
+                       .Index("sources_index")
+                       .Script(s => s
+                           .Source(scriptSource)
+                           .Params(p => p.Add("id", id))
+                       )
+                   );
+                return updateResponse;
+            }
+
+            return false;
         }
 
         Task<(List<Source>, int)> IService<Source>.GetAllAsync(Pagination pagination)
@@ -119,12 +232,12 @@ namespace backend.Service
             throw new NotImplementedException();
         }
 
-        Task<Source?> IService<Source>.GetByIdAsync(int id)
+        Task<List<Source>> IService<Source>.GetAllAsync()
         {
             throw new NotImplementedException();
         }
 
-        Task<List<Source>> IService<Source>.GetAllAsync()
+        Task<Source?> IService<Source>.GetByIdAsync(int id)
         {
             throw new NotImplementedException();
         }
