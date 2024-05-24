@@ -12,61 +12,78 @@ namespace backend.Service
     {
         private readonly LMSContext _context;
         private readonly IMapper _mapper;
+        private readonly IimageServices _imageServices;
 
-        public QuestionService(LMSContext context, IMapper mapper)
+        public QuestionService(LMSContext context, IMapper mapper, IimageServices imageServices)
         {
             _context = context;
             _mapper = mapper;
+            _imageServices = imageServices;
         }
 
-        public async Task<QuestionDto> CreateAsync(QuestionDto questionDto)
+        public async Task<Question> CreateAsync(QuestionDto questionDto)
         {
-            var question = _mapper.Map<Question>(questionDto);
+            var question = new Question
+            {
+                Content = questionDto.Content,
+                Image = questionDto.Image != null ? _imageServices.AddFile(questionDto.Image, "Questions", "Image") : null
+            };
             _context.Questions.Add(question);
             await _context.SaveChangesAsync();
-            return questionDto;
+            return question;
         }
 
-        public async Task<List<QuestionDto>> GetAllAsync()
+        public async Task<List<QuestionViewModel>> GetAllAsync()
         {
             var questions = await _context.Questions
                 //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
                 //.Include(q => q.Options) // Include options for the question
+                .Select(q => new Question
+                {
+                    Content = q.Content,
+                    Image = q.Image != null ? _imageServices.GetFile(q.Image) : null,
+                })
                 .ToListAsync();
-            return _mapper.Map<List<QuestionDto>>(questions);   
+            return _mapper.Map<List<QuestionViewModel>>(questions);   
         }
-        public async Task<(List<QuestionDto>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<QuestionViewModel>,int)> GetAllAsync(Pagination pagination)
         {
             var questions = await _context.Questions
-                //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
-                //.Include(q => q.Options) // Include options for the question
+                 //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
+                 //.Include(q => q.Options) // Include options for the question
+                 .Select(q => new Question
+                 {
+                     Content = q.Content,
+                     Image = q.Image != null ? _imageServices.GetFile(q.Image) : null,
+                 })
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                  .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Questions.CountAsync();
-            return (_mapper.Map<List<QuestionDto>>(questions),count);
+            return (_mapper.Map<List<QuestionViewModel>>(questions),count);
         }
-        public async Task<QuestionDto?> GetByIdAsync(int id)
+        public async Task<QuestionViewModel?> GetByIdAsync(int id)
         {
             var qt = await _context.Questions
                 //.Include(q => q.QuizQuestions)
                 //.Include(q => q.Options)
                 .FirstOrDefaultAsync(q => q.Id == id);
-            return _mapper.Map<QuestionDto?>(qt);
+            qt.Image = qt.Image != null ? _imageServices.GetFile(qt.Image) : null;
+            return _mapper.Map<QuestionViewModel?>(qt);
         }
 
-        public async Task<QuestionDto?> UpdateAsync(int id, QuestionDto updatedQuestion)
+        public async Task<Question?> UpdateAsync(int id, QuestionDto updatedQuestion)
         {
             var question = await _context.Questions.FindAsync(id);
             if (question == null) return null;
 
             question.Content = updatedQuestion.Content;
-            question.Image = updatedQuestion.Image;
+            question.Image = _imageServices.UpdateFile(updatedQuestion.Image,question.Image,"Questions","Image");
             //question.StaticFolder = updatedQuestion.StaticFolder;
             // Ensure options and quiz questions are handled if necessary, might require additional logic
 
             await _context.SaveChangesAsync();
-            return _mapper.Map<QuestionDto>(question);
+            return question;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -83,6 +100,10 @@ namespace backend.Service
             if (options != null)
             {
                 _context.Options.RemoveRange(options);
+            }
+            if(question.Image != null)
+            {
+                _imageServices.DeleteFile(question.Image);
             }
             _context.Questions.Remove(question);
             await _context.SaveChangesAsync();

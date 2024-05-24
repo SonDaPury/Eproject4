@@ -26,7 +26,7 @@ namespace backend.Controller
 
         // POST: api/Questions
         [HttpPost]
-        public async Task<ActionResult<QuestionDto>> CreateQuestion([FromBody] QuestionDto questionDto)
+        public async Task<IActionResult> CreateQuestion([FromForm] QuestionDto questionDto)
         {
             if (questionDto == null)
             {
@@ -35,20 +35,20 @@ namespace backend.Controller
 
             //var question = _mapper.Map<Question>(questionDto);
             var createdQuestion = await _questionService.CreateAsync(questionDto);
-            //var createdQuestionDto = _mapper.Map<QuestionDto>(createdQuestion);
-            return Ok(createdQuestion);
+            var createdQuestionDto = _mapper.Map<QuestionViewModel>(createdQuestion);
+            return Ok(createdQuestionDto);
         }
 
         // GET: api/Questions
         [HttpGet("pagination")]
-        public async Task<ActionResult<IEnumerable<QuestionDto>>> GetAllQuestions([FromQuery] Pagination pagination)
+        public async Task<IActionResult> GetAllQuestions([FromQuery] Pagination pagination)
         {
             var questions = await _questionService.GetAllAsync(pagination);
-            var questionDtos = _mapper.Map<List<QuestionDto>>(questions.Item1);
-            return Ok(new { TotalCount = questions.Item2, Items = questionDtos });
+            //var questionDtos = _mapper.Map<List<QuestionDto>>(questions.Item1);
+            return Ok(new { TotalCount = questions.Item2, Items = questions.Item1 });
         }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<QuestionDto>>> GetAllQuestions()
+        public async Task<IActionResult> GetAllQuestions()
         {
             var questions = await _questionService.GetAllAsync();
             //var questionDtos = _mapper.Map<List<QuestionDto>>(questions);
@@ -57,7 +57,7 @@ namespace backend.Controller
 
         // GET: api/Questions/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<QuestionDto>> GetQuestion(int id)
+        public async Task<IActionResult> GetQuestion(int id)
         {
             var question = await _questionService.GetByIdAsync(id);
             if (question == null)
@@ -70,7 +70,7 @@ namespace backend.Controller
 
         // PUT: api/Questions/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateQuestion(int id, [FromBody] QuestionDto questionDto)
+        public async Task<IActionResult> UpdateQuestion(int id, [FromForm] QuestionDto questionDto)
         {
             if (questionDto == null)
             {
@@ -83,7 +83,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Question with ID {id} not found." });
             }
-            return Ok(_mapper.Map<QuestionDto>(updatedQuestion));
+            return Ok(_mapper.Map<QuestionViewModel>(updatedQuestion));
         }
 
         // DELETE: api/Questions/5
