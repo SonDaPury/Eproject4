@@ -61,7 +61,7 @@ namespace backend.Service
                     Description = result.Description,
                     Thumbnail = result.Thumbnail,
                     Slug = result.Slug,
-                    Status = (bool)result.Status? 1 : 0,
+                    Status = result.Status,
                     Video_intro = result.VideoIntro,
                     Price = result.Price,
                     Rating = result.Rating,
