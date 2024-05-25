@@ -10,7 +10,7 @@ import {
   setSubTopics,
   deleteSubTopicReducer,
 } from "@eproject4/redux/slices/subTopicSlice";
-import { getTopics } from "@eproject4/services/topic.service";
+import { getAllTopics, getTopics } from "@eproject4/services/topic.service";
 import { setTopics } from "@eproject4/redux/slices/topicSlice";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -33,7 +33,7 @@ function SubTopic() {
   const dataSubTopics = useSelector(subTopicsSelector);
   const dispatch = useDispatch();
   const { getSubTopicsAction } = getSubTopics();
-  const { getTopicsAction } = getTopics();
+  const { getAllTopicsAction } = getAllTopics();
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [openModal, setOpenModal] = useState(false);
@@ -65,8 +65,8 @@ function SubTopic() {
   };
 
   const fetchDataTopics = async () => {
-    const res = await getTopicsAction();
-    dispatch(setTopics(res?.data));
+    const res = await getAllTopicsAction();
+    dispatch(setTopics(res?.data?.items));
   };
 
   useEffect(() => {

@@ -58,7 +58,7 @@ function AdminLayout({ name, children }) {
   };
 
   return (
-    <Box sx={{ backgroundColor: "#F0F0F0", height: "100vh" }}>
+    <Box sx={{ backgroundColor: "#F0F0F0", minHeight: "100vh" }}>
       <AppBar
         sx={{
           height: "70px",
