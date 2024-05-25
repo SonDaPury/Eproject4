@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\Temp\**" />
+    <Content Remove="wwwroot\Temp\**" />
+    <EmbeddedResource Remove="wwwroot\Temp\**" />
+    <None Remove="wwwroot\Temp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
@@ -29,10 +36,6 @@
 
   <ItemGroup>
     <None Include="wwwroot\htmlpage.html" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\Temp\" />
   </ItemGroup>
 
 </Project>

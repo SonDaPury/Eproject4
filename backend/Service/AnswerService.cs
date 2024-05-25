@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -21,13 +22,17 @@ namespace backend.Service
             return answer;
         }
 
-        public async Task<List<Answer>> GetAllAsync()
+        public async Task<(List<Answer>,int)> GetAllAsync(Pagination pagination)
         {
-            return await _context.Answers
+            var answers = await _context.Answers
                 //.Include(a => a.Exam)
                 //.Include(a => a.User)
                 //.Include(a => a.Attemp)
+                .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .ToListAsync();
+            var count = await _context.Answers.CountAsync();
+            return (answers, count);
         }
 
         public async Task<Answer?> GetByIdAsync(int id)

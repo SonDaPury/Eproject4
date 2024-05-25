@@ -6,5 +6,6 @@ namespace backend.Service.Interface
     {
         //Task InsertIndex(int index);
         //Task UpdateIndexHightoLow(int index, int indexhigher);
+        Task<List<Serial>> GetAllAsync();
     }
 }

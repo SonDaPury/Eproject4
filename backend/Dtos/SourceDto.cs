@@ -15,5 +15,7 @@
         public string? Rating { get; set; }
         public int? UserId { get; set; }
         public int? SubTopicId { get; set; }
+
+        public int? TopicId { get; set; }
     }
 }

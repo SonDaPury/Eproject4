@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +12,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
+    //[JwtAuthorize("user", "admin")]
     public class TopicController : ControllerBase
     {
         private readonly ITopicService _topicService;
@@ -23,6 +25,7 @@ namespace backend.Controller
 
         // POST: api/Topics
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<Topic>> CreateTopic([FromBody] TopicDto topicDto)
         {
             if (topicDto == null)
@@ -37,11 +40,11 @@ namespace backend.Controller
         // GET: api/Topics
         [HttpGet]
         //[JwtAuthorize("user")]
-        public async Task<IActionResult> GetAllTopics()
+        public async Task<IActionResult> GetAllTopics([FromQuery]Pagination pagination)
         {
-            var topics = await _topicService.GetAllAsync();
-            var topicDto = _mapper.Map<List<TopicDto>>(topics);
-            return Ok(topicDto);
+            var topics = await _topicService.GetAllAsync(pagination);
+            var topicDto = _mapper.Map<List<TopicDto>>(topics.Item1);
+            return Ok(new { TotalCount = topics.Item2, Items = topicDto });
         }
 
         // GET: api/Topics/5
@@ -49,11 +52,12 @@ namespace backend.Controller
         public async Task<ActionResult<Topic>> GetTopic(int id)
         {
             var topic = await _topicService.GetByIdAsync(id);
+            var topicDto = _mapper.Map<TopicDto>(topic);
             if (topic == null)
             {
                 return NotFound(new { message = $"Topic with ID {id} not found." });
             }
-            return Ok(topic);
+            return Ok(topicDto);
         }
 
         // PUT: api/Topics/5

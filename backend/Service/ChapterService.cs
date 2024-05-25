@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +17,17 @@ namespace backend.Service
             return chapter;
         }
 
-        public async Task<List<Chapter>> GetAllAsync()
+        public async Task<(List<Chapter>, int)> GetAllAsync(Pagination pagination)
         {
-            return await _context.Chapters
+            var chapters = await _context.Chapters
                 //.Include(c => c.Source) // Includes the source of the chapter
                 //.Include(c => c.Lessions) // Includes all lessons in the chapter
                 //.Include(c => c.Exams) // Includes all exams in the chapter
+                .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .ToListAsync();
+            var count = await _context.Chapters.CountAsync();
+            return (chapters, count);
         }
 
         public async Task<Chapter?> GetByIdAsync(int id)
@@ -59,7 +64,7 @@ namespace backend.Service
                 _context.Lessons.RemoveRange(list_lession);
             }
 
-            
+
             _context.Chapters.Remove(chapter);
             await _context.SaveChangesAsync();
             return true;

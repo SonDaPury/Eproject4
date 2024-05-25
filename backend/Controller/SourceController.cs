@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -39,11 +40,15 @@ namespace backend.Controller
 
         // GET: api/Sources
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources()
+        public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources([FromQuery] Pagination pagination)
         {
-            var sources = await _sourceService.GetAllAsync();
+            var (sources, totalCount) = await _sourceService.GetAllAsync(pagination);
+
+            // Ánh xạ từ danh sách sources sang danh sách SourceDto
             var sourceDtos = _mapper.Map<List<SourceDto>>(sources);
-            return Ok(sourceDtos);
+
+            // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
+            return Ok(new { TotalCount = totalCount, Items = sourceDtos });
         }
 
         // GET: api/Sources/5

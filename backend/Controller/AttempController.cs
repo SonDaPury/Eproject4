@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -46,13 +47,13 @@ namespace backend.Controller
 
         // GET: api/Attemps
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AttempDto>>> GetAllAttemps()
+        public async Task<ActionResult<IEnumerable<AttempDto>>> GetAllAttemps([FromQuery] Pagination pagination)
         {
             try
             {
-            var attemps = await _attempService.GetAllAsync();
+                var (attemps, totalCount) = await _attempService.GetAllAsync(pagination);
             var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
-            return Ok(attempDtos);
+                return Ok(new { TotalCount = totalCount, Items = attempDtos });
             }
             catch (Exception ex)
             {

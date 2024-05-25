@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -16,22 +17,36 @@ namespace backend.Service
             return source;
         }
 
-        public async Task<List<Source>> GetAllAsync()
+        public async Task<(List<SourceWithTopicId>,int)> GetAllAsync(Pagination pagination)
         {
-            return await _context.Sources
-                //.Include(s => s.User)
-                //.Include(s => s.SubTopic)
-                //.Include(s => s.Chapters)
+            var sources = await _context.Sources
+                 //.Include(s => s.User)
+                 .Include(s => s.SubTopic)
+                 .Select(s => new SourceWithTopicId
+                 {
+                     Source = s,
+                     TopicId = s.SubTopic.TopicId
+                 })
+                 //.Include(s => s.Chapters)
+                 .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .ToListAsync();
+            var count = await _context.Sources.CountAsync();
+            return (sources, count);
         }
 
-        public async Task<Source?> GetByIdAsync(int id)
+        public async Task<SourceWithTopicId?> GetByIdAsync(int id)
         {
             return await _context.Sources
                 //.Include(s => s.User)
-                //.Include(s => s.SubTopic)
+                .Include(s => s.SubTopic)
+                .Select(s => new SourceWithTopicId
+                {
+                    Source = s,
+                    TopicId = s.SubTopic.TopicId
+                })
                 //.Include(s => s.Chapters)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Source.Id == id);
         }
 
         public async Task<Source?> UpdateAsync(int id, Source updatedSource)
@@ -76,6 +91,16 @@ namespace backend.Service
             _context.Sources.Remove(source);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        Task<(List<Source>, int)> IService<Source>.GetAllAsync(Pagination pagination)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<Source?> IService<Source>.GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 

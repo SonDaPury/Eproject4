@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Exceptions;
 using backend.Service.Interface;
@@ -22,13 +23,16 @@ namespace backend.Service
             return attempt;
         }
 
-        public async Task<List<Attemp>> GetAllAsync()
+        public async Task<(List<Attemp>,int)> GetAllAsync(Pagination pagination)
         {
             var attemps = await _context.Attemps
                 //.Include(a => a.User) // Includes the User associated with the Attemp
                 //.Include(a => a.Answers) // Includes Answers related to the Attemp
+                .Take(pagination.PageSize)
+                .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .ToListAsync();
-            return attemps ?? throw new NotFoundException("list attemp notfound");
+            var count = await _context.Attemps.CountAsync();
+            return (attemps,count);
         }
 
         public async Task<Attemp?> GetByIdAsync(int id)
