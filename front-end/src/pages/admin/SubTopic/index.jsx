@@ -10,7 +10,7 @@ import {
   setSubTopics,
   deleteSubTopicReducer,
 } from "@eproject4/redux/slices/subTopicSlice";
-import { getAllTopics, getTopics } from "@eproject4/services/topic.service";
+import { getAllTopics } from "@eproject4/services/topic.service";
 import { setTopics } from "@eproject4/redux/slices/topicSlice";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";

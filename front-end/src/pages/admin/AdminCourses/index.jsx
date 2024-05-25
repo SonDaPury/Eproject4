@@ -82,7 +82,7 @@ function AdminCourses() {
           maxWidth: {
             xs: "320px",
             sm: "540px",
-            md: "720px",
+            md: "650px",
             lg: "900px",
             xl: "1320px",
           },

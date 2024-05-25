@@ -1,5 +1,4 @@
 import useAxiosWithLoading from "@eproject4/utils/hooks/useAxiosWithLoading";
-import { get } from "react-hook-form";
 
 // Get topics
 export const getTopics = () => {
