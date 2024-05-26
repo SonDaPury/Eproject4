@@ -21,14 +21,18 @@ namespace backend.Service
             await _context.SaveChangesAsync();
             return question;
         }
+        public async Task<List<Question>> GetAllAsync()
+        {
+            return await _context.Questions.ToListAsync();
+        }
 
         public async Task<(List<Question>,int)> GetAllAsync(Pagination pagination)
         {
             var questions = await _context.Questions
                  //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
                  //.Include(q => q.Options) // Include options for the question
-                 .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                 .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Questions.CountAsync();
             return (questions, count);  

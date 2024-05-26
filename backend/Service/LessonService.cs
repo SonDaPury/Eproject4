@@ -17,12 +17,16 @@ namespace backend.Service
             return lesson;
         }
 
+        public async Task<List<Lesson>> GetAllAsync()
+        {
+            return await _context.Lessons.ToListAsync();
+        }
         public async Task<(List<Lesson>,int)> GetAllAsync(Pagination pagination)
         {
             var lessons = await _context.Lessons
                 //.Include(l => l.Chapter) // Include the chapter details
-                 .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                 .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Lessons.CountAsync();
             return (lessons,count);

@@ -46,7 +46,7 @@ namespace backend.Controller
         }
 
         // GET: api/Attemps
-        [HttpGet]
+        [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<AttempDto>>> GetAllAttemps([FromQuery] Pagination pagination)
         {
             try
@@ -54,6 +54,21 @@ namespace backend.Controller
                 var (attemps, totalCount) = await _attempService.GetAllAsync(pagination);
             var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
                 return Ok(new { TotalCount = totalCount, Items = attempDtos });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+
+        }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AttempDto>>> GetAllAttemps()
+        {
+            try
+            {
+                var attemps = await _attempService.GetAllAsync();
+                var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
+                return Ok( attempDtos );
             }
             catch (Exception ex)
             {

@@ -32,14 +32,19 @@ namespace backend.Service
             return exam;
         }
 
+        public async Task<List<Exam>> GetAllAsync()
+        {
+            return await _context.Exams.ToListAsync();
+        }
+
         public async Task<(List<Exam>,int)> GetAllAsync(Pagination pagination)
         {
             var exams = await _context.Exams
                 //.Include(e => e.Chapter) // Include the chapter details
                 //.Include(e => e.QuizQuestions) // Include associated quiz questions
                 //.Include(e => e.Answers) // Include associated answers
-                .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Exams.CountAsync(); 
             return (exams, count);

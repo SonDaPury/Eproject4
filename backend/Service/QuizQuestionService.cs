@@ -22,13 +22,18 @@ namespace backend.Service
             return quizQuestion;
         }
 
+        public Task<List<QuizQuestion>> GetAllAsync()
+        {
+            return _context.QuizQuestions.ToListAsync();
+        }
+
         public async Task<(List<QuizQuestion>,int)> GetAllAsync(Pagination pagination)
         {
             var qqs = await _context.QuizQuestions
                  //.Include(qq => qq.Exam)
                  //.Include(qq => qq.Question)
-                 .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                 .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.QuizQuestions.CountAsync();
             return (qqs, count);

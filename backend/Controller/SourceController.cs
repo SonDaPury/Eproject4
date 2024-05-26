@@ -39,7 +39,7 @@ namespace backend.Controller
         }
 
         // GET: api/Sources
-        [HttpGet]
+        [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources([FromQuery] Pagination pagination)
         {
             var (sources, totalCount) = await _sourceService.GetAllAsync(pagination);
@@ -49,6 +49,18 @@ namespace backend.Controller
 
             // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
             return Ok(new { TotalCount = totalCount, Items = sourceDtos });
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources()
+        {
+            var sources= await _sourceService.GetAllAsync();
+
+            // Ánh xạ từ danh sách sources sang danh sách SourceDto
+            var sourceDtos = _mapper.Map<List<SourceDto>>(sources);
+
+            // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
+            return Ok( sourceDtos );
         }
 
         // GET: api/Sources/5

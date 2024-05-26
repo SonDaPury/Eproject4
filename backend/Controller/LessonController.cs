@@ -39,12 +39,20 @@ namespace backend.Controller
         }
 
         // GET: api/Lessons
-        [HttpGet]
+        [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<LessonDto>>> GetAllLessons([FromQuery] Pagination pagination)
         {
             var lessons = await _lessonService.GetAllAsync(pagination);
             var lessonDtos = _mapper.Map<List<LessonDto>>(lessons.Item1);
             return Ok(new { TotalCount = lessons.Item2 , Lessons = lessonDtos });
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<LessonDto>>> GetAllLessons()
+        {
+            var lessons = await _lessonService.GetAllAsync();
+            var lessonDtos = _mapper.Map<List<LessonDto>>(lessons);
+            return Ok( lessonDtos);
         }
 
         // GET: api/Lessons/5

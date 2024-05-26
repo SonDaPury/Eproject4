@@ -28,8 +28,8 @@ namespace backend.Service
                 //.Include(a => a.Exam)
                 //.Include(a => a.User)
                 //.Include(a => a.Attemp)
-                .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Answers.CountAsync();
             return (answers, count);
@@ -66,6 +66,11 @@ namespace backend.Service
             _context.Answers.Remove(answer);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<Answer>> GetAllAsync()
+        {
+            return await _context.Answers.ToListAsync();
         }
     }
 

@@ -38,12 +38,20 @@ namespace backend.Controller
         }
 
         // GET: api/SubTopics
-        [HttpGet]
+        [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<SubTopicDto>>> GetAllSubTopics([FromQuery] Pagination pagination)
         {
             var subTopics = await _subTopicService.GetAllAsync(pagination);
             var subTopicDtos = _mapper.Map<List<SubTopicDto>>(subTopics.Item1);
             return Ok(new { TotalCount = subTopics.Item2, Items = subTopicDtos });
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SubTopicDto>>> GetAllSubTopics()
+        {
+            var subTopics = await _subTopicService.GetAllAsync();
+            var subTopicDtos = _mapper.Map<List<SubTopicDto>>(subTopics);
+            return Ok( subTopicDtos );
         }
 
         // GET: api/SubTopics/5

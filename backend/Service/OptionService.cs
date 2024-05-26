@@ -23,12 +23,17 @@ namespace backend.Service
             return option;
         }
 
+        public async Task<List<Option>> GetAllAsync()
+        {
+            return await _context.Options.ToListAsync();
+        }
+
         public async Task<(List<Option>,int)> GetAllAsync(Pagination pagination)
         {
             var options = await _context.Options
                  //.Include(o => o.Question) // Includes the question to provide context for the option
-                 .Take(pagination.PageSize)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
+                 .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Options.CountAsync();
             return (options, count);    
