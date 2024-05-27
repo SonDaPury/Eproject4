@@ -23,6 +23,6 @@ namespace backend.Dtos.UserDto
         [RegularExpression(@"^\+?\d{10,15}$", ErrorMessage = "Invalid phone number")]
         public string? PhoneNumber { get; set; }
 
-        public string? Avatar { get; set; }
+        public IFormFile? Avatar { get; set; }
     }
 }

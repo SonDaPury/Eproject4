@@ -1,27 +1,27 @@
-﻿using backend.Base;
+﻿using AutoMapper;
+using backend.Base;
 using backend.Data;
+using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Service
 {
-    public class LessonService(LMSContext context) : ILessonService
+    public class LessonService(LMSContext context, IMapper mapper) : ILessonService
     {
         private readonly LMSContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
-        public async Task<Lesson> CreateAsync(Lesson lesson)
+        public async Task<LessonDto> CreateAsync(LessonDto lessonDto)
         {
+            var lesson = _mapper.Map<Lesson>(lessonDto);    
             _context.Lessons.Add(lesson);
             await _context.SaveChangesAsync();
-            return lesson;
+            return lessonDto;
         }
 
-        public async Task<List<Lesson>> GetAllAsync()
-        {
-            return await _context.Lessons.ToListAsync();
-        }
-        public async Task<(List<Lesson>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<LessonDto>,int)> GetAllAsync(Pagination pagination)
         {
             var lessons = await _context.Lessons
                 //.Include(l => l.Chapter) // Include the chapter details
@@ -29,33 +29,42 @@ namespace backend.Service
                  .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Lessons.CountAsync();
-            return (lessons,count);
+            return (_mapper.Map<List<LessonDto>>(lessons),count);
         }
-
-        public async Task<Lesson?> GetByIdAsync(int id)
+        public async Task<List<LessonDto>> GetAllAsync()
         {
-            return await _context.Lessons
+            var lessons = await _context.Lessons
+                //.Include(l => l.Chapter) // Include the chapter details
+                
+                .ToListAsync();
+            return _mapper.Map<List<LessonDto>>(lessons);
+        }
+        public async Task<LessonDto?> GetByIdAsync(int id)
+        {
+            var lesson = await _context.Lessons
                 //.Include(l => l.Chapter) // Include the chapter to which the lesson belongs
                 .FirstOrDefaultAsync(l => l.Id == id);
+            return _mapper?.Map<LessonDto?>(lesson);
         }
 
-        public async Task<Lesson?> UpdateAsync(int id, Lesson updatedLesson)
+        public async Task<LessonDto?> UpdateAsync(int id, LessonDto updatedLesson)
         {
+            var update = _mapper.Map<Lesson>(updatedLesson);    
             var lesson = await _context.Lessons.FindAsync(id);
             if (lesson == null) return null;
 
-            lesson.Title = updatedLesson.Title;
-            lesson.Author = updatedLesson.Author;
-            lesson.VideoDuration = updatedLesson.VideoDuration;
-            lesson.Thumbnail = updatedLesson.Thumbnail;
-            lesson.Video = updatedLesson.Video;
-            lesson.View = updatedLesson.View;
-            lesson.Status = updatedLesson.Status;
-            lesson.ChapterId = updatedLesson.ChapterId;
-            lesson.StaticFolder = updatedLesson.StaticFolder;
+            lesson.Title = update.Title;
+            lesson.Author = update.Author;
+            lesson.VideoDuration = update.VideoDuration;
+            lesson.Thumbnail = update.Thumbnail;
+            lesson.Video = update.Video;
+            lesson.View = update.View;
+            lesson.Status = update.Status;
+            lesson.ChapterId = update.ChapterId;
+            lesson.StaticFolder = update.StaticFolder;
 
             await _context.SaveChangesAsync();
-            return lesson;
+            return updatedLesson;
         }
 
         public async Task<bool> DeleteAsync(int id)

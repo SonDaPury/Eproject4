@@ -28,8 +28,8 @@ namespace backend.Controller
             try
             {
                 var user = await _userService.GetListUsers();
-                var data = _mapper.Map<List<ListUserDto>>(user);
-                return Ok(data);
+                //var data = _mapper.Map<List<ListUserDto>>(user);
+                return Ok(user);
 
             }
             catch (Exception ex)
@@ -45,8 +45,8 @@ namespace backend.Controller
             try
             {
                 var user = await _userService.GetById(userId);
-                var data = _mapper.Map<ListUserDto>(user);
-                return Ok(data);
+                //var data = _mapper.Map<ListUserDto>(user);
+                return Ok(user);
             }
             catch (Exception ex)
             {
@@ -54,10 +54,10 @@ namespace backend.Controller
             }
         }
         [HttpDelete("{userId}")]
-        public async Task<IActionResult> DeleteUser (int userId)
+        public async Task<IActionResult> DeleteUser(int userId)
         {
-            
-             var success = await _userService.DeleteUser(userId);
+
+            var success = await _userService.DeleteUser(userId);
             if (!success)
             {
                 return NotFound(new { message = $"Exam with ID {userId} not found." });
@@ -83,8 +83,8 @@ namespace backend.Controller
         {
             try
             {
-                var data = _mapper.Map<User>(registerViewModel);
-                var newUser = await _userService.Create(data);
+                //var data = _mapper.Map<User>(registerViewModel);
+                var newUser = await _userService.Create(registerViewModel);
                 return Ok(newUser);
             }
             catch (BadRequestException ex)
@@ -97,8 +97,8 @@ namespace backend.Controller
         {
             try
             {
-                var data = _mapper.Map<User>(registerViewModel);
-                var newUser = await _userService.CreateAdminAccount(data);
+                //var data = _mapper.Map<User>(registerViewModel);
+                var newUser = await _userService.CreateAdminAccount(registerViewModel);
                 return Ok(newUser);
             }
             catch (BadRequestException ex)
@@ -106,6 +106,22 @@ namespace backend.Controller
                 return BadRequest(new { massage = ex.Message });
             }
         }
+
+
+        [HttpPut("update/{userId}")]
+        public async Task<ActionResult<User>> UpdateUsser([FromForm] UserUpdateDto registerViewModel,int userId)
+        {
+            try
+            {
+                var newUser = await _userService.UpdateUser(userId, registerViewModel);
+                return Ok(newUser);
+            }
+            catch (BadRequestException ex)
+            {
+                return BadRequest(new { massage = ex.Message });
+            }
+        }
+
         // POST: /user/forgot-password
         [HttpPost("forgot-password")]
         public async Task<ActionResult> SendForgotPasswordEmail([FromBody] ForgotPasswordRequest request)
@@ -116,7 +132,7 @@ namespace backend.Controller
 
 
                 if (isUserExists is null)
-                {                    
+                {
                     return BadRequest(new { massage = "User is not existed" });
                 }
 
@@ -171,7 +187,7 @@ namespace backend.Controller
             {
                 return BadRequest(new { massage = ex.Message });
             }
-           
+
         }
 
         [HttpPut("change-password")]

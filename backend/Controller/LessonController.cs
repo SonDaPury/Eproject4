@@ -32,8 +32,8 @@ namespace backend.Controller
                 return BadRequest(new { message = "Lesson data is required" });
             }
 
-            var lesson = _mapper.Map<Lesson>(lessonDto);
-            var createdLesson = await _lessonService.CreateAsync(lesson);
+            //var lesson = _mapper.Map<Lesson>(lessonDto);
+            var createdLesson = await _lessonService.CreateAsync(lessonDto);
             var createdLessonDto = _mapper.Map<LessonDto>(createdLesson);
             return CreatedAtAction(nameof(GetLesson), new { id = createdLessonDto.Id }, createdLessonDto);
         }
@@ -51,8 +51,8 @@ namespace backend.Controller
         public async Task<ActionResult<IEnumerable<LessonDto>>> GetAllLessons()
         {
             var lessons = await _lessonService.GetAllAsync();
-            var lessonDtos = _mapper.Map<List<LessonDto>>(lessons);
-            return Ok( lessonDtos);
+            //var lessonDtos = _mapper.Map<List<LessonDto>>(lessons);
+            return Ok(lessons);
         }
 
         // GET: api/Lessons/5
@@ -64,8 +64,8 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Lesson with ID {id} not found." });
             }
-            var lessonDto = _mapper.Map<LessonDto>(lesson);
-            return Ok(lessonDto);
+            //var lessonDto = _mapper.Map<LessonDto>(lesson);
+            return Ok(lesson);
         }
 
         // update
@@ -76,8 +76,8 @@ namespace backend.Controller
             {
                 return BadRequest(new { message = "Invalid lesson data" });
             }
-            var data = _mapper.Map<Lesson>(lessonDto);
-            var updatedLesson = await _lessonService.UpdateAsync(id, data);
+            //var data = _mapper.Map<Lesson>(lessonDto);
+            var updatedLesson = await _lessonService.UpdateAsync(id, lessonDto);
             if (updatedLesson == null)
             {
                 return NotFound(new { message = $"Lesson with ID {id} not found." });
