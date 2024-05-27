@@ -56,7 +56,7 @@ const ProfileCard = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const Dashboard = () => {
+const UserDashboard = () => {
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
@@ -124,4 +124,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default UserDashboard;
