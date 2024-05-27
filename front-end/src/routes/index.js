@@ -24,7 +24,9 @@ export const publicRoutes = [
 ];
 
 // Route can login moi xem duoc
-export const privateRoutes = [];
+export const privateRoutes = [
+  { path: "/dashboard-student", component: Dashboard },
+];
 
 // Route chi danh cho admin
 export const adminRoutes = [

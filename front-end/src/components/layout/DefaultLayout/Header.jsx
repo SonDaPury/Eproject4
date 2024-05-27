@@ -225,12 +225,14 @@ function Header() {
                 {/*    <Typography textAlign="center">{setting}</Typography>*/}
                 {/*  </MenuItem>*/}
                 {/*))}*/}
-                <MenuItem onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">Tài khoản</Typography>
-                </MenuItem>
-                <MenuItem onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">Khóa học</Typography>
-                </MenuItem>
+                <Link to={"/dashboard-student"}>
+                  <MenuItem onClick={handleCloseUserMenu}>
+                    <Typography textAlign="center">
+                      Thông tin cá nhân
+                    </Typography>
+                  </MenuItem>
+                </Link>
+
                 <MenuItem onClick={handleLogout}>
                   <Typography textAlign="center">Đăng xuất</Typography>
                 </MenuItem>
