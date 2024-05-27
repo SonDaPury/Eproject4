@@ -33,10 +33,10 @@ namespace backend.Controller
                 return BadRequest(new { message = "Question data is required" });
             }
 
-            var question = _mapper.Map<Question>(questionDto);
-            var createdQuestion = await _questionService.CreateAsync(question);
-            var createdQuestionDto = _mapper.Map<QuestionDto>(createdQuestion);
-            return CreatedAtAction(nameof(GetQuestion), new { id = createdQuestionDto.Id }, createdQuestionDto);
+            //var question = _mapper.Map<Question>(questionDto);
+            var createdQuestion = await _questionService.CreateAsync(questionDto);
+            //var createdQuestionDto = _mapper.Map<QuestionDto>(createdQuestion);
+            return CreatedAtAction(nameof(GetQuestion), new { id = createdQuestion.Id }, createdQuestion);
         }
 
         // GET: api/Questions
@@ -51,8 +51,8 @@ namespace backend.Controller
         public async Task<ActionResult<IEnumerable<QuestionDto>>> GetAllQuestions()
         {
             var questions = await _questionService.GetAllAsync();
-            var questionDtos = _mapper.Map<List<QuestionDto>>(questions);
-            return Ok(questionDtos);
+            //var questionDtos = _mapper.Map<List<QuestionDto>>(questions);
+            return Ok(questions);
         }
 
         // GET: api/Questions/5
@@ -64,8 +64,8 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Question with ID {id} not found." });
             }
-            var questionDto = _mapper.Map<QuestionDto>(question);
-            return Ok(questionDto);
+            //var questionDto = _mapper.Map<QuestionDto>(question);
+            return Ok(question);
         }
 
         // PUT: api/Questions/5
@@ -77,8 +77,8 @@ namespace backend.Controller
                 return BadRequest(new { message = "Invalid question data" });
             }
 
-            var question = _mapper.Map<Question>(questionDto);
-            var updatedQuestion = await _questionService.UpdateAsync(id, question);
+            //var question = _mapper.Map<Question>(questionDto);    
+            var updatedQuestion = await _questionService.UpdateAsync(id, questionDto);
             if (updatedQuestion == null)
             {
                 return NotFound(new { message = $"Question with ID {id} not found." });

@@ -6,11 +6,11 @@ namespace backend.Service.Interface
 {
     public interface IUserService
     {
-        Task<User?> GetById(int id);
-        Task<User?> GetByUsername(string username);
+        Task<ListUserDto?> GetById(int id);
+        Task<ListUserDto?> GetByUsername(string username);
         Task<User?> GetByEmail(string email);
 
-        Task<User?> Create(User registerViewModel);
+        Task<User?> Create(UserRegisterDto registerViewModel);
         Task<Tuple<Tokens, User>> Login(UserLoginDto loginViewModel);
         Task<Tokens> Refresh(Tokens tokens);
         //Task<bool> IsUserExists(string username);
@@ -23,8 +23,9 @@ namespace backend.Service.Interface
         Task ChangePassword(ChangePassworkDto user);
         Task ResetPassword(ResetPasswordDto user);
         Task Logout(Tokens tokens);
-        Task<List<User>> GetListUsers();
+        Task<List<ListUserDto>> GetListUsers();
         Task<bool> DeleteUser(int userId);
-        Task<User?> CreateAdminAccount(User registerViewModel);
+        Task<User?> CreateAdminAccount(UserRegisterDto registerViewModel);
+        Task<User> UpdateUser(int userId, UserUpdateDto registerViewModel);
     }
 }

@@ -1,5 +1,7 @@
-﻿using backend.Base;
+﻿using AutoMapper;
+using backend.Base;
 using backend.Data;
+using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -9,55 +11,62 @@ namespace backend.Service
     public class QuestionService : IQuestionService
     {
         private readonly LMSContext _context;
+        private readonly IMapper _mapper;
 
-        public QuestionService(LMSContext context)
+        public QuestionService(LMSContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<Question> CreateAsync(Question question)
+        public async Task<QuestionDto> CreateAsync(QuestionDto questionDto)
         {
+            var question = _mapper.Map<Question>(questionDto);
             _context.Questions.Add(question);
             await _context.SaveChangesAsync();
-            return question;
-        }
-        public async Task<List<Question>> GetAllAsync()
-        {
-            return await _context.Questions.ToListAsync();
+            return questionDto;
         }
 
-        public async Task<(List<Question>,int)> GetAllAsync(Pagination pagination)
+        public async Task<List<QuestionDto>> GetAllAsync()
         {
             var questions = await _context.Questions
-                 //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
-                 //.Include(q => q.Options) // Include options for the question
+                //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
+                //.Include(q => q.Options) // Include options for the question
+                .ToListAsync();
+            return _mapper.Map<List<QuestionDto>>(questions);   
+        }
+        public async Task<(List<QuestionDto>,int)> GetAllAsync(Pagination pagination)
+        {
+            var questions = await _context.Questions
+                //.Include(q => q.QuizQuestions) // Include quiz questions associated with the question
+                //.Include(q => q.Options) // Include options for the question
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                  .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Questions.CountAsync();
-            return (questions, count);  
+            return (_mapper.Map<List<QuestionDto>>(questions),count);
         }
-
-        public async Task<Question?> GetByIdAsync(int id)
+        public async Task<QuestionDto?> GetByIdAsync(int id)
         {
-            return await _context.Questions
+            var qt = await _context.Questions
                 //.Include(q => q.QuizQuestions)
                 //.Include(q => q.Options)
                 .FirstOrDefaultAsync(q => q.Id == id);
+            return _mapper.Map<QuestionDto?>(qt);
         }
 
-        public async Task<Question?> UpdateAsync(int id, Question updatedQuestion)
+        public async Task<QuestionDto?> UpdateAsync(int id, QuestionDto updatedQuestion)
         {
             var question = await _context.Questions.FindAsync(id);
             if (question == null) return null;
 
             question.Content = updatedQuestion.Content;
             question.Image = updatedQuestion.Image;
-            question.StaticFolder = updatedQuestion.StaticFolder;
+            //question.StaticFolder = updatedQuestion.StaticFolder;
             // Ensure options and quiz questions are handled if necessary, might require additional logic
 
             await _context.SaveChangesAsync();
-            return question;
+            return _mapper.Map<QuestionDto>(question);
         }
 
         public async Task<bool> DeleteAsync(int id)

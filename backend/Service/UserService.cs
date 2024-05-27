@@ -12,6 +12,7 @@ using backend.Exceptions;
 using backend.Service.Interface;
 using backend.Dtos.UserDto;
 using System.Security.Cryptography;
+using AutoMapper;
 
 namespace backend.Service
 {
@@ -20,8 +21,10 @@ namespace backend.Service
         private readonly IConfiguration _config;
         private readonly SmtpClient _smtpClient;
         private readonly LMSContext _context;
+        private readonly IimageServiecs _imageServiecs;
+        private readonly IMapper _mapper;
 
-        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context)
+        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context, IimageServiecs imageServiecs, IMapper mapper)
         {
             _config = configuration;
             _smtpClient = new SmtpClient
@@ -37,14 +40,16 @@ namespace backend.Service
                 DeliveryMethod = SmtpDeliveryMethod.Network
             };
             _context = context;
+            _imageServiecs = imageServiecs;
+            _mapper = mapper;
         }
 
-        public async Task<List<User>> GetListUsers()
+        public async Task<List<ListUserDto>> GetListUsers()
         {
             var users = await _context.Users.ToListAsync();
-            return users ?? throw new NotFoundException("there are no users at all");
+            return _mapper.Map<List<ListUserDto>>(users) ?? throw new NotFoundException("there are no users at all");
         }
-        public async Task<User?> Create(User registerViewModel)
+        public async Task<User?> Create(UserRegisterDto registerViewModel)
         {
             var existingUserByUsername = await GetByUsername(registerViewModel.Username ?? "");
             if (existingUserByUsername != null)
@@ -57,13 +62,14 @@ namespace backend.Service
             {
                 throw new BadRequestException("Email already exists");
             }
+
             var newUser = new User
             {
                 Username = registerViewModel.Username,
                 Password = BCrypt.Net.BCrypt.HashPassword(registerViewModel.Password),
                 Email = registerViewModel.Email,
                 PhoneNumber = registerViewModel.PhoneNumber,
-                Avatar = registerViewModel.Avatar,
+                Avatar = null,
                 RoleId = 2
             };
 
@@ -72,7 +78,7 @@ namespace backend.Service
             return newUser;
         }
 
-        public async Task<User?> CreateAdminAccount(User registerViewModel)
+        public async Task<User?> CreateAdminAccount(UserRegisterDto registerViewModel)
         {
             var existingUserByUsername = await GetByUsername(registerViewModel.Username ?? "");
             if (existingUserByUsername != null)
@@ -91,7 +97,7 @@ namespace backend.Service
                 Password = BCrypt.Net.BCrypt.HashPassword(registerViewModel.Password),
                 Email = registerViewModel.Email,
                 PhoneNumber = registerViewModel.PhoneNumber,
-                Avatar = registerViewModel.Avatar,
+                Avatar = null,
                 RoleId = 1
             };
 
@@ -100,26 +106,46 @@ namespace backend.Service
             return newUser;
         }
 
-        public async Task<bool> DeleteUser (int userId){
+        public async Task<User> UpdateUser (int userId ,UserUpdateDto registerViewModel)
+        {
+            var existingUser = await _context.Users.FindAsync(userId);
+            if (existingUser == null)
+            {
+                throw new BadRequestException("Username not found");
+            }
+            existingUser.PhoneNumber = registerViewModel.PhoneNumber;
+            existingUser.Email = registerViewModel.Email;
+            existingUser.Avatar = null;
+            await _context.SaveChangesAsync();
+            return existingUser;
+        }
+
+        public async Task<bool> DeleteUser(int userId)
+        {
             var user = await _context.Users.FindAsync(userId);
+            string filePath = user.Avatar;
             if (user == null) return false;
             var sources = await _context.Sources.Where(s => s.UserId == userId).ToListAsync();
-            if(sources != null)
+            if (sources != null)
             {
                 _context.Sources.RemoveRange(sources);
             }
             var answers = await _context.Answers.Where(a => a.UserId == userId).ToListAsync();
-            if(answers != null)
+            if (answers != null)
             {
                 _context.Answers.RemoveRange(answers);
             }
             var attemps = await _context.Attemps.Where(a => a.UserId == userId).ToListAsync();
-            if(attemps != null)
+            if (attemps != null)
             {
                 _context.Attemps.RemoveRange(attemps);
             }
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
+            if (filePath != null)
+            {
+                _imageServiecs.DeleteFile(filePath);
+            }
             return true;
         }
 
@@ -129,20 +155,22 @@ namespace backend.Service
             return user;
         }
 
-        public async Task<User?> GetById(int id)
+        public async Task<ListUserDto?> GetById(int id)
         {
-            return await _context.Users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
+            return _mapper.Map<ListUserDto?>(user);
         }
 
-        public async Task<User?> GetByUsername(string username)
+        public async Task<ListUserDto?> GetByUsername(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username.Equals(username));
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.Equals(username));
+            return _mapper.Map<ListUserDto?>(user);
         }
 
-        public async Task<Tuple<Tokens,User>> Login(UserLoginDto loginViewModel)
+        public async Task<Tuple<Tokens, User>> Login(UserLoginDto loginViewModel)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginViewModel.Username);
-            
+
             if (user != null && BCrypt.Net.BCrypt.Verify(loginViewModel.Password, user.Password))
             {
                 var roleName = await _context.Roles.Where(r => r.Id == user.RoleId).Select(r => r.RoleName).FirstOrDefaultAsync();
@@ -171,7 +199,7 @@ namespace backend.Service
                 //    AccessToken = jwtToken,
                 //    RefreshToken = GenerateRefreshToken()
                 //};
-                var jwtToken = GenerateJWTTokens(user.Id.ToString(),user.RoleId.ToString());
+                var jwtToken = GenerateJWTTokens(user.Id.ToString(), user.RoleId.ToString());
                 UserRefreshTokens rfToken = new UserRefreshTokens()
                 {
                     RefreshToken = jwtToken.RefreshToken,
@@ -188,7 +216,7 @@ namespace backend.Service
                     RoleId = user.RoleId,
                     PhoneNumber = user.PhoneNumber,
                 };
-                return Tuple.Create(jwtToken,userInfo);
+                return Tuple.Create(jwtToken, userInfo);
             }
             else
             {
@@ -200,7 +228,7 @@ namespace backend.Service
         {
             var principal = GetPrincipalFromExpiredToken(tokens.AccessToken);
             var userId = int.Parse(principal.Identity.Name);
-            var user = await GetById(userId);
+            var user = await _context.Users.FindAsync(userId);
             var roleId = user.RoleId;
             var savedRefreshToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(
                 u => u.UserName == user.Username && u.RefreshToken == tokens.RefreshToken && u.IsActived == true
@@ -210,7 +238,7 @@ namespace backend.Service
                 || savedRefreshToken?.RefreshTokenExpiryTime <= DateTime.UtcNow
             )
             {
-               throw new BadRequestException( "Invalid attempt!" );
+                throw new BadRequestException("Invalid attempt!");
             }
             var newJwtToken = GenerateJWTTokens(user.Id.ToString(), roleId.ToString());
             if (newJwtToken == null)
@@ -237,7 +265,7 @@ namespace backend.Service
 
         public async Task Logout(Tokens tokens)
         {
-            var rfToken = await _context.UserRefreshTokens.FirstOrDefaultAsync( u => u.RefreshToken == tokens.RefreshToken);
+            var rfToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(u => u.RefreshToken == tokens.RefreshToken);
             if (rfToken == null)
             {
                 throw new NotFoundException("Invalid refresh token");
@@ -308,7 +336,7 @@ namespace backend.Service
             _smtpClient.Send(mailMessage);
         }
 
-        
+
 
         public async Task ChangePassword(ChangePassworkDto user)
         {
