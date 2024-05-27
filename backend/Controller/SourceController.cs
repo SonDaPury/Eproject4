@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using backend.Attributes;
 using backend.Base;
+using backend.Data;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -11,16 +12,17 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
     public class SourceController : ControllerBase
     {
         private readonly ISourceService _sourceService;
         private readonly IMapper _mapper;
+        private readonly IElasticSearchRepository _elasticsearchRepository;
 
-        public SourceController(ISourceService sourceService, IMapper mapper)
+        public SourceController(ISourceService sourceService, IMapper mapper, IElasticSearchRepository elasticSearchRepository)
         {
             _sourceService = sourceService;
             _mapper = mapper;
+            _elasticsearchRepository = elasticSearchRepository;
         }
 
         // POST: api/Sources
@@ -35,6 +37,7 @@ namespace backend.Controller
             var source = _mapper.Map<Source>(sourceDto);
             var createdSource = await _sourceService.CreateAsync(source);
             var createdSourceDto = _mapper.Map<SourceDto>(createdSource);
+
             return CreatedAtAction(nameof(GetSource), new { id = createdSource.Id }, createdSourceDto);
         }
 
@@ -54,13 +57,13 @@ namespace backend.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SourceDto>>> GetAllSources()
         {
-            var sources= await _sourceService.GetAllAsync();
+            var sources = await _sourceService.GetAllAsync();
 
             // Ánh xạ từ danh sách sources sang danh sách SourceDto
             var sourceDtos = _mapper.Map<List<SourceDto>>(sources);
 
             // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
-            return Ok( sourceDtos );
+            return Ok(sourceDtos);
         }
 
         // GET: api/Sources/5

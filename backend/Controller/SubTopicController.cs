@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using backend.Attributes;
 using backend.Base;
+using backend.Data;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -11,13 +12,12 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
     public class SubTopicController : ControllerBase
     {
         private readonly ISubTopicService _subTopicService;
         private readonly IMapper _mapper;
 
-        public SubTopicController(ISubTopicService subTopicService, IMapper mapper)
+        public SubTopicController(ISubTopicService subTopicService, IMapper mapper, IElasticSearchRepository elasticSearchRepository)
         {
             _subTopicService = subTopicService;
             _mapper = mapper;
@@ -34,6 +34,7 @@ namespace backend.Controller
             var subTopic = _mapper.Map<SubTopic>(subTopicDto);
             var createdSubTopic = await _subTopicService.CreateAsync(subTopic);
             var createdSubTopicDto = _mapper.Map<SubTopicDto>(createdSubTopic);
+
             return CreatedAtAction(nameof(GetSubTopic), new { id = createdSubTopic.Id }, createdSubTopicDto);
         }
 
@@ -51,7 +52,7 @@ namespace backend.Controller
         {
             var subTopics = await _subTopicService.GetAllAsync();
             var subTopicDtos = _mapper.Map<List<SubTopicDto>>(subTopics);
-            return Ok( subTopicDtos );
+            return Ok(subTopicDtos);
         }
 
         // GET: api/SubTopics/5
@@ -81,6 +82,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"SubTopic with ID {id} not found." });
             }
+
             return Ok(_mapper.Map<SubTopicDto>(updatedSubTopic));
         }
 
@@ -93,6 +95,8 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"SubTopic with ID {id} not found." });
             }
+
+
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
     }

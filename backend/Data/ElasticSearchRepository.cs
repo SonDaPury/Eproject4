@@ -10,50 +10,70 @@ namespace backend.Data
         {
             _client = client;
         }
-        public bool AddorUpdateData<T>(T document, string index, string id) where T : class
+        public bool AddorUpdateData<T>(T document, string id) where T : class
         {
-            var indexResponse = _client.Index(document, i => i
-    .Index("sources_index")
-    .Id(id)
-);
-            return indexResponse.IsValid;
-        }
+            try
+            {
+                var indexResponse = _client.Index(document, i => i
+              .Index("sources_index")
+              .Id(id));
+                return indexResponse.IsValid;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
-        public bool DeleIndex(string index)
-        {
-            throw new NotImplementedException();
         }
 
         public List<T> GetData<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class
         {
-            var response = _client.Search<T>(selector);
-            return response.Documents.ToList();
+            try
+            {
+                var response = _client.Search<T>(selector);
+                if (response.IsValid)
+                {
+                    return response.Documents.ToList();
+                }
+                else
+                {
+                    Console.WriteLine($"Search failed: {response.ServerError.Error.Reason}");
+                    return new List<T>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception occurred: {ex.Message}");
+                return new List<T>();
+            }
         }
 
-        public bool RemoveDocument(string index, string id)
+
+        public bool RemoveDocument(string id, string index = "sources_index")
         {
             var response = _client.Delete(new DeleteRequest(index, id));
             return response.IsValid;
         }
 
-        public bool RemoveChildrenDocumentByScript()
+        public bool UpdateScript(string id, Func<UpdateDescriptor<object, object>, IUpdateRequest<object, object>> selector)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var response = _client.Update<object>(id, selector);
+                if (response.IsValid)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
-        public bool AddData<T>(T document, string key) where T : class
-        {
-            throw new NotImplementedException();
-        }
-
-        public T GetData<T>(string id, string key) where T : class
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<T> SearchData<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class
-        {
-            throw new NotImplementedException();
-        }
     }
 }
