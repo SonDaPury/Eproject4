@@ -7,6 +7,7 @@ import "swiper/css/navigation";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@emotion/react";
 import FilterPanel from "@eproject4/components/FilterPanel";
+import PaginationTemp from "@eproject4/components/PaginationTemp";
 
 const ListCourses = () => {
   // Roters
@@ -37,15 +38,6 @@ const ListCourses = () => {
   const ViewStudent = filteredData.sort((a, b) => b.views - a.views);
 
   const TopCourse = ViewStudent.slice(0, 5);
-
-  // Màu phân trang
-  const theme = createTheme({
-    palette: {
-      primary: {
-        main: "##FF6636", // Màu cam
-      },
-    },
-  });
 
   return (
     <Box sx={{ maxWidth: "1320px", margin: "auto" }}>
@@ -82,17 +74,7 @@ const ListCourses = () => {
             ))}
           </Box>
 
-          <ThemeProvider theme={theme}>
-            <Stack
-              spacing={2}
-              sx={{
-                justifyContent: "center",
-                alignItems: "center",
-                margin: "45px 0px",
-              }}>
-              <Pagination count={10} color="primary" />
-            </Stack>
-          </ThemeProvider>
+          <PaginationTemp />
         </Box>
       </Box>
     </Box>
