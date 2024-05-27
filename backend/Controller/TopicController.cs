@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using backend.Attributes;
 using backend.Base;
+using backend.Data;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Nest;
 
 namespace backend.Controller
 {
@@ -17,10 +19,12 @@ namespace backend.Controller
     {
         private readonly ITopicService _topicService;
         private readonly IMapper _mapper;
-        public TopicController(ITopicService topicService, IMapper mapper)
+        private readonly IElasticSearchRepository elasticSearchRepository;
+        public TopicController(ITopicService topicService, IMapper mapper, IElasticSearchRepository _elasticSearchRepository)
         {
             _topicService = topicService;
             _mapper = mapper;
+            elasticSearchRepository = _elasticSearchRepository;
         }
 
         // POST: api/Topics
@@ -28,25 +32,26 @@ namespace backend.Controller
         [AllowAnonymous]
         public async Task<ActionResult<Topic>> CreateTopic([FromBody] TopicDto topicDto)
         {
-            try
+            if (topicDto == null)
             {
-                if (topicDto == null)
-                {
-                    return BadRequest(new { message = "Topic data is required" });
-                }
-                var data = _mapper.Map<Topic>(topicDto);
-                var createdTopic = await _topicService.CreateAsync(data);
-                return CreatedAtAction("GetTopic", new { id = createdTopic.Id }, createdTopic);
-            }catch (Exception ex)
-            {
-                return BadRequest(new {message = ex.Message});
+                return BadRequest(new { message = "Topic data is required" });
             }
+            var data = _mapper.Map<Topic>(topicDto);
+            var createdTopic = await _topicService.CreateAsync(data);
+            var topicelasticSearch = new TopicElasticSearch
+            {
+                TopicId = createdTopic.Id,
+                TopicName = createdTopic.TopicName,
+                subTopics = new List<SubTopcElasticSearch>()
+            };
+            bool checkElastic = elasticSearchRepository.AddorUpdateData<TopicElasticSearch>(topicelasticSearch, topicelasticSearch.TopicId.ToString());
+            return CreatedAtAction("GetTopic", new { id = createdTopic.Id }, createdTopic);
         }
 
         // GET: api/Topics
         [HttpGet("pagination")]
         //[JwtAuthorize("user")]
-        public async Task<IActionResult> GetAllTopics([FromQuery]Pagination pagination)
+        public async Task<IActionResult> GetAllTopics([FromQuery] Pagination pagination)
         {
             var topics = await _topicService.GetAllAsync(pagination);
             var topicDto = _mapper.Map<List<TopicDto>>(topics.Item1);
@@ -70,6 +75,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Topic with ID {id} not found." });
             }
+
             return Ok(topicDto);
         }
 
@@ -77,7 +83,7 @@ namespace backend.Controller
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTopic(int id, [FromBody] TopicDto topicDto)
         {
-            if (topicDto == null )
+            if (topicDto == null)
             {
                 return BadRequest(new { message = "Invalid topic data" });
             }
@@ -87,6 +93,9 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Topic with ID {id} not found." });
             }
+            var check = elasticSearchRepository.UpdateScript(id.ToString(), u => u.Index("sources_index")
+            .Script(s => s.Source($"ctx._source.TopicName = params.newValue")
+            .Params(p => p.Add("newValue", topicDto.TopicName))));
             return Ok(updatedTopic);
         }
 
@@ -99,7 +108,8 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Topic with ID {id} not found." });
             }
-            return Ok(new {mesage = "delete successfuly !!!"});
+            bool check = elasticSearchRepository.RemoveDocument(id.ToString());
+            return Ok(new { mesage = "delete successfuly !!!" });
         }
     }
 }
