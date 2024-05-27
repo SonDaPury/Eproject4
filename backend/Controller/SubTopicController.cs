@@ -12,7 +12,6 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
     public class SubTopicController : ControllerBase
     {
         private readonly ISubTopicService _subTopicService;
@@ -37,14 +36,7 @@ namespace backend.Controller
             var subTopic = _mapper.Map<SubTopic>(subTopicDto);
             var createdSubTopic = await _subTopicService.CreateAsync(subTopic);
             var createdSubTopicDto = _mapper.Map<SubTopicDto>(createdSubTopic);
-            _elasticsearchRepository.UpdateScript(createdSubTopic.Id.ToString(), u => u.Index("sources_index")
-            .Script(s => s.Source("ctx._source.subTopics.add(params.subtopic)")
-            .Params(p => p.Add("subTopics", new SubTopcElasticSearch
-            {
-                SubTopicId = subTopicDto.Id,
-                SubTopicName = subTopicDto.SubTopicName,
-                sources = new List<SourcesElasticSearch>()
-            }))));
+
             return CreatedAtAction(nameof(GetSubTopic), new { id = createdSubTopic.Id }, createdSubTopicDto);
         }
 
@@ -92,26 +84,6 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"SubTopic with ID {id} not found." });
             }
-            var scriptSource = @"
-    for (int i = 0; i < ctx._source.subTopics.size(); i++) {
-        if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) {
-            ctx._source.subTopics[i].SubTopicName = params.SubTopicName;
-        }
-    }";
-
-            var scriptParams = new Dictionary<string, object>
-{
-    { "SubTopicId", updatedSubTopic.Id },
-    { "SubTopicName", updatedSubTopic.SubTopicName }
-};
-
-            var updateResponse = _elasticsearchRepository.UpdateScript(updatedSubTopic.TopicId.ToString(), u => u
-                .Index("sources_index")
-                .Script(s => s
-                    .Source(scriptSource)
-                    .Params(scriptParams)
-                )
-            );
 
             return Ok(_mapper.Map<SubTopicDto>(updatedSubTopic));
         }
@@ -125,9 +97,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"SubTopic with ID {id} not found." });
             }
-            var script = "ctx._source.subTopics.removeIf(subTopic -> subTopic.SubTopicId == params.Id)";
-            bool check = _elasticsearchRepository.UpdateScript(id.ToString(), u => u.Index("sources_index")
-               .Script(s => s.Source(script).Params(p => p.Add("Id", id))));
+
 
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
