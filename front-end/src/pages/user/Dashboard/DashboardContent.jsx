@@ -23,14 +23,6 @@ import LibraryAddCheckIcon from "@mui/icons-material/LibraryAddCheck";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
 export default function DashboardContent() {
-  const DashboardCard = styled(Box)(({ theme }) => ({
-    backgroundColor: "#fff",
-    borderRadius: theme.shape.borderRadius,
-    padding: theme.spacing(2),
-    textAlign: "center",
-    boxShadow: theme.shadows[1],
-  }));
-
   const courses = [
     {
       title: "Kevin Lee's UI/UX Master/Teacher Program",
@@ -98,8 +90,16 @@ export default function DashboardContent() {
                     backgroundColor: stat.bg,
                   }}
                   elevation={3}>
-                  <Card sx={{ width: "60px", height: "60px", display:"flex",justifyContent:"center",alignItems:"center",marginRight:"24px" }}>
-                    <Box >{stat.icon}</Box>
+                  <Card
+                    sx={{
+                      width: "60px",
+                      height: "60px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginRight: "24px",
+                    }}>
+                    <Box>{stat.icon}</Box>
                   </Card>
 
                   <Box>

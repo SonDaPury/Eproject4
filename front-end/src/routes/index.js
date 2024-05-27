@@ -10,6 +10,7 @@ import Register from "@eproject4/pages/auth/Register";
 import Topic from "@eproject4/pages/admin/Topic/Topic.jsx";
 import Dashboard from "@eproject4/pages/admin/Dashboard";
 import SubTopic from "@eproject4/pages/admin/SubTopic";
+import UserDashboard from "@eproject4/pages/user/Dashboard";
 
 // Route khong can login van xem duoc
 export const publicRoutes = [
@@ -25,7 +26,7 @@ export const publicRoutes = [
 
 // Route can login moi xem duoc
 export const privateRoutes = [
-  { path: "/dashboard-student", component: Dashboard },
+  { path: "/dashboard-student", component: UserDashboard },
 ];
 
 // Route chi danh cho admin
