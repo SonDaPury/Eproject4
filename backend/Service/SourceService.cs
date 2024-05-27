@@ -3,6 +3,9 @@ using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Text;
 
 namespace backend.Service
 {
@@ -12,6 +15,7 @@ namespace backend.Service
 
         public async Task<Source> CreateAsync(Source source)
         {
+            source.Slug = GenerateSlug(source.Title);
             _context.Sources.Add(source);
             await _context.SaveChangesAsync();
             return source;
@@ -70,7 +74,7 @@ namespace backend.Service
             source.Title = updatedSource.Title;
             source.Description = updatedSource.Description;
             source.Thumbnail = updatedSource.Thumbnail;
-            source.Slug = updatedSource.Slug;
+            source.Slug = GenerateSlug(updatedSource.Title);
             source.Status = updatedSource.Status;
             source.Benefit = updatedSource.Benefit;
             source.Requirement = updatedSource.Requirement;
@@ -119,6 +123,26 @@ namespace backend.Service
         Task<List<Source>> IService<Source>.GetAllAsync()
         {
             throw new NotImplementedException();
+        }
+        private static string GenerateSlug(string title)
+        {
+            string normalizedString = title.Normalize(NormalizationForm.FormD);
+            StringBuilder stringBuilder = new();
+
+            foreach (var c in normalizedString)
+            {
+                UnicodeCategory unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            string cleanStr = stringBuilder.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+            string slug = Regex.Replace(cleanStr, @"\s+", "-"); // Replace spaces with hyphens
+            slug = Regex.Replace(slug, @"[^a-z0-9\s-]", ""); // Remove all non-alphanumeric characters except hyphens
+
+            return slug;
         }
     }
 
