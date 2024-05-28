@@ -17,7 +17,7 @@ namespace backend.Dtos
         public int SubTopicId { get; set; }
         [PropertyName("SubTopicName")]
         public required string SubTopicName { get; set; }
-        public required List<SourcesElasticSearch> sources { get; set; }
+        public List<SourcesElasticSearch>? sources { get; set; }
     }
     public class SourcesElasticSearch
     {
@@ -32,13 +32,13 @@ namespace backend.Dtos
         [PropertyName("Slug")]
         public string Slug { get; set; } = "";
         [PropertyName("Status")]
-        public int Status { get; set; }
+        public int? Status { get; set; }
         [PropertyName("Benefit")]
-        public string Benefit { get; set; } = "";
+        public string? Benefit { get; set; } = "abc";
         [PropertyName("Video_intro")]
         public string Video_intro { get; set; } = "";
         [PropertyName("Price")]
-        public double Price { get; set; }
+        public double? Price { get; set; }
         [PropertyName("Rating")]
         public string Rating { get; set; } = "";
         [PropertyName("UserId")]

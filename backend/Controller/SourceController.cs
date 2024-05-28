@@ -12,7 +12,6 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
     public class SourceController : ControllerBase
     {
         private readonly ISourceService _sourceService;

@@ -1,4 +1,5 @@
 ﻿using backend.Dtos;
+using backend.Entities;
 using Nest;
 
 namespace backend.Data
@@ -28,16 +29,40 @@ namespace backend.Data
 
         public List<T> GetData<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class
         {
+            var list = new List<T>();
             try
             {
                 var response = _client.Search<T>(selector);
                 if (response.IsValid)
                 {
-                    return response.Documents.ToList();
+                    var hits = response.Hits;
+                    foreach (var hit in hits)
+                    {
+                        var innerHits = hit.InnerHits;
+                        if (innerHits.ContainsKey("filtered_subTopics"))
+                        {
+                            var filteredSubTopicsHits = innerHits["filtered_subTopics"].Hits;
+                            foreach (var subTopicHit in filteredSubTopicsHits.Hits)
+                            {
+                                if (subTopicHit.InnerHits.ContainsKey("filtered_sources"))
+                                {
+                                    var filteredSourcesHits = subTopicHit.InnerHits["filtered_sources"].Hits;
+                                    for (int i = 0; i < filteredSourcesHits.Hits.Count; i++)
+                                    {
+                                        var sourceHit = filteredSourcesHits.Hits[i];
+                                        var source = sourceHit.Source.As<T>();
+                                        list.Add(source);
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    return list;
                 }
                 else
                 {
-                    Console.WriteLine($"Search failed: {response.ServerError.Error.Reason}");
+                    Console.WriteLine($"Search failed: {response.ServerError?.Error?.Reason ?? "Unknown error"}");
                     return new List<T>();
                 }
             }
@@ -47,6 +72,7 @@ namespace backend.Data
                 return new List<T>();
             }
         }
+
 
 
         public bool RemoveDocument(string id, string index = "sources_index")
