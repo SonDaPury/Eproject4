@@ -53,7 +53,7 @@ namespace backend.Controller
             var exam = _mapper.Map<Exam>(examDto);
             var createdExam = await _examService.CreateAsync(exam,index);
             var createdExamDto = _mapper.Map<ExamDto>(createdExam);
-            return CreatedAtAction(nameof(GetExam), new { id = createdExamDto.Id }, createdExamDto);
+            return CreatedAtAction(nameof(GetExam), new { id = createdExam.Id }, createdExamDto);
         }
 
         // GET: api/Exams

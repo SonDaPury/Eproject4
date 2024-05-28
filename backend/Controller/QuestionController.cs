@@ -36,7 +36,7 @@ namespace backend.Controller
             //var question = _mapper.Map<Question>(questionDto);
             var createdQuestion = await _questionService.CreateAsync(questionDto);
             //var createdQuestionDto = _mapper.Map<QuestionDto>(createdQuestion);
-            return CreatedAtAction(nameof(GetQuestion), new { id = createdQuestion.Id }, createdQuestion);
+            return Ok(createdQuestion);
         }
 
         // GET: api/Questions

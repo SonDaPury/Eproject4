@@ -50,7 +50,7 @@ namespace backend.Entities
         public virtual User? User { get; set; }
 
         [Column("sub_topic_id")]
-        public int SubTopicId { get; set; }
+        public int? SubTopicId { get; set; }
         public virtual SubTopic? SubTopic { get; set; }
 
 
