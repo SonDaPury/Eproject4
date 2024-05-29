@@ -26,6 +26,8 @@ namespace backend.Extentions
             CreateMap<QuizQuestion, QuizQuestionDto>().ReverseMap();
 
             CreateMap<Source, SourceDto>().ReverseMap();
+            CreateMap<Source, SourceViewDto>().ReverseMap();
+            CreateMap<SourceViewDto,SourceWithTopicId>().ReverseMap();
 
             CreateMap<SubTopic, SubTopicDto>().ReverseMap();
 

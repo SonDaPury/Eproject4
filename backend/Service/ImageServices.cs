@@ -2,7 +2,7 @@
 
 namespace backend.Service
 {
-    public class ImageServices : IimageServiecs
+    public class ImageServices : IimageServices
     {
         private readonly IWebHostEnvironment _env;
         public ImageServices(IWebHostEnvironment env)
@@ -29,11 +29,12 @@ namespace backend.Service
             string fullFileName = newFileName + fileExtension;
             return fullFileName;
         }
-        public string AddFile(IFormFile file)
+        public string AddFile(IFormFile file,string rootFolder, string subFolder)
         {
             try
             {
-                string rootPath = GetRootPath();
+                //string subFolder = fileType;
+                string rootPath = Path.Combine(GetRootPath(),rootFolder, subFolder);
                 if (!Directory.Exists(rootPath))
                 {
                     Directory.CreateDirectory(rootPath);
@@ -47,7 +48,10 @@ namespace backend.Service
                     // Sao chép nội dung của file vào stream
                     file.CopyTo(stream);
                 }
-                return fullPath;
+                // Lấy đường dẫn tương đối từ sau 'wwwroot'
+                //string relativePath = fullPath.Substring(_env.WebRootPath.Length).TrimStart(Path.DirectorySeparatorChar);
+                string relativePath = Path.Combine("wwwroot", fullPath.Substring(_env.WebRootPath.Length).TrimStart(Path.DirectorySeparatorChar));
+                return relativePath;
             }
             catch (Exception ex)
             {
@@ -55,17 +59,26 @@ namespace backend.Service
             }
         }
 
-        public string UpdateFile(IFormFile file, string filename)
+        //public string UpdateFile(IFormFile file, string filename,string rootFolder, string fileType)
+        //{
+        //    string fileDelete = DeleteFile(filename);
+        //    string filePath = "";
+        //    if (fileDelete != null)
+        //    {
+        //        filePath = AddFile(file,fileType);
+        //    }
+        //    return filePath;
+        //}
+        public string UpdateFile(IFormFile file, string existingFilePath, string rootFolder, string subFolder)
         {
-            string fileDelete = DeleteFile(filename);
-            string filePath = "";
-            if (fileDelete != null)
+            string fullExistingPath = Path.Combine(GetRootPath(), existingFilePath);
+            if (File.Exists(fullExistingPath))
             {
-                filePath = AddFile(file);
+                File.Delete(fullExistingPath);
             }
-            return filePath;
-        }
 
+            return AddFile(file, rootFolder, subFolder);
+        }
         public string DeleteFile(string filename)
         {
             string filePath = FilePath(filename);

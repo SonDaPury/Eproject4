@@ -135,7 +135,8 @@ builder.Services.AddCors(options =>
         .AllowAnyMethod()
         .AllowAnyHeader()
         .SetIsOriginAllowed((host) => true)
-        .AllowCredentials());
+        .AllowCredentials()
+        .WithOrigins("http://localhost:5187", "https://localhost:7240"));
 });
 builder.Services.AddSignalR();
 

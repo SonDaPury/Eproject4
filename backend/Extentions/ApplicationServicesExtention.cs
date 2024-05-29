@@ -29,7 +29,7 @@ namespace backend.Extentions
             */
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISerialService, SerialService>();
-            services.AddScoped<IimageServiecs, ImageServices>();
+            services.AddScoped<IimageServices, ImageServices>();
             services.AddAutoMapper(typeof(CreateAutoMapper));
 
             services.Configure<ApiBehaviorOptions>(options =>
