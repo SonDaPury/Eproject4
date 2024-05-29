@@ -5,9 +5,11 @@ namespace backend.Service
     public class ImageServices : IimageServices
     {
         private readonly IWebHostEnvironment _env;
-        public ImageServices(IWebHostEnvironment env)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public ImageServices(IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
         {
             _env = env;
+            _httpContextAccessor = httpContextAccessor;
         }
         private string GetRootPath()
         {
@@ -49,8 +51,8 @@ namespace backend.Service
                     file.CopyTo(stream);
                 }
                 // Lấy đường dẫn tương đối từ sau 'wwwroot'
-                //string relativePath = fullPath.Substring(_env.WebRootPath.Length).TrimStart(Path.DirectorySeparatorChar);
-                string relativePath = Path.Combine("wwwroot", fullPath.Substring(_env.WebRootPath.Length).TrimStart(Path.DirectorySeparatorChar));
+                string relativePath = fullPath.Substring(_env.WebRootPath.Length).TrimStart(Path.DirectorySeparatorChar);
+                //string relativePath = Path.Combine("wwwroot", fullPath.Substring(_env.WebRootPath.Length).TrimStart(Path.DirectorySeparatorChar));
                 return relativePath;
             }
             catch (Exception ex)
@@ -87,6 +89,23 @@ namespace backend.Service
                 File.Delete(filePath);
             }
             return filename;
+        }
+        public string GetFile(string relativePath)
+        {
+            string fullPath = FilePath(relativePath);
+            if (File.Exists(fullPath))
+            {
+                var request = _httpContextAccessor.HttpContext.Request;
+                string baseUrl = $"{request.Scheme}://{request.Host}";
+
+                // Loại bỏ phần 'wwwroot' khỏi đường dẫn tập tin để tạo URL
+                string cleanedPath = fullPath.Replace(_env.WebRootPath + "\\", "").Replace('\\', '/');
+                return $"{baseUrl}/{cleanedPath}";
+            }
+            else
+            {
+                throw new FileNotFoundException("File not found at the specified path.", fullPath);
+            }
         }
     }
 }
