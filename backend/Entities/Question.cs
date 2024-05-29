@@ -16,9 +16,9 @@ namespace backend.Entities
         [Column("image")]
         public string? Image { get; set; }
 
-        [Column("static_folder")]
-        [StringLength(20)]
-        public string? StaticFolder { get; set; }
+        //[Column("static_folder")]
+        //[StringLength(20)]
+        //public string? StaticFolder { get; set; }
         public ICollection<QuizQuestion>? QuizQuestions { get; set; }
         public ICollection<Option>? Options { get; set; }
     }

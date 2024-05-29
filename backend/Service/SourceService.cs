@@ -6,16 +6,23 @@ using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
 using Nest;
 using System.Reflection.Metadata;
-
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Text;
+using backend.Dtos;
+using AutoMapper;
 namespace backend.Service
 {
-    public class SourceService(LMSContext context, IElasticSearchRepository elasticsearchRepository) : ISourceService
+    public class SourceService(LMSContext context, IElasticSearchRepository elasticsearchRepository, IMapper mapper) : ISourceService
     {
         private readonly LMSContext _context = context;
         private readonly IElasticSearchRepository _elasticsearchRepository = elasticsearchRepository;
-
-        public async Task<Source> CreateAsync(Source source)
+        private readonly IMapper _mapper = mapper;
+     
+        public async Task<Source> CreateAsync(SourceDto sourceDto)
         {
+            sourceDto.Slug = GenerateSlug(sourceDto.Title);
+            var source = _mapper.Map<Source>(sourceDto);
             _context.Sources.Add(source);
             try
             {
@@ -115,7 +122,7 @@ namespace backend.Service
             source.Title = updatedSource.Title;
             source.Description = updatedSource.Description;
             source.Thumbnail = updatedSource.Thumbnail;
-            source.Slug = updatedSource.Slug;
+            source.Slug = GenerateSlug(updatedSource.Title);
             source.Status = updatedSource.Status;
             source.Benefit = updatedSource.Benefit;
             source.Requirement = updatedSource.Requirement;
@@ -124,7 +131,7 @@ namespace backend.Service
             source.Rating = updatedSource.Rating;
             source.UserId = updatedSource.UserId;
             source.SubTopicId = updatedSource.SubTopicId;
-            source.StaticFolder = updatedSource.StaticFolder;
+            //source.StaticFolder = updatedSource.StaticFolder;
 
             // Lưu các thay đổi vào cơ sở dữ liệu
             int check = await _context.SaveChangesAsync();
@@ -230,6 +237,31 @@ namespace backend.Service
         }
 
         Task<Source?> IService<Source>.GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+        private static string GenerateSlug(string title)
+        {
+            string normalizedString = title.Normalize(NormalizationForm.FormD);
+            StringBuilder stringBuilder = new();
+
+            foreach (var c in normalizedString)
+            {
+                UnicodeCategory unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            string cleanStr = stringBuilder.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+            string slug = Regex.Replace(cleanStr, @"\s+", "-"); // Replace spaces with hyphens
+            slug = Regex.Replace(slug, @"[^a-z0-9\s-]", ""); // Remove all non-alphanumeric characters except hyphens
+
+            return slug;
+        }
+
+        public Task<Source> CreateAsync(Source chapter)
         {
             throw new NotImplementedException();
         }

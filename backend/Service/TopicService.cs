@@ -14,6 +14,8 @@ namespace backend.Service
         // Tạo mới một topic
         public async Task<Topic> CreateAsync(Topic topic)
         {
+            var existtopic = _context.Topics.FirstOrDefault(t => t.TopicName == topic.TopicName);
+            if (existtopic != null) throw new Exception("topic name is exist");
             _context.Topics.Add(topic);
             await _context.SaveChangesAsync();
             return topic;

@@ -41,16 +41,16 @@ namespace backend.Entities
         public string? Rating { get; set; }
 
 
-        [Column("static_folder")]
-        [StringLength(20)]
-        public string? StaticFolder { get; set; }
+        //[Column("static_folder")]
+        //[StringLength(20)]
+        //public string? StaticFolder { get; set; }
 
         [Column("user_id")]
         public int UserId { get; set; }
         public virtual User? User { get; set; }
 
         [Column("sub_topic_id")]
-        public int SubTopicId { get; set; }
+        public int? SubTopicId { get; set; }
         public virtual SubTopic? SubTopic { get; set; }
 
 

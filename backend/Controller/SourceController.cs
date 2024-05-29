@@ -27,7 +27,7 @@ namespace backend.Controller
 
         // POST: api/Sources
         [HttpPost]
-        public async Task<ActionResult<SourceDto>> CreateSource([FromBody] SourceDto sourceDto)
+        public async Task<ActionResult<SourceDto>> CreateSource([FromForm] SourceDto sourceDto)
         {
             if (sourceDto == null)
             {
@@ -81,7 +81,7 @@ namespace backend.Controller
 
         // PUT: api/Sources/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSource(int id, [FromBody] SourceDto sourceDto)
+        public async Task<IActionResult> UpdateSource(int id, [FromForm] SourceDto sourceDto)
         {
             if (sourceDto == null)
             {

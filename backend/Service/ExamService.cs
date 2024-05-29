@@ -132,41 +132,27 @@ namespace backend.Service
             var endTime = DateTime.UtcNow.AddMinutes(exam.TimeLimit);
             //var endTime = DateTime.UtcNow.AddMinutes(2);
             _continueExam = true;
-
-            //while (DateTime.UtcNow < endTime && _continueExam == true)
-            //{
-            //    var remainingTime = endTime - DateTime.UtcNow;
-            //    var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
-            //    await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
-            //    await Task.Delay(1000);
-            //}
-            //exam.IsStarted = false;
-            //await _context.SaveChangesAsync();
-            //if (!_continueExam)
-            //{
-            //    await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
-            //}
-            System.Timers.Timer timer = new System.Timers.Timer(1000);
-            timer.Elapsed += async (sender, e) => {
-                if (DateTime.UtcNow >= endTime || !_continueExam)
-                {
-                    timer.Stop();
-                    exam.IsStarted = false;
-                    await _context.SaveChangesAsync();
-                    if (!_continueExam)
-                    {
-                        await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
-                    }
-                    timer.Dispose();
-                }
-                else
-                {
-                    var remainingTime = endTime - DateTime.UtcNow;
-                    var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
-                    await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
-                }
-            };
-            timer.Start();
+            //System.Timers.Timer timer = new System.Timers.Timer(1000);
+            //timer.Elapsed += async (sender, e) => {
+            //    if (DateTime.UtcNow >= endTime || !_continueExam)
+            //    {
+            //        timer.Stop();
+            //        exam.IsStarted = false;
+            //        await _context.SaveChangesAsync();
+            //        if (!_continueExam)
+            //        {
+            //            //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
+            //        }
+            //        timer.Dispose();
+            //    }
+            //    else
+            //    {
+            //        var remainingTime = endTime - DateTime.UtcNow;
+            //        var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
+            //        //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
+            //    }
+            //};
+            //timer.Start();
         }
 
 
@@ -179,8 +165,7 @@ namespace backend.Service
             var exam = await _context.Exams.FindAsync(examId);
             var userConnection = await _context.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
             if (exam == null || userConnection == null) throw new Exception("Exam or User not found");
-            await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
-            //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("DisconnectClient");
+            //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
             userConnection.DisconnectedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             if (userConnection.DisconnectedAt.HasValue)
