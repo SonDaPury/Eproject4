@@ -6,9 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Service
 {
-    public class TopicService(LMSContext context) : ITopicService
+    public class TopicService(LMSContext context, IElasticSearchRepository elasticSearchRepository) : ITopicService
     {
         private readonly LMSContext _context = context;
+        private readonly IElasticSearchRepository _elasticSearchRepository = elasticSearchRepository;
 
         // Tạo mới một topic
         public async Task<Topic> CreateAsync(Topic topic)
@@ -25,12 +26,12 @@ namespace backend.Service
         }
 
         // Lấy danh sách tất cả topics
-        public async Task<(List<Topic>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<Topic>, int)> GetAllAsync(Pagination pagination)
         {
             var topics = await _context.Topics
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                
+
                 .ToListAsync();
             var count = await _context.Topics.CountAsync();
             return (topics, count);
