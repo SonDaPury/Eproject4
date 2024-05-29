@@ -6,16 +6,20 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text;
+using backend.Dtos;
+using AutoMapper;
 
 namespace backend.Service
 {
-    public class SourceService(LMSContext context) : ISourceService
+    public class SourceService(LMSContext context, IMapper mapper) : ISourceService
     {
         private readonly LMSContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
-        public async Task<Source> CreateAsync(Source source)
+        public async Task<Source> CreateAsync(SourceDto sourceDto)
         {
-            source.Slug = GenerateSlug(source.Title);
+            sourceDto.Slug = GenerateSlug(sourceDto.Title);
+            var source = _mapper.Map<Source>(sourceDto);
             _context.Sources.Add(source);
             await _context.SaveChangesAsync();
             return source;
@@ -34,7 +38,7 @@ namespace backend.Service
                  .ToListAsync();
         }
 
-        public async Task<(List<SourceWithTopicId>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<SourceWithTopicId>, int)> GetAllAsync(Pagination pagination)
         {
             var sources = await _context.Sources
                  //.Include(s => s.User)
@@ -44,7 +48,7 @@ namespace backend.Service
                      Source = s,
                      TopicId = s.SubTopic.TopicId
                  })
-                 //.Include(s => s.Chapters)
+                //.Include(s => s.Chapters)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                  .Take(pagination.PageSize)
                 .ToListAsync();
@@ -83,7 +87,7 @@ namespace backend.Service
             source.Rating = updatedSource.Rating;
             source.UserId = updatedSource.UserId;
             source.SubTopicId = updatedSource.SubTopicId;
-            source.StaticFolder = updatedSource.StaticFolder;
+            //source.StaticFolder = updatedSource.StaticFolder;
 
             await _context.SaveChangesAsync();
             return source;
@@ -143,6 +147,11 @@ namespace backend.Service
             slug = Regex.Replace(slug, @"[^a-z0-9\s-]", ""); // Remove all non-alphanumeric characters except hyphens
 
             return slug;
+        }
+
+        public Task<Source> CreateAsync(Source chapter)
+        {
+            throw new NotImplementedException();
         }
     }
 

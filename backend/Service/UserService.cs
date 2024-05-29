@@ -63,7 +63,7 @@ namespace backend.Service
                 throw new BadRequestException("Email already exists");
             }
 
-            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.Equals("user", StringComparison.CurrentCultureIgnoreCase)); 
+            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.ToLower().Equals( "user")); 
 
             var newUser = new User
             {
@@ -93,7 +93,7 @@ namespace backend.Service
             {
                 throw new BadRequestException("Email already exists");
             }
-            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.Equals("admin", StringComparison.CurrentCultureIgnoreCase));
+            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.ToLower().Equals("admin"));
             var newUser = new User
             {
                 Username = registerViewModel.Username,
