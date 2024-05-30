@@ -6,11 +6,11 @@ namespace backend.Service.Interface
 {
     public interface IQuestionService
     {
-        Task<QuestionDto> CreateAsync(QuestionDto questionDto);
+        Task<Question> CreateAsync(QuestionDto questionDto);
         Task<bool> DeleteAsync(int id);
-        Task<List<QuestionDto>> GetAllAsync();
-        Task<(List<QuestionDto>, int)> GetAllAsync(Pagination pagination);
-        Task<QuestionDto?> GetByIdAsync(int id);
-        Task<QuestionDto?> UpdateAsync(int id, QuestionDto updatedQuestion);
+        Task<List<QuestionViewModel>> GetAllAsync();
+        Task<(List<QuestionViewModel>, int)> GetAllAsync(Pagination pagination);
+        Task<QuestionViewModel?> GetByIdAsync(int id);
+        Task<Question?> UpdateAsync(int id, QuestionDto updatedQuestion);
     }
 }

@@ -23,8 +23,9 @@ namespace backend.Service
         private readonly LMSContext _context;
         private readonly IimageServices _imageServiecs;
         private readonly IMapper _mapper;
+        private readonly IimageServices _imageServices;
 
-        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context, IimageServices imageServiecs, IMapper mapper)
+        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context, IimageServices imageServiecs, IMapper mapper, IimageServices imageServices)
         {
             _config = configuration;
             _smtpClient = new SmtpClient
@@ -42,11 +43,20 @@ namespace backend.Service
             _context = context;
             _imageServiecs = imageServiecs;
             _mapper = mapper;
+            _imageServices = imageServices;
         }
 
         public async Task<List<ListUserDto>> GetListUsers()
         {
-            var users = await _context.Users.ToListAsync();
+            var users = await _context.Users
+                .Select(u => new User
+                {
+                    Username = u.Username,
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    Avatar = u.Avatar != null ? _imageServices.GetFile(u.Avatar) : null,
+                })
+                .ToListAsync();
             return _mapper.Map<List<ListUserDto>>(users) ?? throw new NotFoundException("there are no users at all");
         }
         public async Task<User?> Create(UserRegisterDto registerViewModel)
@@ -71,7 +81,7 @@ namespace backend.Service
                 Password = BCrypt.Net.BCrypt.HashPassword(registerViewModel.Password),
                 Email = registerViewModel.Email,
                 PhoneNumber = registerViewModel.PhoneNumber,
-                Avatar = null,
+                Avatar = registerViewModel.Avatar !=null ? _imageServices.AddFile(registerViewModel.Avatar,"User","Avartar") : null,
                 RoleId = role.Id
             };
 
@@ -100,7 +110,7 @@ namespace backend.Service
                 Password = BCrypt.Net.BCrypt.HashPassword(registerViewModel.Password),
                 Email = registerViewModel.Email,
                 PhoneNumber = registerViewModel.PhoneNumber,
-                Avatar = null,
+                Avatar = registerViewModel.Avatar != null ? _imageServices.AddFile(registerViewModel.Avatar, "User", "Avartar") : null,
                 RoleId = role.Id
             };
 
@@ -118,7 +128,7 @@ namespace backend.Service
             }
             existingUser.PhoneNumber = registerViewModel.PhoneNumber;
             existingUser.Email = registerViewModel.Email;
-            existingUser.Avatar = null;
+            existingUser.Avatar = registerViewModel.Avatar != null ? _imageServices.UpdateFile(registerViewModel.Avatar,existingUser.Avatar, "User", "Avartar") : null;
             await _context.SaveChangesAsync();
             return existingUser;
         }
@@ -155,18 +165,21 @@ namespace backend.Service
         public async Task<User?> GetByEmail(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
             return user;
         }
 
         public async Task<ListUserDto?> GetById(int id)
         {
             var user = await _context.Users.FindAsync(id);
+            user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
             return _mapper.Map<ListUserDto?>(user);
         }
 
         public async Task<ListUserDto?> GetByUsername(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.Equals(username));
+            user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
             return _mapper.Map<ListUserDto?>(user);
         }
 

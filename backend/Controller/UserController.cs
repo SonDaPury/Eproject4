@@ -93,7 +93,7 @@ namespace backend.Controller
             }
         }
         [HttpPost("register-admin")]
-        public async Task<ActionResult<User>> RegisterAdminAccount([FromBody] UserRegisterDto registerViewModel)
+        public async Task<ActionResult<User>> RegisterAdminAccount([FromForm] UserRegisterDto registerViewModel)
         {
             try
             {
@@ -109,12 +109,13 @@ namespace backend.Controller
 
 
         [HttpPut("update/{userId}")]
-        public async Task<ActionResult<User>> UpdateUsser([FromForm] UserUpdateDto registerViewModel,int userId)
+        public async Task<IActionResult> UpdateUsser([FromForm] UserUpdateDto registerViewModel,int userId)
         {
             try
             {
                 var newUser = await _userService.UpdateUser(userId, registerViewModel);
-                return Ok(newUser);
+                var userUpdate = _mapper.Map<UserUpdateDto>(newUser);
+                return Ok(userUpdate);
             }
             catch (BadRequestException ex)
             {
