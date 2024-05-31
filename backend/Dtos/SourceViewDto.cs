@@ -7,7 +7,7 @@
         public string? Description { get; set; }
         public string? Thumbnail { get; set; }
         public string? Slug { get; set; }
-        public bool? Status { get; set; }
+        public int? Status { get; set; }
         public string[]? Benefit { get; set; }
         public string[]? Requirement { get; set; }
         public string? VideoIntro { get; set; }

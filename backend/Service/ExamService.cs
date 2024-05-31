@@ -90,7 +90,7 @@ namespace backend.Service
             exam.MaxQuestion = updatedExam.MaxQuestion;
             exam.Status = updatedExam.Status;
             exam.SourceId = updatedExam.SourceId;
-            exam.StaticFolder = updatedExam.StaticFolder;
+            //exam.StaticFolder = updatedExam.StaticFolder;
 
             await _context.SaveChangesAsync();
             return exam;

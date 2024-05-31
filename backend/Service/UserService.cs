@@ -165,13 +165,14 @@ namespace backend.Service
         public async Task<User?> GetByEmail(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
+            //user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
             return user;
         }
 
         public async Task<ListUserDto?> GetById(int id)
         {
             var user = await _context.Users.FindAsync(id);
+            if(user != null)
             user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
             return _mapper.Map<ListUserDto?>(user);
         }
@@ -179,7 +180,7 @@ namespace backend.Service
         public async Task<ListUserDto?> GetByUsername(string username)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.Equals(username));
-            user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
+            //user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
             return _mapper.Map<ListUserDto?>(user);
         }
 

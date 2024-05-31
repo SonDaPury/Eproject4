@@ -33,9 +33,9 @@ namespace backend.Entities
         public bool IsStarted { get; set; } = false;
 
 
-        [Column("static_folder")]
-        [StringLength(20)]
-        public string? StaticFolder { get; set; }
+        //[Column("static_folder")]
+        //[StringLength(20)]
+        //public string? StaticFolder { get; set; }
 
         [Column("source_id")]
         public int SourceId { get; set; }
