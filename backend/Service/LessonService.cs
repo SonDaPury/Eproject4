@@ -5,23 +5,72 @@ using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Net.WebSockets;
 
 namespace backend.Service
 {
-    public class LessonService(LMSContext context, IMapper mapper) : ILessonService
+    public class LessonService(IWebHostEnvironment env, LMSContext context, IMapper mapper, IimageServices iimageServices) : ILessonService
     {
         private readonly LMSContext _context = context;
         private readonly IMapper _mapper = mapper;
-
+        private readonly IWebHostEnvironment _env = env;
+        private readonly IimageServices _imageServices = iimageServices;
+        private void ProcessVideoFile(string fileVideoNameSource)
+        {
+            if (!string.IsNullOrEmpty(fileVideoNameSource))
+            {
+                string tempPath = Path.Combine(_env.WebRootPath, "Temp");
+                string newPath = Path.Combine(tempPath, fileVideoNameSource);
+                string[] filePaths = Directory.GetFiles(tempPath).Where(p => p.Contains(fileVideoNameSource)).OrderBy(p => Int32.Parse(p.Replace(fileVideoNameSource, "$").Split('$')[1])).ToArray();
+                foreach (string filePath in filePaths)
+                {
+                    MergeChunks(newPath, filePath);
+                }
+                System.IO.File.Move(Path.Combine(tempPath, fileVideoNameSource), Path.Combine(_env.WebRootPath, fileVideoNameSource));
+            }
+        }
+        private static void MergeChunks(string chunk1, string chunk2)
+        {
+            FileStream fs1 = null;
+            FileStream fs2 = null;
+            try
+            {
+                fs1 = System.IO.File.Open(chunk1, FileMode.Append);
+                fs2 = System.IO.File.Open(chunk2, FileMode.Open);
+                byte[] fs2Content = new byte[fs2.Length];
+                fs2.Read(fs2Content, 0, (int)fs2.Length);
+                fs1.Write(fs2Content, 0, (int)fs2.Length);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message + " : " + ex.StackTrace);
+            }
+            finally
+            {
+                if (fs1 != null) fs1.Close();
+                if (fs2 != null) fs2.Close();
+                System.IO.File.Delete(chunk2);
+            }
+        }
         public async Task<LessonDto> CreateAsync(LessonDto lessonDto)
         {
-            var lesson = _mapper.Map<Lesson>(lessonDto);    
+            var lesson = _mapper.Map<Lesson>(lessonDto);
+
+            // xử lý video lớn
+            if (lessonDto.FileVideoNameSource != null)
+            {
+                ProcessVideoFile(lessonDto.FileVideoNameSource);
+                lesson.Video = lessonDto.FileVideoNameSource;
+            }
             _context.Lessons.Add(lesson);
+
+
             await _context.SaveChangesAsync();
             return lessonDto;
         }
 
-        public async Task<(List<LessonDto>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<LessonDto>, int)> GetAllAsync(Pagination pagination)
         {
             var lessons = await _context.Lessons
                 //.Include(l => l.Chapter) // Include the chapter details
@@ -29,15 +78,34 @@ namespace backend.Service
                  .Take(pagination.PageSize)
                 .ToListAsync();
             var count = await _context.Lessons.CountAsync();
-            return (_mapper.Map<List<LessonDto>>(lessons),count);
+            return (_mapper.Map<List<LessonDto>>(lessons), count);
         }
-        public async Task<List<LessonDto>> GetAllAsync()
+        public async Task<object> GetAllAsync(int chapterID)
         {
-            var lessons = await _context.Lessons
-                //.Include(l => l.Chapter) // Include the chapter details
-                
-                .ToListAsync();
-            return _mapper.Map<List<LessonDto>>(lessons);
+            var query = await (from lesson in _context.Lessons
+                               join chapter in _context.Chapters on lesson.ChapterId equals chapter.Id
+                               join serial in _context.Serials on lesson.Id equals serial.LessonId
+                               where lesson.ChapterId == chapterID
+                               group new { lesson, serial } by lesson.ChapterId into g
+                               select new
+                               {
+                                   Chapter = g.Key,
+                                   Lesson = g.Select(g => new
+                                   {
+                                       id = g.lesson.Id,
+                                       index = g.serial.Index,
+                                       title = g.lesson.Title,
+                                       author = g.lesson.Author,
+                                       videoDuration = g.lesson.VideoDuration,
+                                       thumbnail = g.lesson.Thumbnail,
+                                       video = g.lesson.Video != null ? _imageServices.GetFile(g.lesson.Video) : null,
+                                       view = g.lesson.View,
+                                       status = g.lesson.Status,
+                                       exam = g.serial.ExamId
+                                   })
+                               }).ToListAsync();
+
+            return query;
         }
         public async Task<LessonDto?> GetByIdAsync(int id)
         {
@@ -49,15 +117,29 @@ namespace backend.Service
 
         public async Task<LessonDto?> UpdateAsync(int id, LessonDto updatedLesson)
         {
-            var update = _mapper.Map<Lesson>(updatedLesson);    
+            var update = _mapper.Map<Lesson>(updatedLesson);
             var lesson = await _context.Lessons.FindAsync(id);
             if (lesson == null) return null;
-
+            if (!String.IsNullOrEmpty(updatedLesson.FileVideoNameSource))
+            {
+                bool check = true;
+                if (lesson.Video != null)
+                {
+                    string result = _imageServices.DeleteFile(lesson.Video);
+                    if (result.Contains("failed"))
+                    {
+                        check = false;
+                    }
+                }
+                if (check)
+                {
+                    ProcessVideoFile(updatedLesson.FileVideoNameSource);
+                    lesson.Video = updatedLesson.FileVideoNameSource;
+                }
+            }
             lesson.Title = update.Title;
             lesson.Author = update.Author;
             lesson.VideoDuration = update.VideoDuration;
-            lesson.Thumbnail = update.Thumbnail;
-            lesson.Video = update.Video;
             lesson.View = update.View;
             lesson.Status = update.Status;
             lesson.ChapterId = update.ChapterId;
@@ -72,8 +154,24 @@ namespace backend.Service
             var lesson = await _context.Lessons.FindAsync(id);
             if (lesson == null) return false;
 
+            if (!string.IsNullOrEmpty(lesson.Video))
+            {
+                string result = _imageServices.DeleteFile(lesson.Video);
+                if (result.Contains("failed"))
+                {
+                    return false;
+                }
+            }
+
+            var serials = await _context.Serials.FirstOrDefaultAsync(s => s.LessonId == id);
+            if (serials != null)
+            {
+                _context.Serials.Remove(serials);
+            }
+
             _context.Lessons.Remove(lesson);
             await _context.SaveChangesAsync();
+
             return true;
         }
     }

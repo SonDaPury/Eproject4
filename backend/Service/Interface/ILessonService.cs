@@ -8,8 +8,8 @@ namespace backend.Service.Interface
     {
         Task<LessonDto> CreateAsync(LessonDto lessonDto);
         Task<bool> DeleteAsync(int id);
-        Task<(List<LessonDto>,int)> GetAllAsync(Pagination pagination);
-        Task<List<LessonDto>> GetAllAsync();
+        Task<(List<LessonDto>, int)> GetAllAsync(Pagination pagination);
+        Task<object> GetAllAsync(int chapterID);
         Task<LessonDto?> GetByIdAsync(int id);
         Task<LessonDto?> UpdateAsync(int id, LessonDto updatedLesson);
     }

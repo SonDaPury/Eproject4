@@ -19,9 +19,9 @@ namespace backend.Service
         private readonly IExamService _examService = examService;
         private readonly IElasticSearchRepository _elasticsearchRepository = elasticsearchRepository;
 
+
         public async Task<Source> CreateAsync(SourceDto sourceDto)
         {
-            sourceDto.Slug = GenerateSlug(sourceDto.Title);
             var source = _mapper.Map<Source>(sourceDto);
             // Kiểm tra và xử lý tải lên thumbnail
             if (sourceDto.Thumbnail != null)
@@ -35,6 +35,7 @@ namespace backend.Service
                 string videoPath = _imageServices.AddFile(sourceDto.VideoIntro, "sources", "videos");
                 source.VideoIntro = videoPath;
             }
+
             _context.Sources.Add(source);
             try
             {
@@ -92,9 +93,9 @@ namespace backend.Service
                      TopicId = s.SubTopic.TopicId ?? null
                  })
                  .ToListAsync();
-            if(sources.Any())
-            foreach (var source in sources)
-            {
+            if (sources.Any())
+                foreach (var source in sources)
+                {
                     if (source.Source != null)
                     {
                         if (source.Source.Thumbnail != null)
@@ -102,7 +103,7 @@ namespace backend.Service
                         if (source.Source.VideoIntro != null)
                             source.Source.VideoIntro = _imageServices.GetFile(source.Source.VideoIntro);
                     }
-            }
+                }
             return sources;
         }
 
