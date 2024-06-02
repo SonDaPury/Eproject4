@@ -47,7 +47,7 @@ namespace backend.Service
         {
             var chapter = await _context.Chapters.FindAsync(id);
             if (chapter == null) return null;
-
+            chapter.Index = updatedChapter.Index;
             chapter.Title = updatedChapter.Title;
             chapter.Description = updatedChapter.Description;
             //chapter.SourceId = updatedChapter.SourceId;
@@ -72,6 +72,14 @@ namespace backend.Service
             _context.Chapters.Remove(chapter);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<object> GetChapterBySourceID(int sourceID)
+        {
+            var result = await (from chapter in _context.Chapters
+                                where chapter.SourceId == sourceID
+                                select chapter).OrderBy(p => p.Index).ToListAsync();
+            return result;
         }
     }
 

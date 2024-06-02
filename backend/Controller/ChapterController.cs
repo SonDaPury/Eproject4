@@ -11,7 +11,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
+    //[JwtAuthorize("user", "admin")]
     public class ChapterController : ControllerBase
     {
         private readonly IChapterService _chapterService;
@@ -22,7 +22,16 @@ namespace backend.Controller
             _chapterService = chapterService;
             _mapper = mapper;
         }
-
+        [HttpGet("GetChapterBySourceID")]
+        public async Task<IActionResult> GetChapterBySourceID(int sourceID)
+        {
+            var chapter = await _chapterService.GetChapterBySourceID(sourceID);
+            if (chapter == null)
+            {
+                return NotFound();
+            }
+            return Ok(chapter);
+        }
         // POST: api/Chapters
         [HttpPost]
         public async Task<ActionResult<ChapterDto>> CreateChapter([FromBody] ChapterDto chapterDto)
@@ -40,20 +49,20 @@ namespace backend.Controller
         }
 
         // GET: api/Chapters
-        [HttpGet("pagination")]
-        public async Task<ActionResult<List<ChapterDto>>> GetAllChapters([FromQuery] Pagination pagination)
-        {
-            var (chapters, totalCount) = await _chapterService.GetAllAsync(pagination);
-            var chapterDtos = _mapper.Map<List<ChapterDto>>(chapters);
-            return Ok(new { TotalCount = totalCount, Items = chapterDtos });
-        }
+        /*      [HttpGet("pagination")]
+              public async Task<ActionResult<List<ChapterDto>>> GetAllChapters([FromQuery] Pagination pagination)
+              {
+                  var (chapters, totalCount) = await _chapterService.GetAllAsync(pagination);
+                  var chapterDtos = _mapper.Map<List<ChapterDto>>(chapters);
+                  return Ok(new { TotalCount = totalCount, Items = chapterDtos });
+              }*/
 
         [HttpGet()]
         public async Task<ActionResult<List<ChapterDto>>> GetAllChapters()
         {
             var chapters = await _chapterService.GetAllAsync();
             var chapterDtos = _mapper.Map<List<ChapterDto>>(chapters);
-            return Ok( chapterDtos );
+            return Ok(chapterDtos);
         }
         // GET: api/Chapters/5
         [HttpGet("{id}")]
