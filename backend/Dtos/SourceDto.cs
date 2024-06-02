@@ -16,5 +16,6 @@
         public int? UserId { get; set; }
         public int? SubTopicId { get; set; }
         public int? TopicId { get; set; }
+        public string? FileVideoNameSource { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using backend.Data;
+using backend.Dtos;
+using backend.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
 
@@ -17,14 +19,16 @@ namespace backend.Controller
     public class SearchController
     {
         private readonly IElasticSearchRepository _elasticSearchRepository;
-        public SearchController(IElasticSearchRepository elasticSearchRepository)
+        private readonly IimageServices _IimageServices;
+        public SearchController(IElasticSearchRepository elasticSearchRepository, IimageServices iimageServices)
         {
             _elasticSearchRepository = elasticSearchRepository;
+            _IimageServices = iimageServices;
         }
         [HttpPost]
         public async Task<object> SearchQuery([FromBody] SearchQuery searchquery)
         {
-            var result = _elasticSearchRepository.GetData<object>(s => s
+            var result = _elasticSearchRepository.GetData<SourcesElasticSearch>(s => s
     .Index("sources_index")
     .Query(q => q
         .Bool(b => b
@@ -78,13 +82,29 @@ namespace backend.Controller
                )
            )
                                                             );
+            var test = result.Select(x => new
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                Thumbnail = _IimageServices.GetFile(x.Thumbnail),
+                Slug = x.Slug,
+                Status = x.Status,
+                Benefit = x.Benefit,
+                Video_intro = _IimageServices.GetFile(x.Video_intro),
+                Price = x.Price,
+                Rating = x.Rating,
+                UserId = x.UserId
 
-            return result;
-                                                        }
+            }
+
+             ).ToList();
+            return test;
+        }
         [HttpPost("searchfulltext")]
         public async Task<object> SearchFullText(string search)
-                                                        {
-            var result = _elasticSearchRepository.GetData<object>(s => s
+        {
+            var result = _elasticSearchRepository.GetData<SourcesElasticSearch>(s => s
             .Index("sources_index")
             .From(0)
             .Size(10)
@@ -113,7 +133,23 @@ namespace backend.Controller
             )
         )
             ));
-            return result;
+            var test = result.Select(x => new
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Description = x.Description,
+                Thumbnail = _IimageServices.GetFile(x.Thumbnail),
+                Slug = x.Slug,
+                Status = x.Status,
+                Benefit = x.Benefit,
+                Video_intro = _IimageServices.GetFile(x.Video_intro),
+                Price = x.Price,
+                Rating = x.Rating,
+                UserId = x.UserId
+
+            }
+          ).ToList();
+            return test;
         }
     }
 }

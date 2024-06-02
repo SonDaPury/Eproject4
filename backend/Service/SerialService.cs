@@ -1,5 +1,6 @@
 ﻿using backend.Base;
 using backend.Data;
+using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -10,40 +11,26 @@ namespace backend.Service
     {
         private readonly LMSContext _context = context;
 
-        public async Task<Serial> CreateAsync(Serial newSerial)
+        public async Task<Serial> CreateSerial(SerialDto newSerial)
         {
-            // Xác định index lớn nhất hiện có
-            int? maxIndex = await _context.Serials.MaxAsync(s => (int?)s.Index);
-
-            // Nếu chưa có Serial nào, gán index là 0
-            if (maxIndex == null)
-            {
-                newSerial.Index = 0;
-            }
-            else
-            {
-                // Kiểm tra xem có cần phải cập nhật index của các Serial khác không
-                if (newSerial.Index <= maxIndex)
-                {
-                    // Tăng index cho tất cả các Serial có index >= giá trị index mới
-                    var serialsToUpdate = _context.Serials.Where(s => s.Index >= newSerial.Index);
-                    foreach (var serial in serialsToUpdate)
-                    {
-                        serial.Index++;
-                    }
-                }
-                else
-                {
-                    // Nếu thêm vào cuối, chỉ cần gán index là maxIndex + 1
-                    newSerial.Index = maxIndex.Value + 1;
-                }
-            }
-
-            _context.Serials.Add(newSerial);
+            var serial = new Serial();
+            serial.Index = newSerial.Index;
+            serial.LessonId = newSerial.Lesson_ID;
+            serial.ExamId = newSerial.Exam_ID;
+            _context.Serials.Add(serial);
             await _context.SaveChangesAsync();
-            return newSerial;
+            return serial;
         }
-
+        public async Task<Serial> UpdateSerial(int id, UpdateSerialDto updateSerial)
+        {
+            var serial = await _context.Serials.FindAsync(id);
+            if (serial == null) return null;
+            serial.Index = updateSerial.Index;
+            serial.LessonId = updateSerial.Lesson_ID;
+            serial.ExamId = updateSerial.Exam_ID;
+            await _context.SaveChangesAsync();
+            return serial;
+        }
         public async Task<List<Serial>> GetAllAsync()
         {
             return await _context.Serials.ToListAsync();
@@ -57,33 +44,35 @@ namespace backend.Service
 
         public async Task<Serial?> UpdateAsync(int id, Serial updatedSerial)
         {
-            var serial = await _context.Serials.FindAsync(id);
-            if (serial == null) return null;
+            /* var serial = await _context.Serials.FindAsync(id);
+             if (serial == null) return null;
 
-            if (serial.Index != updatedSerial.Index)
-            {
-                serial.Index = updatedSerial.Index;
-                serial.LessonId = updatedSerial.LessonId;
-                serial.ExamId = updatedSerial.ExamId;
+             if (serial.Index != updatedSerial.Index)
+             {
+                 serial.Index = updatedSerial.Index;
+                 serial.LessonId = updatedSerial.LessonId;
+                 serial.ExamId = updatedSerial.ExamId;
 
-                // Determine the range of indices to update
-                int minIndex = Math.Min(serial.Index, updatedSerial.Index);
-                int maxIndex = Math.Max(serial.Index, updatedSerial.Index);
+                 // Determine the range of indices to update
+                 int minIndex = Math.Min(serial.Index, updatedSerial.Index);
+                 int maxIndex = Math.Max(serial.Index, updatedSerial.Index);
 
-                var serialsToUpdate = _context.Serials
-                    .Where(s => s.Index >= minIndex && s.Index <= maxIndex && s.Id != id);
+                 var serialsToUpdate = _context.Serials
+                     .Where(s => s.Index >= minIndex && s.Index <= maxIndex && s.Id != id);
 
-                if (serial.Index > updatedSerial.Index)
-                {
-                    await serialsToUpdate.ForEachAsync(s => s.Index++);
-                }
-                else
-                {
-                    await serialsToUpdate.ForEachAsync(s => s.Index--);
-                }
-            }
-            await _context.SaveChangesAsync();
-            return serial;
+                 if (serial.Index > updatedSerial.Index)
+                 {
+                     await serialsToUpdate.ForEachAsync(s => s.Index++);
+                 }
+                 else
+                 {
+                     await serialsToUpdate.ForEachAsync(s => s.Index--);
+                 }
+             }
+             await _context.SaveChangesAsync();
+             return serial;*/
+            throw new NotImplementedException();
+
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -124,6 +113,13 @@ namespace backend.Service
         {
             throw new NotImplementedException();
         }
+
+        public Task<Serial> CreateAsync(Serial chapter)
+        {
+            throw new NotImplementedException();
+        }
+
+
 
         //public async Task UpdateIndexHightoLow (int index, int indexhigher)
         //{

@@ -11,18 +11,41 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
+    //[JwtAuthorize("user", "admin")]
     public class LessonController : ControllerBase
     {
         private readonly ILessonService _lessonService;
         private readonly IMapper _mapper;
-
-        public LessonController(ILessonService lessonService, IMapper mapper)
+        private readonly IWebHostEnvironment _env;
+        public int chunkSize;
+        private IConfiguration configuration;
+        public LessonController(IWebHostEnvironment env, IConfiguration configuration, ILessonService lessonService, IMapper mapper)
         {
             _lessonService = lessonService;
             _mapper = mapper;
+            _env = env;
+            chunkSize = 1048576 * Convert.ToInt32(configuration["ChunkSize"]);
+            this.configuration = configuration;
         }
-
+        [HttpPost("Chukedfile")]
+        public async Task<IActionResult> UploadChukedFile(string id, string fileName)
+        {
+            var chunkNumber = id;
+            var path = Path.Combine(_env.WebRootPath, "Temp", fileName + chunkNumber);
+            using (FileStream fs = System.IO.File.Create(path))
+            {
+                byte[] bytes = new byte[chunkSize];
+                int bytesRead = 0;
+                while ((bytesRead = await Request.Body.ReadAsync(bytes, 0, bytes.Length)) > 0)
+                {
+                    fs.Write(bytes, 0, bytesRead);
+                }
+            }
+            return Ok(new
+            {
+                Success = true
+            });
+        }
         // POST: api/Lessons
         [HttpPost]
         public async Task<ActionResult<LessonDto>> CreateLesson([FromBody] LessonDto lessonDto)
@@ -44,13 +67,13 @@ namespace backend.Controller
         {
             var lessons = await _lessonService.GetAllAsync(pagination);
             var lessonDtos = _mapper.Map<List<LessonDto>>(lessons.Item1);
-            return Ok(new { TotalCount = lessons.Item2 , Lessons = lessonDtos });
+            return Ok(new { TotalCount = lessons.Item2, Lessons = lessonDtos });
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<LessonDto>>> GetAllLessons()
+        public async Task<ActionResult<object>> GetAllLessons(int chapterID)
         {
-            var lessons = await _lessonService.GetAllAsync();
+            var lessons = await _lessonService.GetAllAsync(chapterID);
             //var lessonDtos = _mapper.Map<List<LessonDto>>(lessons);
             return Ok(lessons);
         }

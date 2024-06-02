@@ -31,12 +31,12 @@ namespace backend.Service
             string fullFileName = newFileName + fileExtension;
             return fullFileName;
         }
-        public string AddFile(IFormFile file,string rootFolder, string subFolder)
+        public string AddFile(IFormFile file, string rootFolder, string subFolder)
         {
             try
             {
                 //string subFolder = fileType;
-                string rootPath = Path.Combine(GetRootPath(),rootFolder, subFolder);
+                string rootPath = Path.Combine(GetRootPath(), rootFolder, subFolder);
                 if (!Directory.Exists(rootPath))
                 {
                     Directory.CreateDirectory(rootPath);
@@ -87,13 +87,14 @@ namespace backend.Service
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
+                return "failed";
             }
             return filename;
         }
         public string GetFile(string relativePath)
         {
             string fullPath = FilePath(relativePath);
-            if (File.Exists(fullPath))
+            if (!File.Exists(fullPath))
             {
                 var request = _httpContextAccessor.HttpContext.Request;
                 string baseUrl = $"{request.Scheme}://{request.Host}";

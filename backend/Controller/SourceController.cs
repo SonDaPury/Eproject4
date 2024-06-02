@@ -20,8 +20,10 @@ namespace backend.Controller
         private readonly IMapper _mapper;
         private readonly IElasticSearchRepository _elasticsearchRepository;
 
+
         public SourceController(ISourceService sourceService, IMapper mapper, IElasticSearchRepository elasticSearchRepository)
         {
+
             _sourceService = sourceService;
             _mapper = mapper;
             _elasticsearchRepository = elasticSearchRepository;
@@ -30,7 +32,7 @@ namespace backend.Controller
         // POST: api/Sources
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> CreateSource( [FromForm] SourceDto sourceDto)
+        public async Task<IActionResult> CreateSource([FromForm] SourceDto sourceDto)
         {
             try
             {
@@ -43,7 +45,8 @@ namespace backend.Controller
                 var createdSource = await _sourceService.CreateAsync(sourceDto);
                 var createdSourceDto = _mapper.Map<SourceViewDto>(createdSource);
                 return CreatedAtAction(nameof(GetSource), new { id = createdSource.Id }, createdSourceDto);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -62,7 +65,9 @@ namespace backend.Controller
 
                 // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
                 return Ok(new { TotalCount = totalCount, Items = sources });
-            }catch (Exception ex) { 
+            }
+            catch (Exception ex)
+            {
                 return BadRequest(ex.Message);
             }
         }
@@ -79,7 +84,8 @@ namespace backend.Controller
 
                 // Gửi lại response bao gồm cả danh sách SourceDto và tổng số lượng (nếu cần)
                 return Ok(sources);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -98,7 +104,8 @@ namespace backend.Controller
                 }
                 //var sourceDto = _mapper.Map<SourceViewDto>(source);
                 return Ok(source);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -118,53 +125,6 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Source with ID {id} not found." });
             }
-            var script = @"
-  for (int i = 0; i < ctx._source.subTopics.size(); i++) {
-    if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) {
-      for (int j = 0; j < ctx._source.subTopics[i].sources.size(); j++) {
-        if (ctx._source.subTopics[i].sources[j].Id == params.id) {
-          ctx._source.subTopics[i].sources[j].Title = params.Title;
-          ctx._source.subTopics[i].sources[j].Description = params.Description;
-          ctx._source.subTopics[i].sources[j].Thumbnail = params.Thumbnail;
-          ctx._source.subTopics[i].sources[j].Slug = params.Slug;
-          ctx._source.subTopics[i].sources[j].Status = params.Status;
-          ctx._source.subTopics[i].sources[j].Benefit = params.Benefit;
-          ctx._source.subTopics[i].sources[j].Video_intro = params.Video_intro;
-          ctx._source.subTopics[i].sources[j].Price = params.Price;
-          ctx._source.subTopics[i].sources[j].Rating = params.Rating;
-          ctx._source.subTopics[i].sources[j].UserId = params.UserId;
-          break;
-        }
-      }
-      break;
-    }
-  }
-";
-
-            var scriptParams = new Dictionary<string, object>
-{
-    { "SubTopicId", 102 },
-    { "id", 1008 },
-    { "Title", "Demo5 Title" },
-    { "Description", "Demo2 Description" },
-    { "Thumbnail", "demo-thumbnail.jpg" },
-    { "Slug", "demo3-slug" },
-    { "Status", 2 },
-    { "Benefit", "Demo Benefit" },
-    { "Video_intro", "demo-intro.mp4" },
-    { "Price", 0 },
-    { "Rating", "3" },
-    { "UserId", 2003 }
-};
-
-            var updateResponse = _elasticsearchRepository.UpdateScript(id.ToString(), u => u
-               .Index("sources_index")
-               .Script(s => s
-                  .Source(script)
-                  .Params(scriptParams)
-               )
-            );
-
             return Ok(_mapper.Map<SourceDto>(updatedSource));
         }
 
@@ -180,7 +140,8 @@ namespace backend.Controller
                     return NotFound(new { message = $"Source with ID {id} not found." });
                 }
                 return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
