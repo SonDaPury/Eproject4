@@ -12,6 +12,8 @@ namespace backend.Entities
 
         [Column("title")]
         public string? Title { get; set; }
+        [Column("Index")]
+        public int? Index { get; set; }
 
         [Column("description")]
         public string? Description { get; set; }
