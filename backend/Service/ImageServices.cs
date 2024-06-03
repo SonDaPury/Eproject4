@@ -94,7 +94,7 @@ namespace backend.Service
         public string GetFile(string relativePath)
         {
             string fullPath = FilePath(relativePath);
-            if (!File.Exists(fullPath))
+            if (File.Exists(fullPath))
             {
                 var request = _httpContextAccessor.HttpContext.Request;
                 string baseUrl = $"{request.Scheme}://{request.Host}";

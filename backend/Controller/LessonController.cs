@@ -48,7 +48,7 @@ namespace backend.Controller
         }
         // POST: api/Lessons
         [HttpPost]
-        public async Task<ActionResult<LessonDto>> CreateLesson([FromBody] LessonDto lessonDto)
+        public async Task<ActionResult<LessonDto>> CreateLesson([FromBody] LessonDtoCreate lessonDto)
         {
             if (lessonDto == null)
             {
@@ -93,7 +93,7 @@ namespace backend.Controller
 
         // update
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLesson(int id, [FromBody] LessonDto lessonDto)
+        public async Task<IActionResult> UpdateLesson(int id, [FromBody] LessonDtoUpdate lessonDto)
         {
             if (lessonDto == null)
             {

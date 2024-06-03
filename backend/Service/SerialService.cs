@@ -4,6 +4,7 @@ using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace backend.Service
 {
@@ -11,26 +12,83 @@ namespace backend.Service
     {
         private readonly LMSContext _context = context;
 
-        public async Task<Serial> CreateSerial(SerialDto newSerial)
+        private async Task<int?> MaxIndexByChapterId(int? chapterId)
+        {
+            var maxIndex = context.Lessons
+          .Join(context.Chapters,
+                les => les.ChapterId,
+                chapter => chapter.Id,
+                (les, chapter) => new { les, chapter })
+          .Join(context.Serials,
+                combined => combined.les.Id,
+                serial => serial.LessonId,
+                (combined, serial) => new { combined.les, combined.chapter, serial })
+          .Where(x => x.les.ChapterId == chapterId)
+          .Max(x => x.serial.Index);
+            return maxIndex;
+        }
+        private async Task<int?> MaxIndexByChapterId(int? chapterId, int lessonID)
+        {
+            var maxIndex = context.Lessons
+          .Join(context.Chapters,
+                les => les.ChapterId,
+                chapter => chapter.Id,
+                (les, chapter) => new { les, chapter })
+          .Join(context.Serials,
+                combined => combined.les.Id,
+                serial => serial.LessonId,
+                (combined, serial) => new { combined.les, combined.chapter, serial })
+          .Where(x => x.les.ChapterId == chapterId && x.les.Id != lessonID)
+          .Max(x => x.serial.Index);
+            return maxIndex;
+        }
+        private async Task<List<Serial>> GetSerialbyChpaterID(int chapterID, int Index)
+        {
+            var result = from serial in context.Serials
+                         join lesson in context.Lessons on serial.LessonId equals lesson.Id
+                         join chapter in context.Chapters on lesson.ChapterId equals chapter.Id
+                         where lesson.ChapterId == chapterID && serial.Index >= Index
+                         select (new Serial
+                         {
+                             Id = serial.Id,
+                             Index = serial.Index,
+                             LessonId = serial.LessonId,
+                             ExamId = serial.ExamId
+                         });
+
+            var serialList = await result.ToListAsync();
+            return serialList;
+        }
+        public async Task<Serial> CreateSerial(SerialDtoCreate newSerial)
         {
             var serial = new Serial();
             serial.Index = newSerial.Index;
             serial.LessonId = newSerial.Lesson_ID;
             serial.ExamId = newSerial.Exam_ID;
-            _context.Serials.Add(serial);
-            await _context.SaveChangesAsync();
+
+            if (serial.Index != null)
+            {
+                var maxIndex = await MaxIndexByChapterId(newSerial.Chapter_ID);
+
+                if (serial.Index <= maxIndex)
+                {
+                    var serialsToUpdate = await GetSerialbyChpaterID((int)newSerial.Chapter_ID, serial.Index ?? 0);
+
+                    serialsToUpdate.ForEach(s => s.Index++);
+                    _context.UpdateRange(serialsToUpdate);
+
+                }
+                else
+                {
+                    serial.Index = maxIndex ?? 0 + 1;
+                }
+                _context.Serials.Add(serial);
+                await context.SaveChangesAsync();
+            }
+
             return serial;
         }
-        public async Task<Serial> UpdateSerial(int id, UpdateSerialDto updateSerial)
-        {
-            var serial = await _context.Serials.FindAsync(id);
-            if (serial == null) return null;
-            serial.Index = updateSerial.Index;
-            serial.LessonId = updateSerial.Lesson_ID;
-            serial.ExamId = updateSerial.Exam_ID;
-            await _context.SaveChangesAsync();
-            return serial;
-        }
+
         public async Task<List<Serial>> GetAllAsync()
         {
             return await _context.Serials.ToListAsync();
@@ -41,112 +99,150 @@ namespace backend.Service
             return await _context.Serials
                 .FirstOrDefaultAsync(st => st.Id == id);
         }
-
-        public async Task<Serial?> UpdateAsync(int id, Serial updatedSerial)
+        private async Task<List<Serial>> GetSerialByChapterID(int chapter_ID, int minIndex, int maxIndex, int serialID)
         {
-            /* var serial = await _context.Serials.FindAsync(id);
-             if (serial == null) return null;
+            var result = from serial in context.Serials
+                         join lesson in context.Lessons on serial.LessonId equals lesson.Id
+                         join chapter in context.Chapters on lesson.ChapterId equals chapter.Id
+                         where lesson.ChapterId == chapter_ID && serial.Index >= minIndex && serial.Index <= maxIndex && serial.Id != serialID
+                         select (new Serial
+                         {
+                             Id = serial.Id,
+                             Index = serial.Index,
+                             LessonId = serial.LessonId,
+                             ExamId = serial.ExamId
+                         });
 
-             if (serial.Index != updatedSerial.Index)
-             {
-                 serial.Index = updatedSerial.Index;
-                 serial.LessonId = updatedSerial.LessonId;
-                 serial.ExamId = updatedSerial.ExamId;
+            var serialList = await result.ToListAsync();
+            return serialList;
+        }
+        public async Task<Serial?> UpdateSerial(SerialDtoUpdate updatedSerial)
+        {
+            var serial = await _context.Serials.FirstOrDefaultAsync(s => s.LessonId == updatedSerial.Lesson_ID);
+            if (serial == null) return null;
 
-                 // Determine the range of indices to update
-                 int minIndex = Math.Min(serial.Index, updatedSerial.Index);
-                 int maxIndex = Math.Max(serial.Index, updatedSerial.Index);
+            if (serial.Index != updatedSerial.Index)
+            {
+                // Determine the range of indices to update
+                int minIndex = Math.Min(serial.Index ?? 1, updatedSerial.Index ?? 1);
+                int maxIndex = Math.Max(serial.Index ?? 1, updatedSerial.Index ?? 1);
 
-                 var serialsToUpdate = _context.Serials
-                     .Where(s => s.Index >= minIndex && s.Index <= maxIndex && s.Id != id);
+                var serialsToUpdate = await GetSerialByChapterID(updatedSerial.ChapterID, minIndex, maxIndex, serial.Id);
+                if (serial.Index > updatedSerial.Index)
+                {
+                    serialsToUpdate.ForEach(s => s.Index++);
+                }
+                else
+                {
+                    serialsToUpdate.ForEach(s => s.Index--);
+                }
+                _context.UpdateRange(serialsToUpdate);
+                await _context.SaveChangesAsync();
+            }
+            var maxIndexinChapter = await MaxIndexByChapterId(updatedSerial.ChapterID, updatedSerial.Lesson_ID);
+            if (updatedSerial.Index > maxIndexinChapter)
+            {
+                updatedSerial.Index = maxIndexinChapter + 1;
+            }
+            serial.Index = updatedSerial.Index;
+            serial.ExamId = updatedSerial.Exam_ID;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                // Log the exception (pseudo-code)
+                // Log.Error("Failed to update Serial");
+                throw;
+            }
+            return serial;
+        }
+        private async Task<List<Serial>> GetSerialG(int chapter_ID, int Index)
+        {
+            var result = from serial in context.Serials
+                         join lesson in context.Lessons on serial.LessonId equals lesson.Id
+                         join chapter in context.Chapters on lesson.ChapterId equals chapter.Id
+                         where lesson.ChapterId == chapter_ID && serial.Index > Index
+                         select (new Serial
+                         {
+                             Id = serial.Id,
+                             Index = serial.Index,
+                             LessonId = serial.LessonId,
+                             ExamId = serial.ExamId
+                         });
 
-                 if (serial.Index > updatedSerial.Index)
-                 {
-                     await serialsToUpdate.ForEachAsync(s => s.Index++);
-                 }
-                 else
-                 {
-                     await serialsToUpdate.ForEachAsync(s => s.Index--);
-                 }
-             }
-             await _context.SaveChangesAsync();
-             return serial;*/
-            throw new NotImplementedException();
-
+            var serialList = await result.ToListAsync();
+            return serialList;
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            using (var transaction = _context.Database.BeginTransaction())
+            try
             {
-                try
+                var serial2 = await _context.Serials
+     .Join(_context.Lessons,
+         serial => serial.LessonId,
+         lesson => lesson.Id,
+         (serial, lesson) => new { Serial = serial, Lesson = lesson })
+     .FirstOrDefaultAsync(s => s.Serial.LessonId == id);
+                if (serial2 == null) return false;
+                var serial = await _context.Serials.FirstAsync(s => s.Id == serial2.Serial.Id);
+
+                _context.Serials.Remove(serial);
+
+                // Efficiently update all higher index Serials in one go if supported
+                var higherIndexSerials = await GetSerialG(serial2.Lesson.ChapterId, (int)serial.Index);
+                if (higherIndexSerials != null)
                 {
-                    var serial = await _context.Serials.FindAsync(id);
-                    if (serial == null) return false;
-
-                    _context.Serials.Remove(serial);
-
-                    // Efficiently update all higher index Serials in one go if supported
-                    var higherIndexSerials = _context.Serials.Where(s => s.Index > serial.Index);
                     foreach (var higherSerial in higherIndexSerials)
                     {
                         higherSerial.Index--;
                     }
-
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-
-                    return true;
+                    _context.UpdateRange(higherIndexSerials);
                 }
-                catch (Exception ex)
-                {
-                    // Rollback transaction and handle or log the exception
-                    await transaction.RollbackAsync();
-                    // Log the exception (pseudo-code)
-                    // Log.Error("Failed to delete and re-index Serials", ex);
-                    return false;
-                }
+
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
             }
         }
-
-        public Task<(List<Serial>, int)> GetAllAsync(Pagination pagination)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Serial> CreateAsync(Serial chapter)
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-        //public async Task UpdateIndexHightoLow (int index, int indexhigher)
-        //{
-        //    var ListSerial = await _context.Serials.Where(s => s.Index > index && s.Index < indexhigher).ToListAsync();
-        //    foreach (Serial serial in ListSerial)
-        //    {
-        //        serial.Index++;
-        //    }
-        //    await _context.SaveChangesAsync();
-        //}
-        //public async Task UpdateIndexLowtoHigh(int index, int indexhigher)
-        //{
-        //    var ListSerial = await _context.Serials.Where(s => s.Index > index && s.Index < indexhigher).ToListAsync();
-        //    foreach (Serial serial in ListSerial)
-        //    {
-        //        serial.Index--;
-        //    }
-        //    await _context.SaveChangesAsync();
-        //}
-        //public async Task InsertIndex(int index)
-        //{
-        //    var ListSerial = await _context.Serials.Where(s => s.Index > index).ToListAsync();
-        //    foreach (Serial serial in ListSerial)
-        //    {
-        //        serial.Index--;
-        //    }
-        //    await _context.SaveChangesAsync();
-        //}
     }
+
+
+
+
+
+    //public async Task UpdateIndexHightoLow (int index, int indexhigher)
+    //{
+    //    var ListSerial = await _context.Serials.Where(s => s.Index > index && s.Index < indexhigher).ToListAsync();
+    //    foreach (Serial serial in ListSerial)
+    //    {
+    //        serial.Index++;
+    //    }
+    //    await _context.SaveChangesAsync();
+    //}
+    //public async Task UpdateIndexLowtoHigh(int index, int indexhigher)
+    //{
+    //    var ListSerial = await _context.Serials.Where(s => s.Index > index && s.Index < indexhigher).ToListAsync();
+    //    foreach (Serial serial in ListSerial)
+    //    {
+    //        serial.Index--;
+    //    }
+    //    await _context.SaveChangesAsync();
+    //}
+    //public async Task InsertIndex(int index)
+    //{
+    //    var ListSerial = await _context.Serials.Where(s => s.Index > index).ToListAsync();
+    //    foreach (Serial serial in ListSerial)
+    //    {
+    //        serial.Index--;
+    //    }
+    //    await _context.SaveChangesAsync();
+    //}
 }
+

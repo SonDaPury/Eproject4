@@ -10,12 +10,13 @@ using System.Net.WebSockets;
 
 namespace backend.Service
 {
-    public class LessonService(IWebHostEnvironment env, LMSContext context, IMapper mapper, IimageServices iimageServices) : ILessonService
+    public class LessonService(ISerialService serialService, IWebHostEnvironment env, LMSContext context, IMapper mapper, IimageServices iimageServices) : ILessonService
     {
         private readonly LMSContext _context = context;
         private readonly IMapper _mapper = mapper;
         private readonly IWebHostEnvironment _env = env;
         private readonly IimageServices _imageServices = iimageServices;
+        private readonly ISerialService _serialService = serialService;
         private void ProcessVideoFile(string fileVideoNameSource)
         {
             if (!string.IsNullOrEmpty(fileVideoNameSource))
@@ -53,22 +54,44 @@ namespace backend.Service
                 System.IO.File.Delete(chunk2);
             }
         }
-        public async Task<LessonDto> CreateAsync(LessonDto lessonDto)
+        public async Task<LessonDto> CreateAsync(LessonDtoCreate lessonDto)
         {
-            var lesson = _mapper.Map<Lesson>(lessonDto);
-
-            // xử lý video lớn
-            if (lessonDto.FileVideoNameSource != null)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                ProcessVideoFile(lessonDto.FileVideoNameSource);
-                lesson.Video = lessonDto.FileVideoNameSource;
+                try
+                {
+                    var lesson = _mapper.Map<Lesson>(lessonDto);
+
+                    // Xử lý video lớn
+                    if (lessonDto.FileVideoNameSource != null)
+                    {
+                        ProcessVideoFile(lessonDto.FileVideoNameSource);
+                        lesson.Video = lessonDto.FileVideoNameSource;
+                    }
+                    _context.Lessons.Add(lesson);
+                    await _context.SaveChangesAsync();
+
+                    var serialDto = new SerialDtoCreate
+                    {
+                        Index = lessonDto.Index,
+                        Lesson_ID = lesson.Id,
+                        Exam_ID = lessonDto.Exam_ID,
+                        Chapter_ID = lessonDto.ChapterId
+                    };
+                    var result = await _serialService.CreateSerial(serialDto);
+
+                    await transaction.CommitAsync();
+
+                    return lessonDto;
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
-            _context.Lessons.Add(lesson);
-
-
-            await _context.SaveChangesAsync();
-            return lessonDto;
         }
+
 
         public async Task<(List<LessonDto>, int)> GetAllAsync(Pagination pagination)
         {
@@ -114,66 +137,116 @@ namespace backend.Service
                 .FirstOrDefaultAsync(l => l.Id == id);
             return _mapper?.Map<LessonDto?>(lesson);
         }
-
-        public async Task<LessonDto?> UpdateAsync(int id, LessonDto updatedLesson)
+        public async Task<int> GetSerialIDbyLessonID(int lessonId)
         {
-            var update = _mapper.Map<Lesson>(updatedLesson);
-            var lesson = await _context.Lessons.FindAsync(id);
-            if (lesson == null) return null;
-            if (!String.IsNullOrEmpty(updatedLesson.FileVideoNameSource))
+            var serial = await _context.Serials.FirstOrDefaultAsync(s => s.LessonId == lessonId);
+            return serial.Id;
+        }
+        public async Task<LessonDto?> UpdateAsync(int id, LessonDtoUpdate updatedLesson)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                bool check = true;
-                if (lesson.Video != null)
+                try
                 {
-                    string result = _imageServices.DeleteFile(lesson.Video);
-                    if (result.Contains("failed"))
+                    var update = _mapper.Map<Lesson>(updatedLesson);
+                    var lesson = await _context.Lessons.FindAsync(id);
+                    if (lesson == null) return null;
+
+                    if (!String.IsNullOrEmpty(updatedLesson.FileVideoNameSource))
                     {
-                        check = false;
+                        bool check = true;
+                        if (lesson.Video != null)
+                        {
+                            string result = _imageServices.DeleteFile(lesson.Video);
+                            if (result.Contains("failed"))
+                            {
+                                check = false;
+                            }
+                        }
+
+                        if (check)
+                        {
+                            ProcessVideoFile(updatedLesson.FileVideoNameSource);
+                            lesson.Video = updatedLesson.FileVideoNameSource;
+                        }
                     }
+
+                    lesson.Title = update.Title;
+                    lesson.Author = update.Author;
+                    lesson.VideoDuration = update.VideoDuration;
+                    lesson.View = update.View;
+                    lesson.Status = update.Status;
+                    lesson.ChapterId = update.ChapterId;
+
+                    await _context.SaveChangesAsync();
+                    var serial = new SerialDtoUpdate
+                    {
+                        Lesson_ID = id,
+                        ChapterID = updatedLesson.ChapterId,
+                        Exam_ID = updatedLesson.serialDto.Exam_ID,
+                        Index = updatedLesson.serialDto.Index
+                    };
+                    await _serialService.UpdateSerial(serial);
+
+                    await transaction.CommitAsync();
+
+                    return updatedLesson;
                 }
-                if (check)
+                catch (Exception)
                 {
-                    ProcessVideoFile(updatedLesson.FileVideoNameSource);
-                    lesson.Video = updatedLesson.FileVideoNameSource;
+                    await transaction.RollbackAsync();
+                    throw;
                 }
             }
-            lesson.Title = update.Title;
-            lesson.Author = update.Author;
-            lesson.VideoDuration = update.VideoDuration;
-            lesson.View = update.View;
-            lesson.Status = update.Status;
-            lesson.ChapterId = update.ChapterId;
-            //lesson.StaticFolder = update.StaticFolder;
-
-            await _context.SaveChangesAsync();
-            return updatedLesson;
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var lesson = await _context.Lessons.FindAsync(id);
-            if (lesson == null) return false;
-
-            if (!string.IsNullOrEmpty(lesson.Video))
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                string result = _imageServices.DeleteFile(lesson.Video);
-                if (result.Contains("failed"))
+                try
                 {
-                    return false;
+                    var lesson = await _context.Lessons.FindAsync(id);
+                    if (lesson == null) return false;
+
+                    if (!string.IsNullOrEmpty(lesson.Video))
+                    {
+                        string result = _imageServices.DeleteFile(lesson.Video);
+                        if (result.Contains("failed"))
+                        {
+                            return false;
+                        }
+                    }
+                    _context.Lessons.Remove(lesson);
+
+                    /*   var serials = await _context.Serials.FirstOrDefaultAsync(s => s.LessonId == id);
+                       if (serials != null)
+                       {
+                           _context.Serials.Remove(serials);
+                       }*/
+
+                    //var serialID = await GetSerialIDbyLessonID(id);
+                    bool check = await _serialService.DeleteAsync(id);
+
+                    if (!check)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
                 }
             }
-
-            var serials = await _context.Serials.FirstOrDefaultAsync(s => s.LessonId == id);
-            if (serials != null)
-            {
-                _context.Serials.Remove(serials);
-            }
-
-            _context.Lessons.Remove(lesson);
-            await _context.SaveChangesAsync();
-
-            return true;
         }
+
     }
 
 }

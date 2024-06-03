@@ -7,4 +7,8 @@
         public string? Description { get; set; }
         public int SourceId { get; set; }
     }
+    public class ChapterDtoUpdate : ChapterDto
+    {
+        public int? Index { get; set; }
+    }
 }
