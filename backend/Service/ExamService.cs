@@ -21,14 +21,6 @@ namespace backend.Service
         {
             await _context.Exams.AddAsync(exam);
             await _context.SaveChangesAsync();
-            var newSerial = new Serial
-            {
-                Index =index,
-                ExamId = exam.Id,
-                LessonId = null
-            };
-            await _serialService.CreateAsync(newSerial);
-            await _context.SaveChangesAsync();
             return exam;
         }
 
@@ -37,7 +29,7 @@ namespace backend.Service
             return await _context.Exams.ToListAsync();
         }
 
-        public async Task<(List<Exam>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<Exam>, int)> GetAllAsync(Pagination pagination)
         {
             var exams = await _context.Exams
                 //.Include(e => e.Chapter) // Include the chapter details
@@ -46,7 +38,7 @@ namespace backend.Service
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
                 .ToListAsync();
-            var count = await _context.Exams.CountAsync(); 
+            var count = await _context.Exams.CountAsync();
             return (exams, count);
         }
 

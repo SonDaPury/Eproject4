@@ -34,18 +34,15 @@ namespace backend.Controller
         }
         // POST: api/Chapters
         [HttpPost]
-        public async Task<ActionResult<ChapterDto>> CreateChapter([FromBody] ChapterDto chapterDto)
+        public async Task<ActionResult<ChapterDto>> CreateChapter([FromBody] ChapterDtoUpdate chapterDto)
         {
             if (chapterDto == null)
             {
                 return NotFound(new { message = "Chapter data is required" });
             }
 
-            var chapter = _mapper.Map<Chapter>(chapterDto);
-            var createdChapter = await _chapterService.CreateAsync(chapter);
-            var createdChapterDto = _mapper.Map<ChapterDto>(createdChapter);
-
-            return CreatedAtAction(nameof(GetChapter), new { id = createdChapterDto.Id }, createdChapterDto);
+            var createdChapter = await _chapterService.CreateAsync(chapterDto);
+            return Ok(createdChapter);
         }
 
         // GET: api/Chapters
@@ -65,34 +62,32 @@ namespace backend.Controller
             return Ok(chapterDtos);
         }
         // GET: api/Chapters/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ChapterDto>> GetChapter(int id)
-        {
-            var chapter = await _chapterService.GetByIdAsync(id);
-            if (chapter == null)
-            {
-                return NotFound(new { message = $"Chapter with ID {id} not found." });
-            }
-            var chapterDto = _mapper.Map<ChapterDto>(chapter);
-            return Ok(chapterDto);
-        }
+        /*   [HttpGet("{id}")]
+           public async Task<ActionResult<ChapterDto>> GetChapter(int id)
+           {
+               var chapter = await _chapterService.GetByIdAsync(id);
+               if (chapter == null)
+               {
+                   return NotFound(new { message = $"Chapter with ID {id} not found." });
+               }
+               var chapterDto = _mapper.Map<ChapterDto>(chapter);
+               return Ok(chapterDto);
+           }*/
 
         // PUT: api/Chapters/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateChapter(int id, [FromBody] ChapterDto chapterDto)
+        public async Task<IActionResult> UpdateChapter(int id, [FromBody] ChapterDtoUpdate chapterDto)
         {
             if (chapterDto == null)
             {
                 return NotFound(new { message = "Invalid chapter data" });
             }
-
-            var chapter = _mapper.Map<Chapter>(chapterDto);
-            var updatedChapter = await _chapterService.UpdateAsync(id, chapter);
+            var updatedChapter = await _chapterService.UpdateAsync(id, chapterDto);
             if (updatedChapter == null)
             {
                 return NotFound(new { message = $"Chapter with ID {id} not found." });
             }
-            return Ok(_mapper.Map<ChapterDto>(updatedChapter));
+            return Ok(updatedChapter);
         }
 
         // DELETE: api/Chapters/5

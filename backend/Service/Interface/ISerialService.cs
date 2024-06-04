@@ -1,14 +1,17 @@
-﻿using backend.Dtos;
+﻿using backend.Data;
+using backend.Dtos;
 using backend.Entities;
 
 namespace backend.Service.Interface
 {
-    public interface ISerialService : IService<Serial>
+    public interface ISerialService
     {
         //Task InsertIndex(int index);
         //Task UpdateIndexHightoLow(int index, int indexhigher);
         Task<List<Serial>> GetAllAsync();
-        Task<Serial> CreateSerial(SerialDto chapter);
-        Task<Serial?> UpdateSerial(int id, UpdateSerialDto updateSerial);
+        Task<Serial> CreateSerial(SerialDtoCreate chapter);
+        Task<Serial?> UpdateSerial(SerialDtoUpdate updateSerial);
+        Task<bool> DeleteAsync(int id);
+
     }
 }
