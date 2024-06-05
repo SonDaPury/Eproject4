@@ -124,7 +124,7 @@ namespace backend.Service
                                        video = g.lesson.Video != null ? _imageServices.GetFile(g.lesson.Video) : null,
                                        view = g.lesson.View,
                                        status = g.lesson.Status,
-                                       exam = g.serial.ExamId
+                                       examID = g.serial.ExamId
                                    })
                                }).ToListAsync();
 

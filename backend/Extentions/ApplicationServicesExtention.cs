@@ -27,6 +27,8 @@ namespace backend.Extentions
             services.AddScoped<ITopicService, TopicService>();
             /*            services.AddScoped<IChukedFileService, ChunkedFileService>();
             */
+            services.AddScoped<IOrderService, OrderService>();
+
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISerialService, SerialService>();
             services.AddScoped<IimageServices, ImageServices>();
