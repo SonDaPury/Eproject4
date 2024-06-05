@@ -33,6 +33,23 @@ namespace backend.Service
             return question;
         }
 
+        public async Task<List<Question>> AddRange(List<QuestionDto> questionDtos)
+        {
+            List<Question> result = [];
+            foreach(var questionDto in questionDtos)
+            {
+                var question = new Question
+                {
+                    Content = questionDto.Content,
+                    Image = questionDto.Image != null ? _imageServices.AddFile(questionDto.Image, "Questions", "Image") : null
+                };
+                result.Add(question);
+            }
+            await _context.Questions.AddRangeAsync(result);
+            await _context.SaveChangesAsync();  
+            return result;
+        }
+
         public async Task<List<QuestionViewModel>> GetAllAsync()
         {
             var questions = await _context.Questions

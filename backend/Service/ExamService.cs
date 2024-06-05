@@ -1,5 +1,6 @@
 ﻿using backend.Base;
 using backend.Data;
+using backend.Dtos;
 using backend.Entities;
 using backend.Exceptions;
 using backend.Helper;
@@ -10,18 +11,57 @@ using System.Timers;
 
 namespace backend.Service
 {
-    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService) : IExamService
+    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService, IServiceScopeFactory scopeFactory, IimageServices imageServices) : IExamService
     {
         private readonly LMSContext _context = context;
         private readonly IHubContext<ExamHub> _hubContext = hubContext;
         private readonly ISerialService _serialService = serialService;
-        private static volatile bool _continueExam = true;
+        private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
+        private readonly IimageServices _imageServices = imageServices;
+        //private static volatile bool _continueExam = true;
 
         public async Task<Exam> CreateAsync(Exam exam, int index)
         {
             await _context.Exams.AddAsync(exam);
             await _context.SaveChangesAsync();
             return exam;
+        }
+
+        public async Task<Question> CreateQuestionsForExamAsync(QuestionForExamDto questionDto, int examId)
+        {
+            Question question = new Question()
+            {
+                Content = questionDto.Content,
+                Image = questionDto.Image != null ? _imageServices.AddFile(questionDto.Image, "Questions", "Image") : null
+            };
+            await _context.Questions.AddAsync(question);
+            await _context.SaveChangesAsync();
+            
+
+            List<Option> options = new List<Option>();
+            //foreach (var optionDto in questionDto.Options)
+            //{
+            //    Option option = new Option()
+            //    {
+            //        Answer = optionDto.Answer,
+            //        IsCorrect = (bool)optionDto.IsCorrect,
+            //        QuestionId = question.Id
+            //    };
+            //    options.Add(option);
+            //}
+            await _context.Options.AddRangeAsync(options);
+            await _context.SaveChangesAsync();
+            var quizQuestion = new QuizQuestion
+            {
+                QuestionId = question.Id,
+                ExamId = examId
+            };
+            await _context.QuizQuestions.AddAsync(quizQuestion);
+            await _context.SaveChangesAsync(); // Lưu quizQuestions
+
+
+
+            return question;
         }
 
         public async Task<List<Exam>> GetAllAsync()
@@ -112,90 +152,69 @@ namespace backend.Service
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task StartExam(int examId, int userId)
-        {
-            var exam = await _context.Exams.FindAsync(examId);
-            if (exam == null || exam.IsStarted)
-            {
-                throw new Exception("Exam not found or already started.");
-            }
-            exam.IsStarted = true;
-            await _context.SaveChangesAsync();
+        //public async Task StartExam(int examId)
+        //{
+        //    var exam = await _context.Exams.FindAsync(examId);
+        //    if (exam == null || exam.IsStarted)
+        //    {
+        //        throw new Exception("Exam not found or already started.");
+        //    }
+        //    exam.IsStarted = true;
+        //    await _context.SaveChangesAsync();
+        //    await _hubContext.Clients.Group($"Exam-{examId}").SendAsync("ReceiveExamStart");
 
-            var userConnection = await _context.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
-
-            if (exam == null || userConnection == null) throw new Exception("Exam or User not found");
-
-            var endTime = DateTime.UtcNow.AddMinutes(exam.TimeLimit);
-            //var endTime = DateTime.UtcNow.AddMinutes(2);
-            _continueExam = true;
-            //System.Timers.Timer timer = new System.Timers.Timer(1000);
-            //timer.Elapsed += async (sender, e) => {
-            //    if (DateTime.UtcNow >= endTime || !_continueExam)
-            //    {
-            //        timer.Stop();
-            //        exam.IsStarted = false;
-            //        await _context.SaveChangesAsync();
-            //        if (!_continueExam)
-            //        {
-            //            //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
-            //        }
-            //        timer.Dispose();
-            //    }
-            //    else
-            //    {
-            //        var remainingTime = endTime - DateTime.UtcNow;
-            //        var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
-            //        //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
-            //    }
-            //};
-            //timer.Start();
-        }
+        //}
 
 
         public async Task<int> EndExam(
-            List<UserAnswer> userAnswers
-            , int examId
+             //List<UserAnswer> userAnswers,
+             int examId
             , int userId)
         {
-            _continueExam = false;
-            var exam = await _context.Exams.FindAsync(examId);
-            var userConnection = await _context.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
-            if (exam == null || userConnection == null) throw new Exception("Exam or User not found");
-            //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
-            userConnection.DisconnectedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            if (userConnection.DisconnectedAt.HasValue)
+            using (var scope = _scopeFactory.CreateScope())
             {
-                var timeTaken = userConnection.DisconnectedAt.Value - userConnection.ConnectedAt;
-                var formattedTakenTime = $"{timeTaken.Minutes:D2}:{timeTaken.Seconds:D2}";
-                // Tìm giá trị Index lớn nhất hiện tại
-                int? maxIndex = await _context.Attemps.MaxAsync(a => (int?)a.Index) ?? 0;
-                Attemp attemp = new Attemp()
+                var dbContext = scope.ServiceProvider.GetRequiredService<LMSContext>();
+                //_continueExam = false;
+                var exam = await dbContext.Exams.FindAsync(examId);
+                var userConnection = await dbContext.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
+                if (exam == null || userConnection == null) throw new Exception("Exam or User not found");
+                await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
+                //await _hubContext.Clients.Group($"Exam-{examId}").SendAsync("ReceiveExamEnd", "The exam has ended.");
+                userConnection.DisconnectedAt = DateTime.UtcNow;
+                await dbContext.SaveChangesAsync();
+                if (userConnection.DisconnectedAt.HasValue)
                 {
-                    Index = maxIndex + 1,
-                    TimeTaken = formattedTakenTime,
-                    UserId = userId
-                };
-                exam.IsStarted = false;
-                await _context.Attemps.AddAsync(attemp);
-                await _context.SaveChangesAsync();
-                var total = await CalculateScore(userAnswers, examId);
-                var answer = new Answer
+                    var timeTaken = userConnection.DisconnectedAt.Value - userConnection.ConnectedAt;
+                    var formattedTakenTime = $"{timeTaken.Minutes:D2}:{timeTaken.Seconds:D2}";
+                    // Tìm giá trị Index lớn nhất hiện tại
+                    int? maxIndex = await dbContext.Attemps.MaxAsync(a => (int?)a.Index) ?? 0;
+                    Attemp attemp = new Attemp()
+                    {
+                        Index = maxIndex + 1,
+                        TimeTaken = formattedTakenTime,
+                        UserId = userId
+                    };
+                    exam.IsStarted = false;
+                    await dbContext.Attemps.AddAsync(attemp);
+                    await dbContext.SaveChangesAsync();
+                    var total = 100;
+                    //await CalculateScore(userAnswers, examId);
+                    var answer = new Answer
+                    {
+                        Total = total.ToString() + "%",
+                        UserId = userId,
+                        ExamId = examId,
+                        AttemptId = attemp.Id
+                    };
+                    await dbContext.Answers.AddAsync(answer);
+                    await dbContext.SaveChangesAsync();
+                    return total;
+                }
+                else
                 {
-                    Total = total.ToString() + "%",
-                    UserId = userId,
-                    ExamId = examId,
-                    AttemptId = attemp.Id
-                };
-                await _context.Answers.AddAsync(answer);
-                await _context.SaveChangesAsync();
-                return total;
-            }
-            else
-            {
-                // Xử lý trường hợp DisconnectedAt hoặc ConnectedAt không có giá trị
-                throw new Exception("DisconnectedAt or ConnectedAt not found");
+                    // Xử lý trường hợp DisconnectedAt hoặc ConnectedAt không có giá trị
+                    throw new Exception("DisconnectedAt or ConnectedAt not found");
+                }
             }
 
         }
@@ -224,8 +243,8 @@ namespace backend.Service
                     correctAnswers++; // Người dùng chọn đúng, tăng điểm
                 }
             }
-
-            return (int)correctAnswers / totalQuestions * 100;
+            return 100;
+            //return (int)correctAnswers / totalQuestions * 100;
         }
 
         //tính điểm nếu câu hỏi có nhiều đáp án đúng

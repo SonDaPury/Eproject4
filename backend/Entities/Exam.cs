@@ -43,6 +43,7 @@ namespace backend.Entities
         public ICollection<QuizQuestion>? QuizQuestions { get; set; }
         public ICollection<Answer>? Answers { get; set; }
         public ICollection<Serial>? Serials { get; set; }
+        public ICollection<UserConnection>? Users { get; set; }
         
     }
 }
