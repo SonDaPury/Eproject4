@@ -26,6 +26,7 @@ namespace backend.Data
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserRefreshTokens> UserRefreshTokens { get; set; }
         public virtual DbSet<Serial> Serials { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
 
         public virtual DbSet<UserConnection> UserConnections { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,6 +36,9 @@ namespace backend.Data
               .HasOne(a => a.Answer)
               .WithOne(a => a.Attemp)
               .HasForeignKey<Answer>(a => a.AttemptId);
+            modelBuilder.Entity<Serial>()
+              .HasIndex(s => s.LessonId)
+              .IsUnique();
         }
     }
 }
