@@ -152,8 +152,9 @@ namespace backend.Service
                     e.TimeLimit,
                     Questions = e.QuizQuestions.Select(qq => new
                     {
+                        QuestionID = qq.QuestionId,
                         QuestionText = qq.Question.Content,
-                        Options = qq.Question.Options.Select(o => new { o.Answer, o.IsCorrect })
+                        Options = qq.Question.Options.Select(o => new { o.Id, o.Answer, o.IsCorrect })
                     })
                 })
                 .FirstOrDefaultAsync();
