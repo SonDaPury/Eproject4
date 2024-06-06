@@ -12,66 +12,19 @@ namespace backend.Helper
         private readonly LMSContext _context;
         //private static Dictionary<int, (System.Timers.Timer Timer, DateTime EndTime)> _examTimers = new Dictionary<int, (System.Timers.Timer, DateTime)>();
         private readonly IExamService _examService;
-        private readonly IHubContext<ExamHub> _hubContext;
-        private static Dictionary<int, bool> _continueExams = new Dictionary<int, bool>();
-        public ExamHub(LMSContext context, IExamService examService, IHubContext<ExamHub> hubContext)
+        //private static Dictionary<int, bool> _continueExams = new Dictionary<int, bool>();
+        public ExamHub(LMSContext context, IExamService examService)
         {
             _context = context;
             _examService = examService;
-            _hubContext = hubContext;
         }
         public override async Task OnConnectedAsync()
         {
-            var userId = 1;
-            //int.Parse(Context.User.Identity.Name);
-            //var user = await _context.Users.FindAsync(userId);
-
-            //if (user != null)
-            //{
-            //    var connection = new UserConnection
-            //    {
-            //        //ConnectionId = Context.ConnectionId,
-            //        UserId = user.Id,
-            //        ConnectedAt = DateTime.UtcNow
-            //    };
-
-            //    _context.UserConnections.Add(connection);
-            //    await _context.SaveChangesAsync();
-            //}
-            var userConnection = await _context.UserConnections
-            .OrderByDescending(uc => uc.ConnectedAt)
-            .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ExamId != null);
-
-            if (userConnection != null && DateTime.UtcNow < userConnection.EndTime)
-            {
-                var remainingTime = userConnection.EndTime - DateTime.UtcNow;
-                if (userConnection.DisconnectedAt != null)
-                {
-                    var elapsed = (DateTime.UtcNow - userConnection.DisconnectedAt.Value).TotalSeconds;
-                    await Clients.Caller.SendAsync("UpdateTime", remainingTime.TotalSeconds - elapsed);
-                }
-                else
-                {
-                    await Clients.Caller.SendAsync("UpdateTime", remainingTime.TotalSeconds);
-                }
-
-                if (!_continueExams.ContainsKey(userConnection.UserId))
-                {
-                    _continueExams[userConnection.UserId] = true;
-                    _ = CountDown(userConnection.UserId, userConnection.EndTime);
-                }
-            }
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            //var connection = await _context.UserConnections.FindAsync(Context.ConnectionId);
-            //if (connection != null)
-            //{
-            //    connection.DisconnectedAt = DateTime.UtcNow;
-            //    await _context.SaveChangesAsync();
-            //}
             var userId = 1;
             //int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
             var userConnection = await _context.UserConnections
@@ -82,8 +35,11 @@ namespace backend.Helper
             {
                 userConnection.DisconnectedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
+                //if (_continueExams.ContainsKey(userConnection.UserId) && _continueExams[userConnection.UserId])
+                //{
+                await _examService.EndExam((int)userConnection.ExamId, userId);
+                //}
             }
-
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -97,7 +53,7 @@ namespace backend.Helper
         {
             var userId = 1;
                 //int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
-            var exam = await _context.Exams.FindAsync(examId);
+            var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId);
 
             if (exam == null || exam.IsStarted)
             {
@@ -105,19 +61,12 @@ namespace backend.Helper
             }
 
             exam.IsStarted = true;
-            await _context.SaveChangesAsync();
-
-            //var userConnection = await _context.UserConnections.OrderByDescending(x => x.ConnectedAt)
-            //                       .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
-
-            //if (userConnection == null)
-            //{
-            //    throw new Exception("Không tìm thấy kết nối người dùng.");
-            //}
+            //await _context.SaveChangesAsync();
             var now = DateTime.UtcNow;
             var endTime = now.AddMinutes(exam.TimeLimit);
             var userConnection = new UserConnection
             {
+                ConnectionId = Context.ConnectionId,
                 UserId = userId,
                 ConnectedAt = now,
                 EndTime = endTime,
@@ -126,46 +75,27 @@ namespace backend.Helper
 
             _context.UserConnections.Add(userConnection);
             await _context.SaveChangesAsync();
-            _ = CountDown(userId, endTime);
-        }
-        private async Task CountDown(int userId, DateTime endTime)
-        {
-            while (DateTime.UtcNow < endTime && _continueExams[userId])
+            while (DateTime.UtcNow < endTime)
             {
                 var remainingTime = endTime - DateTime.UtcNow;
                 var formattedTime = $"{remainingTime.Minutes:D2}:{remainingTime.Seconds:D2}";
-                await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveTimeUpdate", formattedTime);
+                await Clients.Client(Context.ConnectionId).SendAsync("ReceiveTimeUpdate", formattedTime);
                 await Task.Delay(1000); // Đợi một giây
             }
 
-            if (_continueExams[userId])
-            {
-                // Giả sử bạn có cách để lấy examId từ userId, nếu không bạn cần lưu thêm thông tin
-                var userConnection = await _context.UserConnections
-                    .OrderByDescending(uc => uc.ConnectedAt)
-                    .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ExamId != null);
-
-                if (userConnection != null)
-                {
-                    await _examService.EndExam(userConnection.ExamId.Value, userId);
-                    await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveExamEnd");
-                }
-            }
-            _continueExams.Remove(userId); // Cleanup
+            // Kết thúc kỳ thi khi thời gian hết
+            await _examService.EndExam(examId, userId);
+            await Clients.Client(Context.ConnectionId).SendAsync("ReceiveExamEnd");
         }
+       
 
         public async Task EndExam( int examId)
         {
             var userId = 1;
-            if (_continueExams.ContainsKey(userId))
-            {
-                _continueExams[userId] = false;
-                _continueExams.Remove(userId);
-            }
-
+            
             await _examService.EndExam(examId, userId);
-            //await Clients.Client(Context.ConnectionId).SendAsync("ReceiveExamEnd");
-            await Clients.User(userId.ToString()).SendAsync("ReceiveExamEnd");
+            await Clients.Client(Context.ConnectionId).SendAsync("ReceiveExamEnd");
+            //await Clients.User(userId.ToString()).SendAsync("ReceiveExamEnd");
             //await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
         }
     }

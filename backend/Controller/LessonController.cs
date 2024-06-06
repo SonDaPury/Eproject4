@@ -50,15 +50,21 @@ namespace backend.Controller
         [HttpPost]
         public async Task<ActionResult<LessonDto>> CreateLesson([FromBody] LessonDtoCreate lessonDto)
         {
-            if (lessonDto == null)
+            try
             {
-                return BadRequest(new { message = "Lesson data is required" });
-            }
+                if (lessonDto == null)
+                {
+                    return BadRequest(new { message = "Lesson data is required" });
+                }
 
-            //var lesson = _mapper.Map<Lesson>(lessonDto);
-            var createdLesson = await _lessonService.CreateAsync(lessonDto);
-            //var createdLessonDto = _mapper.Map<LessonDto>(createdLesson);
-            return CreatedAtAction(nameof(GetLesson), new { id = createdLesson.Id }, createdLesson);
+                //var lesson = _mapper.Map<Lesson>(lessonDto);
+                var createdLesson = await _lessonService.CreateAsync(lessonDto);
+                //var createdLessonDto = _mapper.Map<LessonDto>(createdLesson);
+                return CreatedAtAction(nameof(GetLesson), new { id = createdLesson.Id }, createdLesson);
+            }catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // GET: api/Lessons
