@@ -7,6 +7,9 @@ using backend.Helper;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Timers;
 
 namespace backend.Service
@@ -27,41 +30,97 @@ namespace backend.Service
             return exam;
         }
 
-        public async Task<Question> CreateQuestionsForExamAsync(QuestionForExamDto questionDto, int examId)
+        public async Task<object> CreateQuestionsForExamAsync(QuestionForExamDto questionDto)
         {
-            Question question = new Question()
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                Content = questionDto.Content,
-                Image = questionDto.Image != null ? _imageServices.AddFile(questionDto.Image, "Questions", "Image") : null
-            };
-            await _context.Questions.AddAsync(question);
-            await _context.SaveChangesAsync();
-            
+                try
+                {
+                    Question question = new Question()
+                    {
+                        Content = questionDto.Question,
+                        Image = questionDto.Image != null ? _imageServices.AddFile(questionDto.Image, "Questions", "Image") : null
+                    };
+                    await _context.Questions.AddAsync(question);
+                    await _context.SaveChangesAsync();
 
-            List<Option> options = new List<Option>();
-            //foreach (var optionDto in questionDto.Options)
-            //{
-            //    Option option = new Option()
-            //    {
-            //        Answer = optionDto.Answer,
-            //        IsCorrect = (bool)optionDto.IsCorrect,
-            //        QuestionId = question.Id
-            //    };
-            //    options.Add(option);
-            //}
-            await _context.Options.AddRangeAsync(options);
-            await _context.SaveChangesAsync();
-            var quizQuestion = new QuizQuestion
+                    List<Option> options = JsonConvert.DeserializeObject<List<Option>>(questionDto.Options.Trim());
+                    options.ForEach(o => o.QuestionId = question.Id);
+                    await _context.Options.AddRangeAsync(options);
+                    await _context.SaveChangesAsync();
+
+                    var optionIds = options.Select(o => new
+                    {
+                        o.Id,
+                        o.Answer
+                    }).ToList();
+                    await transaction.CommitAsync();
+                    return new
+                    {
+                        QuestionID = question.Id,
+                        OptionIDs = optionIds
+                    };
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+
+        }
+        public async Task<object> UpdateQuestionandOption(UpdateQuestionDto updateQuestionDto)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                QuestionId = question.Id,
-                ExamId = examId
-            };
-            await _context.QuizQuestions.AddAsync(quizQuestion);
-            await _context.SaveChangesAsync(); // Lưu quizQuestions
+                try
+                {
+                    if (updateQuestionDto.QuestionId != 0)
+                    {
+                        var question = await _context.Questions.FindAsync(updateQuestionDto.QuestionId);
+                        if (updateQuestionDto.Content != null)
+                        {
+                            question.Content = updateQuestionDto.Content;
+                        }
+                        if (updateQuestionDto.Image != null)
+                        {
+                            question.Image = _imageServices.UpdateFile(updateQuestionDto.Image, question.Image, "Questions", "Image");
+                        }
+                    }
+                    if (updateQuestionDto.Options != null)
+                    {
+                        List<Option> options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
 
+                        _context.Options.UpdateRange(options);
+                    }
+                    await _context.SaveChangesAsync();
 
-
-            return question;
+                    return new
+                    {
+                        mess = "Success"
+                    };
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+        public async Task<object> ConnectExamWithQuestion(ConnectExamWithQuestion questions)
+        {
+            List<QuizQuestion> quizQuestions = new List<QuizQuestion>();
+            foreach (var questionId in questions.QuestionId)
+            {
+                quizQuestions.Add(new QuizQuestion
+                {
+                    ExamId = questions.ExamID,
+                    QuestionId = questionId
+                });
+            }
+            await _context.AddRangeAsync(quizQuestions);
+            await _context.SaveChangesAsync();
+            return quizQuestions;
         }
 
         public async Task<List<Exam>> GetAllAsync()
@@ -272,6 +331,8 @@ namespace backend.Service
 
             return (int)correctAnswers / totalQuestions * 100;
         }
+
+
     }
 
 }

@@ -34,16 +34,16 @@ namespace backend.Controller
 
                 return Ok(examDetails);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 // Log the exception details here
-                return StatusCode(500,new { message = "Internal Server Error" });
+                return StatusCode(500, new { message = "Internal Server Error" });
             }
         }
 
         // POST: api/Exams
         [HttpPost]
-        public async Task<ActionResult<ExamDto>> CreateExam([FromBody] ExamDto examDto,int index)
+        public async Task<ActionResult<ExamDto>> CreateExam([FromBody] ExamDto examDto, int index)
         {
             if (examDto == null)
             {
@@ -51,25 +51,30 @@ namespace backend.Controller
             }
 
             var exam = _mapper.Map<Exam>(examDto);
-            var createdExam = await _examService.CreateAsync(exam,index);
+            var createdExam = await _examService.CreateAsync(exam, index);
             var createdExamDto = _mapper.Map<ExamDto>(createdExam);
             return CreatedAtAction(nameof(GetExam), new { id = createdExam.Id }, createdExamDto);
         }
 
         [HttpPost("createquestion")]
-        public async Task<IActionResult> CreateQuestions([FromForm] QuestionForExamDto questions, int examId )
+        public async Task<IActionResult> CreateQuestions([FromForm] QuestionForExamDto questions)
         {
-            var createdQuestion = await _examService.CreateQuestionsForExamAsync(questions,examId);
+            var createdQuestion = await _examService.CreateQuestionsForExamAsync(questions);
             return Ok(createdQuestion);
         }
 
-        [HttpPost("createquestion1")]
-        public async Task<IActionResult> CreateQuestions1([FromForm] QuestionForExamDto questions)
+        [HttpPut("updatequestion")]
+        public async Task<IActionResult> UpdateQuestion([FromBody] UpdateQuestionDto updateQuestionDto)
         {
-            
-            return Ok();
+            var updatedQuestion = await _examService.UpdateQuestionandOption(updateQuestionDto);
+            return Ok(updatedQuestion);
         }
-
+        [HttpPost("connectexamquestion")]
+        public async Task<IActionResult> ConnectExamWithQuestion([FromBody] ConnectExamWithQuestion questions)
+        {
+            var connected = await _examService.ConnectExamWithQuestion(questions);
+            return Ok(connected);
+        }
         // GET: api/Exams
         [HttpGet("pagination")]
         public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExams([FromQuery] Pagination pagination)
@@ -84,7 +89,7 @@ namespace backend.Controller
         {
             var exams = await _examService.GetAllAsync();
             var examDtos = _mapper.Map<List<ExamDto>>(exams);
-            return Ok( examDtos );
+            return Ok(examDtos);
         }
         // GET: api/Exams/5
         [HttpGet("{id}")]
@@ -103,7 +108,7 @@ namespace backend.Controller
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateExam(int id, [FromBody] ExamDto examDto)
         {
-            if (examDto == null )
+            if (examDto == null)
             {
                 return NotFound(new { message = "Invalid exam data" });
             }
