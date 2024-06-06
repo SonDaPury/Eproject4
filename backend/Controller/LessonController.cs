@@ -92,18 +92,18 @@ namespace backend.Controller
         }
 
         // update
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLesson(int id, [FromBody] LessonDtoUpdate lessonDto)
+        [HttpPut("UpdateLesson")]
+        public async Task<IActionResult> UpdateLesson([FromBody] LessonDtoUpdate lessonDto)
         {
             if (lessonDto == null)
             {
                 return BadRequest(new { message = "Invalid lesson data" });
             }
             //var data = _mapper.Map<Lesson>(lessonDto);
-            var updatedLesson = await _lessonService.UpdateAsync(id, lessonDto);
+            var updatedLesson = await _lessonService.UpdateAsync(lessonDto.Id, lessonDto);
             if (updatedLesson == null)
             {
-                return NotFound(new { message = $"Lesson with ID {id} not found." });
+                return NotFound(new { message = $"Lesson with ID {lessonDto.Id} not found." });
             }
             return Ok(updatedLesson);
         }
