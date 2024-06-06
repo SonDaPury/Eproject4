@@ -19,7 +19,6 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import seedData from "@eproject4/utils/seedData";
 import StarIcon from "@mui/icons-material/Star";
 import { useDispatch, useSelector } from "react-redux";
-import { favoriteSelector } from "@eproject4/redux/selectors";
 import {
   AddFavoriteSource,
   deleteFavoriteSource,
