@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useParams } from "react-router-dom";
+import { getChapterBySourceId } from "@eproject4/services/chapter.service";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -54,6 +55,7 @@ function a11yProps(index) {
     "aria-controls": `simple-tabpanel-${index}`,
   };
 }
+//ádsadsadasdasdsadsadsasadsda
 const WatchCourse = () => {
   const { id, title } = useParams();
 
@@ -213,7 +215,11 @@ const WatchCourse = () => {
                   <Box>
                     <Typography
                       component={"h2"}
-                      sx={{ fontSize: "25px", fontWeight: 600 , padding:"24px 0px" }}>
+                      sx={{
+                        fontSize: "25px",
+                        fontWeight: 600,
+                        padding: "24px 0px",
+                      }}>
                       2. Sign up in Webflow
                     </Typography>
                     <hr />
@@ -286,7 +292,7 @@ const WatchCourse = () => {
                 </Box>
 
                 <Box>
-                  <SourceDetail />
+                  <SourceDetail id={id} />
                 </Box>
               </Box>
             </Grid>

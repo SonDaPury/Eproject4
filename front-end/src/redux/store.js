@@ -4,6 +4,7 @@ import userReducer from "./slices/userSlice.js";
 import topicReducer from "./slices/topicSlice.js";
 import subTopicsReducer from "./slices/subTopicSlice.js";
 import { favoritesSlice } from "./slices/favoriteSlice.js";
+import { enrollmentSlice } from "./slices/enrollmentSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     user: userReducer,
     topics: topicReducer,
     subTopics: subTopicsReducer,
+    enrollment: enrollmentSlice.reducer,
   },
 });
