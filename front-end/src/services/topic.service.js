@@ -37,6 +37,22 @@ export const getAllTopics = () => {
   return { getAllTopicsAction };
 };
 
+//Get Topic By Id
+
+export const getTopicById = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const getTopicByIdAction = async (id) => {
+    try {
+      const res = await callApi(`/Topic/${id}`, "get", null, null, false);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+  return { getTopicByIdAction };
+};
+
 // Create topic
 export const createTopic = () => {
   const { callApi } = useAxiosWithLoading();
