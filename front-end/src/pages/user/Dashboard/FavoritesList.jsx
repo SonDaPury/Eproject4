@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Paper,
   Table,
@@ -12,21 +12,156 @@ import {
   Typography,
   Box,
   Avatar,
+  Pagination,
 } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import seedData from "@eproject4/utils/seedData";
 import StarIcon from "@mui/icons-material/Star";
+import { useDispatch, useSelector } from "react-redux";
+import { favoriteSelector } from "@eproject4/redux/selectors";
+import {
+  AddFavoriteSource,
+  deleteFavoriteSource,
+  getAllFavorite,
+  getsourceFavoritebyuserid,
+} from "@eproject4/services/favorite.service";
+import {
+  addFavoriteSuccess,
+  removeFavoriteSuccess,
+  setFavoriteStatus,
+  setInitialFavorites,
+} from "@eproject4/redux/slices/favoriteSlice";
 
 const Allcourses = seedData();
 const couresFive = Allcourses.slice(0, 5);
 const length = couresFive.length;
 
 export default function FavoritesList() {
-  const [favorited, setFavorited] = useState(false);
-  const handleToggleFavorite = () => {
-    setFavorited(); // Chuyển đổi trạng thái khi nhấn nút
+  const dispatch = useDispatch();
+  const { getAllFavoriteAction } = getAllFavorite();
+  const { getsourceFavoritebyuseridAction } = getsourceFavoritebyuserid();
+  const { addFavoriteSourceAction } = AddFavoriteSource();
+  const { DeleteFavoriteSourceAction } = deleteFavoriteSource();
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize] = useState(4);
+  // Lấy danh sách yêu thích từ Redux store
+
+  const favorites = useSelector((state) => state.favorites.favorites);
+  // Lấy userId từ danh sách yêu thích nếu có
+  const userId = favorites.length > 0 ? favorites[0].userId : null;
+  const [courseData, SetcourseData] = useState([]);
+  // Hàm để lấy tất cả mục yêu thích từ cơ sở dữ liệu
+  const fetchFavoriteData = async () => {
+    try {
+      const res = await getAllFavoriteAction();
+      if (res.status === 200) {
+        // Cập nhật Redux store với dữ liệu yêu thích từ cơ sở dữ liệu
+        dispatch(setInitialFavorites(res.data));
+      } else {
+        console.error("Failed to fetch initial favorites:", res);
+      }
+    } catch (err) {
+      console.error("Error fetching favorites from database:", err);
+    }
   };
+
+  // Hàm để lấy các khóa học yêu thích cho người dùng hiện tại
+  const fetchFavorites = async () => {
+    if (userId) {
+      try {
+        const res = await getsourceFavoritebyuseridAction(
+          userId,
+          pageSize,
+          pageIndex
+        );
+        if (res && res.data && res.data.sources) {
+          // Cập nhật state với dữ liệu khóa học yêu thích
+          SetcourseData(res.data.sources);
+        } else {
+          console.error("Failed to fetch favorite courses:", res);
+        }
+      } catch (e) {
+        console.error("Error fetching favorite courses:", e);
+      }
+    }
+  };
+
+  // useEffect để gọi hàm fetchFavoriteData khi component được mount
+  useEffect(() => {
+    fetchFavoriteData();
+  }, [dispatch]);
+
+  // useEffect để gọi hàm fetchFavorites khi userId hoặc các tham số phân trang thay đổi
+  useEffect(() => {
+    fetchFavorites();
+  }, [userId, pageSize, pageIndex]);
+
+  // Hàm để thêm hoặc xóa một khóa học khỏi danh sách yêu thích
+  const handleToggleFavorite = async (course) => {
+    const isFavorited = !!favorites.find((fav) => fav.sourceId === course.id);
+    if (isFavorited) {
+      const favorite = favorites.find((fav) => fav.sourceId === course.id);
+      if (!favorite) return;
+      try {
+        // Gọi API để xóa mục yêu thích
+        const res = await DeleteFavoriteSourceAction(favorite.id);
+        if (res.status !== 200) {
+          throw new Error(res.data.message || "Failed to delete favorite");
+        }
+        // Cập nhật Redux store khi xóa thành công
+        dispatch(removeFavoriteSuccess(favorite.id));
+        dispatch(
+          setFavoriteStatus({
+            courseId: course.id,
+            isFavorited: false,
+            favoriteId: null,
+          })
+        );
+      } catch (error) {
+        console.error("Failed to delete favorite course:", error);
+      }
+    } else {
+      try {
+        // Gọi API để thêm mục yêu thích
+        const res = await addFavoriteSourceAction(userId, course.id);
+        if (res.status !== 200) {
+          throw new Error(res.data.message || "Failed to add favorite");
+        }
+        // Cập nhật Redux store khi thêm thành công
+        dispatch(
+          addFavoriteSuccess({
+            ...res.data,
+            sourceId: course.id,
+          })
+        );
+        dispatch(
+          setFavoriteStatus({
+            courseId: course.id,
+            isFavorited: true,
+            favoriteId: res.data.id,
+          })
+        );
+      } catch (error) {
+        console.error("Failed to add favorite course:", error);
+      }
+    }
+  };
+
+  // Hàm kiểm tra xem khóa học có trong danh sách yêu thích hay không
+  const isCourseFavorited = (courseId) => {
+    return !!favorites.find((fav) => fav.sourceId === courseId);
+  };
+
+  // Nếu không có mục yêu thích nào, hiển thị thông báo
+  if (!favorites || favorites.length === 0) {
+    return <div>Bạn chưa có khóa học yêu thích nào.</div>;
+  }
+  // Xử lý khi thay đổi trang pagination
+  const handleChangePagination = (e, newPage) => {
+    setPageIndex(newPage);
+  };
+
   return (
     <Box>
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
@@ -43,14 +178,14 @@ export default function FavoritesList() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {couresFive.map((course, index) => (
+            {courseData.map((course, index) => (
               <TableRow key={index}>
                 <TableCell
                   component="th"
                   scope="row"
                   sx={{ display: "flex", alignItems: "center" }}>
                   <Avatar
-                    src={course.imageThumbnail}
+                    src={course.thumbnail}
                     variant="square"
                     sx={{ width: 160, height: 120, marginRight: 2 }}
                   />
@@ -62,7 +197,8 @@ export default function FavoritesList() {
                         sx={{ color: "#FD8E1F", width: "16px", height: "16px" }}
                       />{" "}
                       <Typography variant="body2" color="primary">
-                        {course.rating} ({course.views.toLocaleString()} Review)
+                        {course.rating}
+                        {/* ({course.views.toLocaleString()} Review) */}
                       </Typography>
                     </Box>
 
@@ -71,7 +207,7 @@ export default function FavoritesList() {
                       variant="body2"
                       color="text.secondary"
                       sx={{ marginTop: "25px" }}>
-                      Đăng bởi: {course.topic}
+                      Đăng bởi: {course.slug}
                     </Typography>
                   </div>
                 </TableCell>
@@ -125,7 +261,7 @@ export default function FavoritesList() {
                     Add To Cart
                   </Button>
                   <Button
-                    onClick={handleToggleFavorite}
+                    onClick={() => handleToggleFavorite(course)}
                     color="error"
                     sx={{
                       marginLeft: 1,
@@ -133,13 +269,29 @@ export default function FavoritesList() {
                       width: "48px",
                       height: "48px",
                     }}>
-                    {favorited ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                    {isCourseFavorited(course.id) ? (
+                      <FavoriteIcon />
+                    ) : (
+                      <FavoriteBorderIcon />
+                    )}
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center", // Căn giữa Pagination
+            margin: "25px 0px",
+          }}>
+          <Pagination
+            count={Math.ceil(courseData.length / pageSize)}
+            onChange={handleChangePagination}
+            page={pageIndex}
+          />
+        </Box>
       </TableContainer>
     </Box>
   );
