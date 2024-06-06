@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class v1 : Migration
+    public partial class v100 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,8 +33,7 @@ namespace backend.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true)
+                    image = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -115,7 +114,6 @@ namespace backend.Migrations
                     email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     phone_number = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     role_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -169,26 +167,6 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserConnections",
-                columns: table => new
-                {
-                    ConnectionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    ConnectedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DisconnectedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserConnections", x => x.ConnectionId);
-                    table.ForeignKey(
-                        name: "FK_UserConnections_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Sources",
                 columns: table => new
                 {
@@ -204,9 +182,8 @@ namespace backend.Migrations
                     video_intro = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     price = table.Column<double>(type: "float", nullable: false),
                     rating = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    user_id = table.Column<int>(type: "int", nullable: false),
-                    sub_topic_id = table.Column<int>(type: "int", nullable: false)
+                    user_id = table.Column<int>(type: "int", nullable: true),
+                    sub_topic_id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -215,14 +192,12 @@ namespace backend.Migrations
                         name: "FK_Sources_SubTopics_sub_topic_id",
                         column: x => x.sub_topic_id,
                         principalTable: "SubTopics",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_Sources_Users_user_id",
                         column: x => x.user_id,
                         principalTable: "Users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -232,6 +207,7 @@ namespace backend.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Index = table.Column<int>(type: "int", nullable: false),
                     description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     source_id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -257,7 +233,6 @@ namespace backend.Migrations
                     max_question = table.Column<int>(type: "int", nullable: false),
                     status = table.Column<bool>(type: "bit", nullable: false),
                     is_started = table.Column<bool>(type: "bit", nullable: false),
-                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     source_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -267,6 +242,36 @@ namespace backend.Migrations
                         name: "FK_Exams_Sources_source_id",
                         column: x => x.source_id,
                         principalTable: "Sources",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    SouresID = table.Column<int>(type: "int", nullable: false),
+                    TotalPrice = table.Column<double>(type: "float", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false),
+                    PaymentID = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Orders_Sources_SouresID",
+                        column: x => x.SouresID,
+                        principalTable: "Sources",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Orders_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -284,7 +289,6 @@ namespace backend.Migrations
                     video = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     view = table.Column<int>(type: "int", nullable: false),
                     status = table.Column<bool>(type: "bit", nullable: false),
-                    static_folder = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     chapter_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -356,12 +360,39 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserConnections",
+                columns: table => new
+                {
+                    ConnectionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    ConnectedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DisconnectedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExamId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserConnections", x => x.ConnectionId);
+                    table.ForeignKey(
+                        name: "FK_UserConnections_Exams_ExamId",
+                        column: x => x.ExamId,
+                        principalTable: "Exams",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_UserConnections_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Serials",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    index = table.Column<int>(type: "int", nullable: false),
+                    index = table.Column<int>(type: "int", nullable: true),
                     lesson_id = table.Column<int>(type: "int", nullable: true),
                     exam_id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -423,6 +454,16 @@ namespace backend.Migrations
                 column: "question_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_SouresID",
+                table: "Orders",
+                column: "SouresID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_UserID",
+                table: "Orders",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_QuizQuestions_exam_id",
                 table: "QuizQuestions",
                 column: "exam_id");
@@ -440,7 +481,9 @@ namespace backend.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Serials_lesson_id",
                 table: "Serials",
-                column: "lesson_id");
+                column: "lesson_id",
+                unique: true,
+                filter: "[lesson_id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sources_sub_topic_id",
@@ -456,6 +499,11 @@ namespace backend.Migrations
                 name: "IX_SubTopics_topic_id",
                 table: "SubTopics",
                 column: "topic_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserConnections_ExamId",
+                table: "UserConnections",
+                column: "ExamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserConnections_UserId",
@@ -487,6 +535,9 @@ namespace backend.Migrations
                 name: "Options");
 
             migrationBuilder.DropTable(
+                name: "Orders");
+
+            migrationBuilder.DropTable(
                 name: "QuizQuestions");
 
             migrationBuilder.DropTable(
@@ -505,10 +556,10 @@ namespace backend.Migrations
                 name: "Questions");
 
             migrationBuilder.DropTable(
-                name: "Exams");
+                name: "Lessons");
 
             migrationBuilder.DropTable(
-                name: "Lessons");
+                name: "Exams");
 
             migrationBuilder.DropTable(
                 name: "Chapters");

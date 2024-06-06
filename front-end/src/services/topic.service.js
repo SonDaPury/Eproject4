@@ -1,10 +1,32 @@
 import useAxiosWithLoading from "@eproject4/utils/hooks/useAxiosWithLoading";
+import { get } from "react-hook-form";
 
 // Get topics
 export const getTopics = () => {
   const { callApi } = useAxiosWithLoading();
 
-  const getTopicsAction = async () => {
+  const getTopicsAction = async (pageIndex, pageSize) => {
+    try {
+      const res = await callApi(
+        `/Topic?PageIndex=${pageIndex}&PageSize=${pageSize}`,
+        "get",
+        null,
+        null,
+        false
+      );
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+  return { getTopicsAction };
+};
+
+// Get all topics
+export const getAllTopics = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const getAllTopicsAction = async () => {
     try {
       const res = await callApi("/Topic", "get", null, null, false);
       return res;
@@ -12,7 +34,8 @@ export const getTopics = () => {
       throw new Error(err);
     }
   };
-  return { getTopicsAction };
+
+  return { getAllTopicsAction };
 };
 
 // Create topic

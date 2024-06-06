@@ -9,7 +9,14 @@ const schema = yup.object().shape({
   name: yup.string().required("Tên danh mục không được để trống"),
 });
 
-function CreateTopic({ open, handleClose, existingTopics, onTopicAdded }) {
+function CreateTopic({
+  open,
+  handleClose,
+  existingTopics,
+  onTopicAdded,
+  pageSize,
+  pageIndex,
+}) {
   const { handleSubmit, control, setError, reset } = useForm({
     resolver: yupResolver(schema),
   });
@@ -30,7 +37,7 @@ function CreateTopic({ open, handleClose, existingTopics, onTopicAdded }) {
     await createTopicAction(newTopic);
     reset();
     handleClose();
-    onTopicAdded();
+    onTopicAdded(pageIndex, pageSize);
   };
 
   return (

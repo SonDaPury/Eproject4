@@ -12,8 +12,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(LMSContext))]
-    [Migration("20240524022550_v1")]
-    partial class v1
+    [Migration("20240606063623_v100")]
+    partial class v100
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -104,6 +104,10 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
+                    b.Property<int>("Index")
+                        .HasColumnType("int")
+                        .HasColumnName("Index");
+
                     b.Property<int>("SourceId")
                         .HasColumnType("int")
                         .HasColumnName("source_id");
@@ -139,11 +143,6 @@ namespace backend.Migrations
                     b.Property<int>("SourceId")
                         .HasColumnType("int")
                         .HasColumnName("source_id");
-
-                    b.Property<string>("StaticFolder")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("static_folder");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
@@ -202,11 +201,6 @@ namespace backend.Migrations
                     b.Property<int>("ChapterId")
                         .HasColumnType("int")
                         .HasColumnName("chapter_id");
-
-                    b.Property<string>("StaticFolder")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("static_folder");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
@@ -267,6 +261,49 @@ namespace backend.Migrations
                     b.ToTable("Options");
                 });
 
+            modelBuilder.Entity("backend.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreatedAt");
+
+                    b.Property<string>("PaymentID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("PaymentID");
+
+                    b.Property<int>("SouresID")
+                        .HasColumnType("int")
+                        .HasColumnName("SouresID");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit")
+                        .HasColumnName("Status");
+
+                    b.Property<double>("TotalPrice")
+                        .HasColumnType("float")
+                        .HasColumnName("TotalPrice");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int")
+                        .HasColumnName("UserID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SouresID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Orders");
+                });
+
             modelBuilder.Entity("backend.Entities.Question", b =>
                 {
                     b.Property<int>("Id")
@@ -283,11 +320,6 @@ namespace backend.Migrations
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("image");
-
-                    b.Property<string>("StaticFolder")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("static_folder");
 
                     b.HasKey("Id");
 
@@ -351,7 +383,7 @@ namespace backend.Migrations
                         .HasColumnType("int")
                         .HasColumnName("exam_id");
 
-                    b.Property<int>("Index")
+                    b.Property<int?>("Index")
                         .HasColumnType("int")
                         .HasColumnName("index");
 
@@ -363,7 +395,9 @@ namespace backend.Migrations
 
                     b.HasIndex("ExamId");
 
-                    b.HasIndex("LessonId");
+                    b.HasIndex("LessonId")
+                        .IsUnique()
+                        .HasFilter("[lesson_id] IS NOT NULL");
 
                     b.ToTable("Serials");
                 });
@@ -401,16 +435,11 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("slug");
 
-                    b.Property<string>("StaticFolder")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("static_folder");
-
                     b.Property<bool>("Status")
                         .HasColumnType("bit")
                         .HasColumnName("status");
 
-                    b.Property<int>("SubTopicId")
+                    b.Property<int?>("SubTopicId")
                         .HasColumnType("int")
                         .HasColumnName("sub_topic_id");
 
@@ -422,7 +451,7 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("title");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int")
                         .HasColumnName("user_id");
 
@@ -515,11 +544,6 @@ namespace backend.Migrations
                         .HasColumnType("int")
                         .HasColumnName("role_id");
 
-                    b.Property<string>("StaticFolder")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("static_folder");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -547,10 +571,18 @@ namespace backend.Migrations
                     b.Property<DateTime?>("DisconnectedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ExamId")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ConnectionId");
+
+                    b.HasIndex("ExamId");
 
                     b.HasIndex("UserId");
 
@@ -658,6 +690,25 @@ namespace backend.Migrations
                     b.Navigation("Question");
                 });
 
+            modelBuilder.Entity("backend.Entities.Order", b =>
+                {
+                    b.HasOne("backend.Entities.Source", "Soures")
+                        .WithMany()
+                        .HasForeignKey("SouresID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Soures");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("backend.Entities.QuizQuestion", b =>
                 {
                     b.HasOne("backend.Entities.Exam", "Exam")
@@ -692,15 +743,11 @@ namespace backend.Migrations
                 {
                     b.HasOne("backend.Entities.SubTopic", "SubTopic")
                         .WithMany("Sources")
-                        .HasForeignKey("SubTopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SubTopicId");
 
                     b.HasOne("backend.Entities.User", "User")
                         .WithMany("Sources")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("SubTopic");
 
@@ -727,11 +774,17 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.UserConnection", b =>
                 {
+                    b.HasOne("backend.Entities.Exam", "Exam")
+                        .WithMany("Users")
+                        .HasForeignKey("ExamId");
+
                     b.HasOne("backend.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Exam");
 
                     b.Navigation("User");
                 });
@@ -753,6 +806,8 @@ namespace backend.Migrations
                     b.Navigation("QuizQuestions");
 
                     b.Navigation("Serials");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("backend.Entities.Lesson", b =>

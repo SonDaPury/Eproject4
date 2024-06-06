@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   topics: [],
   topicDetail: {},
+  total: 0,
 };
 
 const topicSlice = createSlice({
@@ -12,6 +13,9 @@ const topicSlice = createSlice({
     setTopics: (state, action) => {
       state.topics = [...action.payload];
     },
+    setTotalCount: (state, action) => {
+      state.total = action.payload;
+    },
     deleteTopicReducer: (state, action) => {
       state.topics = state.topics.filter((item) => {
         return item.id !== action.payload;
@@ -20,5 +24,6 @@ const topicSlice = createSlice({
   },
 });
 
-export const { setTopics, deleteTopicReducer } = topicSlice.actions;
+export const { setTopics, deleteTopicReducer, setTotalCount } =
+  topicSlice.actions;
 export default topicSlice.reducer;

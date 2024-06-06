@@ -3,10 +3,7 @@ import { useEffect, useState } from "react";
 import { deleteTopic, getTopics } from "@eproject4/services/topic.service";
 import { useDispatch, useSelector } from "react-redux";
 import { topicsSelector } from "@eproject4/redux/selectors";
-import {
-  setTopics,
-  deleteTopicReducer,
-} from "@eproject4/redux/slices/topicSlice";
+import { setTopics, setTotalCount } from "@eproject4/redux/slices/topicSlice";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -14,10 +11,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import TablePagination from "@mui/material/TablePagination";
 import Button from "@mui/material/Button";
 import CreateTopic from "./CreateTopic";
 import UpdateTopic from "./UpdateTopic";
+import Pagination from "@mui/material/Pagination";
 
 function createData(id, nameTopic) {
   return { id, nameTopic };
@@ -28,32 +25,28 @@ function Topic() {
   const dispatch = useDispatch();
   const { getTopicsAction } = getTopics();
   const { deleteTopicAction } = deleteTopic();
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [openModal, setOpenModal] = useState(false);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize] = useState(5);
 
   const rows = data.topics.map((item) => {
     return createData(item?.id, item?.topicName);
   });
 
-  const fetchDataTopics = async () => {
-    const res = await getTopicsAction();
-    dispatch(setTopics(res?.data));
+  const fetchDataTopics = async (pageIndex, pageSize) => {
+    const res = await getTopicsAction(pageIndex, pageSize);
+    dispatch(setTopics(res?.data?.items));
+    dispatch(setTotalCount(res?.data?.totalCount));
   };
 
   useEffect(() => {
-    fetchDataTopics();
-  }, []);
+    fetchDataTopics(pageIndex, pageSize);
+  }, [pageIndex, pageSize]);
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handlePageChange = (event, newPage) => {
+    setPageIndex(newPage);
   };
 
   const handleOpenModal = () => {
@@ -66,7 +59,7 @@ function Topic() {
 
   const handleDeleteTopic = async (id) => {
     await deleteTopicAction(id);
-    dispatch(deleteTopicReducer(id));
+    fetchDataTopics(pageIndex, pageSize);
   };
 
   const handleOpenUpdateModal = (topic) => {
@@ -108,48 +101,43 @@ function Topic() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  return (
-                    <TableRow
-                      key={index}
-                      sx={{
-                        "&:last-child td, &:last-child th": { border: 0 },
-                      }}>
-                      <TableCell component="th" scope="row">
-                        {row.id}
-                      </TableCell>
-                      <TableCell>{row.nameTopic}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outlined"
-                          sx={{ marginRight: "10px" }}
-                          onClick={() => handleOpenUpdateModal(row)}>
-                          Cập nhật
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          onClick={() => {
-                            handleDeleteTopic(row.id);
-                          }}>
-                          Xóa
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+              {rows.map((row, index) => {
+                return (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                    }}>
+                    <TableCell component="th" scope="row">
+                      {row.id}
+                    </TableCell>
+                    <TableCell>{row.nameTopic}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outlined"
+                        sx={{ marginRight: "10px" }}
+                        onClick={() => handleOpenUpdateModal(row)}>
+                        Cập nhật
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          handleDeleteTopic(row.id);
+                        }}>
+                        Xóa
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+        <Pagination
+          count={Math.ceil(data.total / pageSize)}
+          page={pageIndex}
+          onChange={handlePageChange}
+          sx={{ marginTop: 2 }}
         />
       </Box>
       <CreateTopic
@@ -157,6 +145,8 @@ function Topic() {
         handleClose={handleCloseModal}
         existingTopics={data.topics}
         onTopicAdded={fetchDataTopics}
+        pageSize={pageSize}
+        pageIndex={pageIndex}
       />
       {selectedTopic && (
         <UpdateTopic
@@ -164,7 +154,9 @@ function Topic() {
           handleClose={handleCloseUpdateModal}
           existingTopics={data.topics}
           topic={selectedTopic}
-          onTopicUpdated={fetchDataTopics} // Truyền callback để cập nhật danh sách
+          onTopicUpdated={fetchDataTopics}
+          pageSize={pageSize}
+          pageIndex={pageIndex}
         />
       )}
     </Box>

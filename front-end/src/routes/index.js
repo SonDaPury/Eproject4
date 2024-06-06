@@ -11,6 +11,9 @@ import Topic from "@eproject4/pages/admin/Topic/Topic.jsx";
 import Dashboard from "@eproject4/pages/admin/Dashboard";
 import SubTopic from "@eproject4/pages/admin/SubTopic";
 import UserDashboard from "@eproject4/pages/user/Dashboard";
+import CreateCourse from "@eproject4/pages/admin/CreateCourse";
+import AdminCourses from "@eproject4/pages/admin/AdminCourses";
+import AdminDetailCourse from "@eproject4/pages/admin/AdminCourses/AdminDetailCourse.jsx";
 
 // Route khong can login van xem duoc
 export const publicRoutes = [
@@ -48,5 +51,23 @@ export const adminRoutes = [
     component: Dashboard,
     layout: AdminLayout,
     name: "Dashboard",
+  },
+  {
+    path: "/admin/tao-khoa-hoc",
+    component: CreateCourse,
+    layout: AdminLayout,
+    name: "Tạo khóa học",
+  },
+  {
+    path: "/admin/khoa-hoc",
+    component: AdminCourses,
+    layout: AdminLayout,
+    name: "Quản lý khóa học",
+  },
+  {
+    path: "/admin/khoa-hoc/:slug",
+    component: AdminDetailCourse,
+    layout: AdminLayout,
+    name: "Quản lý khóa học",
   },
 ];

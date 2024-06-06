@@ -15,6 +15,8 @@ function UpdateTopic({
   existingTopics,
   topic,
   onTopicUpdated,
+  pageSize,
+  pageIndex,
 }) {
   const { handleSubmit, control, setError, reset } = useForm({
     resolver: yupResolver(schema),
@@ -40,7 +42,7 @@ function UpdateTopic({
     await updateTopicAction(newTopic);
     reset();
     handleClose();
-    onTopicUpdated();
+    onTopicUpdated(pageIndex, pageSize);
   };
 
   return (

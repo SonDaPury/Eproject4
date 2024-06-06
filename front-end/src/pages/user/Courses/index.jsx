@@ -61,7 +61,6 @@ function Courses() {
   });
 
   const topics = removeDuplicate(courseTopics);
-  console.log(topics);
   const data = seedData();
 
   const handleClickFilter = () => {
