@@ -23,4 +23,9 @@
         public long vnp_TxnRef { get; set; }
         public string? vnp_SecureHash { get; set; }
     }
+    public class InsertSourceFree
+    {
+        public int UserID { get; set; }
+        public int SourceID { get; set; }
+    }
 }

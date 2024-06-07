@@ -7,6 +7,7 @@ namespace backend.Service.Interface
         Task<object> CreateOrder(CreateOrder order);
         Task<object> ConfirmPayment(ConfirmPayment confirmPayment);
         Task<object> GetAllOrder();
+        Task<object> InsertSourceFree(InsertSourceFree insertSourceFree);
         /*        Task<Order> GetOrder(int id);
                 Task<Order> UpdateOrder(int id, Order order);
                 Task<Order> DeleteOrder(int id);
