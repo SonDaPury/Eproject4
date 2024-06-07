@@ -146,6 +146,11 @@ namespace backend.Service
             var lesson = await _context.Lessons
                 //.Include(l => l.Chapter) // Include the chapter to which the lesson belongs
                 .FirstOrDefaultAsync(l => l.Id == id);
+            if(lesson == null)
+            {
+                throw new Exception("lesson not found");
+            }
+            lesson.Video = lesson.Video != null ? _imageServices.GetFile(lesson.Video) : null;
             return _mapper?.Map<LessonDto?>(lesson);
         }
         public async Task<int> GetSerialIDbyLessonID(int lessonId)
@@ -256,6 +261,18 @@ namespace backend.Service
                     throw;
                 }
             }
+        }
+
+        public async Task<LessonDto> UpdateView (int lessonId)
+        {
+            var lesson = await _context.Lessons.FindAsync(lessonId);
+            if(lesson == null)
+            {
+                throw new Exception("not found lesson");
+            }
+            lesson.View++;
+            await _context.SaveChangesAsync();
+            return _mapper.Map<LessonDto>(lesson);
         }
 
     }
