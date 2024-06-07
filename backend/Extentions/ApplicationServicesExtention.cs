@@ -34,6 +34,8 @@ namespace backend.Extentions
             services.AddScoped<IimageServices, ImageServices>();
             services.AddAutoMapper(typeof(CreateAutoMapper));
 
+            services.AddTransient<IRedisService, RedisService>();
+
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = acttionContext =>
