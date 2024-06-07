@@ -160,8 +160,8 @@ namespace backend.Controller
             //ExamSubmissionDto submission,
             int examId)
         {
-            var userId = 1;
-            //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
+            var userId =
+            int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
             if (userId == 0)
             {
                 return Unauthorized(new { message = "User is not identified" });
@@ -169,10 +169,10 @@ namespace backend.Controller
 
             try
             {
-                var total = await _examService.EndExam(
+                var attempId = await _examService.EndExam(
                     //submission.UserAnswers, 
                     examId, userId);
-                return Ok(new { message = $"attemId : {total}%" });
+                return Ok(new { AttempId =  attempId });
             }
             catch (System.Exception ex)
             {

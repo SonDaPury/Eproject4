@@ -51,8 +51,8 @@ namespace backend.Helper
 
         public async Task StartExam(int examId)
         {
-            var userId = 1;
-                //int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
+            var userId =
+                int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
             var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId);
 
             if (exam == null || exam.IsStarted)
@@ -91,8 +91,9 @@ namespace backend.Helper
 
         public async Task EndExam( int examId)
         {
-            var userId = 1;
-            
+            var userId =
+                int.Parse(Context.User.Identity.Name);
+
             await _examService.EndExam(examId, userId);
             await Clients.Client(Context.ConnectionId).SendAsync("ReceiveExamEnd");
             //await Clients.User(userId.ToString()).SendAsync("ReceiveExamEnd");
