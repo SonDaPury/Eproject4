@@ -148,21 +148,37 @@ namespace backend.Service
 
             return result;
         }
-        /*     public async Task<object> UpdateOrder(int id)
-    {
-        var order = _context.Orders.FirstOrDefault(x => x.Id == id);
-        if (order == null) return null;
-         ỏ
-        _context.Orders.Update(order);
-        if (order == null)
+
+        public async Task<object> InsertSourceFree(InsertSourceFree insertSourceFree)
         {
-            return new
+            var Order = new Order
             {
-                message = "Order not found"
+                UserID = insertSourceFree.UserID,
+                SouresID = insertSourceFree.SourceID,
+                TotalPrice = 0,
+                CreatedAt = DateTime.Now,
+                PaymentID = "",
+                Status = true
             };
+            await _context.Orders.AddAsync(Order);
+            await _context.SaveChangesAsync();
+            return Order;
         }
-        return order;
-    }*/
+        /*     public async Task<object> UpdateOrder(int id)
+{
+var order = _context.Orders.FirstOrDefault(x => x.Id == id);
+if (order == null) return null;
+ỏ
+_context.Orders.Update(order);
+if (order == null)
+{
+   return new
+   {
+       message = "Order not found"
+   };
+}
+return order;
+}*/
 
     }
 }

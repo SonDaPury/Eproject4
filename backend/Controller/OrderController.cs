@@ -45,5 +45,10 @@ namespace backend.Controller
         {
             return await _orderService.GetAllOrder();
         }
+        [HttpPost("insert-source-free")]
+        public async Task<object> InsertSourceFree(InsertSourceFree insertSourceFree)
+        {
+            return await _orderService.InsertSourceFree(insertSourceFree);
+        }
     }
 }
