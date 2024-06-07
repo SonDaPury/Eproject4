@@ -8,10 +8,12 @@ using backend.Worker;
 using Elasticsearch.Net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Nest;
+using StackExchange.Redis;
 using System.Net.Mail;
 using System.Text;
 
@@ -49,6 +51,11 @@ builder.Services.AddDbContext<LMSContext>(
         );
     }
 );
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configurationOptions = ConfigurationOptions.Parse(configuration.GetSection("Redis:Configuration").Value);
+    return ConnectionMultiplexer.Connect(configurationOptions);
+});
 builder.Services.AddAppServices();
 
 // Jwt Config
