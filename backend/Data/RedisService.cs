@@ -1,7 +1,6 @@
-﻿using backend.Service.Interface;
-using StackExchange.Redis;
+﻿using StackExchange.Redis;
 
-namespace backend.Service
+namespace backend.Data
 {
     public class RedisService : IRedisService
     {
@@ -23,7 +22,7 @@ namespace backend.Service
             var db = _redis.GetDatabase();
             await db.StringSetAsync(key, value);
         }
-        public async Task SetValueWithExpiryAsync(string key, string value , TimeSpan expiry)
+        public async Task SetValueWithExpiryAsync(string key, string value, TimeSpan expiry)
         {
             var db = _redis.GetDatabase();
             await db.StringSetAsync(key, value, expiry);

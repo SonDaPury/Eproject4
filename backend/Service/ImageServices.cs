@@ -109,7 +109,8 @@ namespace backend.Service
             }
             else
             {
-                throw new FileNotFoundException($"File not found at the specified path.{ fullPath}");
+                //throw new FileNotFoundException($"File not found at the specified path.{ fullPath}");
+                return null;
             }
         }
         public bool IsImage(IFormFile file)

@@ -1,4 +1,4 @@
-﻿namespace backend.Service
+﻿namespace backend.Data
 {
     public static class CreateCacheKey
     {

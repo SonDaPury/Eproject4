@@ -1,4 +1,4 @@
-﻿namespace backend.Service.Interface
+﻿namespace backend.Data
 {
     public interface IRedisService
     {

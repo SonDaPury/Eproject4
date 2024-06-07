@@ -53,7 +53,13 @@ builder.Services.AddDbContext<LMSContext>(
 );
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
-    var configurationOptions = ConfigurationOptions.Parse(configuration.GetSection("Redis:Configuration").Value);
+    var redisConfig = builder.Configuration.GetSection("Redis");
+    var configurationOptions = new ConfigurationOptions
+    {
+        EndPoints = { redisConfig["Configuration"] },
+        Password = redisConfig["Password"],
+        AbortOnConnectFail = false
+    };
     return ConnectionMultiplexer.Connect(configurationOptions);
 });
 builder.Services.AddAppServices();
