@@ -57,7 +57,7 @@ namespace backend.Service
             {
                 throw ex;
             }
-            var result = await GetByIdAsync(source.Id);
+            var result = await GetWithToppicIdAsync(source.Id);
 
             var scirptSource = @"for (int i = 0; i < ctx._source.subTopics.size(); i++) { if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) { ctx._source.subTopics[i].sources.add(params.sources); } }";
             var scriptParams = new Dictionary<string, object>
@@ -173,6 +173,24 @@ namespace backend.Service
             return null;
         }
 
+        private async Task<SourceViewDto?> GetWithToppicIdAsync(int id)
+        {
+            var source = await _context.Sources
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (source != null)
+            {
+                //if (source.Thumbnail != null)
+                //    source.Thumbnail = _imageServices.GetFile(source.Thumbnail);
+                //if (source.VideoIntro != null)
+                //    source.VideoIntro = _imageServices.GetFile(source.VideoIntro);
+
+                SourceViewDto sourceViewDto = _mapper.Map<SourceViewDto>(source);
+                var subtopic = await _context.SubTopics.FirstOrDefaultAsync(s => s.Id == source.SubTopicId);
+                sourceViewDto.TopicId = subtopic.TopicId;
+                return sourceViewDto;
+            }
+            return null;
+        }
         public async Task<Source?> UpdateAsync(int id, SourceDto updatedSource)
         {
             var source = await _context.Sources.FindAsync(id);
