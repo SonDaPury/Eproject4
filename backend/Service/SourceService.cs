@@ -71,6 +71,7 @@ namespace backend.Service
                     Thumbnail = result.Thumbnail,
                     Slug = result.Slug,
                     Status = result.Status,
+                    Benefit = "",
                     Video_intro = result.VideoIntro,
                     Price = result.Price,
                     Rating = result.Rating,
@@ -107,9 +108,9 @@ namespace backend.Service
                     if (source.Source != null)
                     {
                         //if (source.Source.Thumbnail != null)
-                            source.Source.Thumbnail = source.Source.Thumbnail != null ? _imageServices.GetFile(source.Source.Thumbnail) : null;
+                        source.Source.Thumbnail = source.Source.Thumbnail != null ? _imageServices.GetFile(source.Source.Thumbnail) : null;
                         //if (source.Source.VideoIntro != null)
-                            source.Source.VideoIntro = source.Source.VideoIntro != null ? _imageServices.GetFile(source.Source.VideoIntro) : null;
+                        source.Source.VideoIntro = source.Source.VideoIntro != null ? _imageServices.GetFile(source.Source.VideoIntro) : null;
                     }
                 }
             return sources;
@@ -196,9 +197,9 @@ namespace backend.Service
             //{
             //    if (!string.IsNullOrWhiteSpace(source.Thumbnail))
             //    {
-                    // Assuming Thumbnail stores a relative path under wwwroot
-                    string existingThumbnailPath =  source.Thumbnail;
-                    source.Thumbnail = _imageServices.UpdateFile(updatedSource.Thumbnail, existingThumbnailPath, "sources", "thumbnails");
+            // Assuming Thumbnail stores a relative path under wwwroot
+            string existingThumbnailPath = source.Thumbnail;
+            source.Thumbnail = _imageServices.UpdateFile(updatedSource.Thumbnail, existingThumbnailPath, "sources", "thumbnails");
             //    }
             //    else
             //    {
@@ -211,9 +212,9 @@ namespace backend.Service
             //{
             //    if (!string.IsNullOrWhiteSpace(source.VideoIntro))
             //    {
-                    // Assuming VideoIntro stores a relative path under wwwroot
-                    string existingVideoPath =  source.VideoIntro;
-                    source.VideoIntro = _imageServices.UpdateFile(updatedSource.VideoIntro, existingVideoPath, "sources", "videos");
+            // Assuming VideoIntro stores a relative path under wwwroot
+            string existingVideoPath = source.VideoIntro;
+            source.VideoIntro = _imageServices.UpdateFile(updatedSource.VideoIntro, existingVideoPath, "sources", "videos");
             //    }
             //    else
             //    {
@@ -236,6 +237,7 @@ namespace backend.Service
                         ctx._source.subTopics[i].sources[j].Description = params.Description;
                         ctx._source.subTopics[i].sources[j].Thumbnail = params.Thumbnail;
                         ctx._source.subTopics[i].sources[j].Slug = params.Slug;
+                        ctx._source.subTopics[i].sources[j].Benefit = params.Benefit;
                         ctx._source.subTopics[i].sources[j].Status = params.Status;
                         ctx._source.subTopics[i].sources[j].Video_intro = params.Video_intro;
                         ctx._source.subTopics[i].sources[j].Price = params.Price;
@@ -257,6 +259,7 @@ namespace backend.Service
         { "Thumbnail", source.Thumbnail },
         { "Slug", source.Slug },
         { "Status", source.Status ? 1 : 0 },
+        { "Benefit", "" },
         { "Video_intro", source.VideoIntro },
         { "Price", source.Price },
         { "Rating", source.Rating },
