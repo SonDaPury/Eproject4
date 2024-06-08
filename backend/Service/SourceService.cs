@@ -106,10 +106,10 @@ namespace backend.Service
                 {
                     if (source.Source != null)
                     {
-                        if (source.Source.Thumbnail != null)
-                            source.Source.Thumbnail = _imageServices.GetFile(source.Source.Thumbnail);
-                        if (source.Source.VideoIntro != null)
-                            source.Source.VideoIntro = _imageServices.GetFile(source.Source.VideoIntro);
+                        //if (source.Source.Thumbnail != null)
+                            source.Source.Thumbnail = source.Source.Thumbnail != null ? _imageServices.GetFile(source.Source.Thumbnail) : null;
+                        //if (source.Source.VideoIntro != null)
+                            source.Source.VideoIntro = source.Source.VideoIntro != null ? _imageServices.GetFile(source.Source.VideoIntro) : null;
                     }
                 }
             return sources;
