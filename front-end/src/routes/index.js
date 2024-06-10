@@ -14,6 +14,7 @@ import UserDashboard from "@eproject4/pages/user/Dashboard";
 import CreateCourse from "@eproject4/pages/admin/CreateCourse";
 import AdminCourses from "@eproject4/pages/admin/AdminCourses";
 import AdminDetailCourse from "@eproject4/pages/admin/AdminCourses/AdminDetailCourse.jsx";
+import AdminLession from "@eproject4/pages/admin/AdminCourses/AdminLession";
 
 // Route khong can login van xem duoc
 export const publicRoutes = [
@@ -67,6 +68,12 @@ export const adminRoutes = [
   {
     path: "/admin/khoa-hoc/:slug",
     component: AdminDetailCourse,
+    layout: AdminLayout,
+    name: "Quản lý khóa học",
+  },
+  {
+    path: "/admin/khoa-hoc/:slug/bai-hoc",
+    component: AdminLession,
     layout: AdminLayout,
     name: "Quản lý khóa học",
   },

@@ -17,6 +17,7 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { createCourse } from "@eproject4/services/courses.service";
 import { getUser } from "@eproject4/helpers/authHelper";
+import { useNavigate } from "react-router-dom";
 
 const validationSchema = Yup.object().shape({
   thumbnail: Yup.mixed()
@@ -58,6 +59,7 @@ function AdvancedInfoTab({ onBack, basicInfo }) {
   const { createCoursesAction } = createCourse();
   const benefitsArray = [];
   const requirementsArray = [];
+  const navigate = useNavigate();
 
   const {
     control,
@@ -123,6 +125,7 @@ function AdvancedInfoTab({ onBack, basicInfo }) {
     } catch (err) {
       throw new Error(err);
     }
+    navigate("/admin/khoa-hoc", { replace: true });
   };
 
   const handleThumbnailChange = (event) => {
