@@ -164,7 +164,10 @@ function AdminLayout({ name, children }) {
                 <ListItem
                   sx={{
                     backgroundColor:
-                      location.pathname === `/admin/${route.slug}`
+                      location.pathname.startsWith(`/admin/${route.slug}`) &&
+                      (location.pathname == `/admin/${route.slug}` ||
+                        location.pathname[`/admin/${route.slug}`.length] ===
+                          "/")
                         ? "#FF6636"
                         : "transparent",
                     "&:hover": {
@@ -178,7 +181,10 @@ function AdminLayout({ name, children }) {
                     sx={{
                       marginRight: "10px",
                       color:
-                        location.pathname === `/admin/${route.slug}`
+                        location.pathname.startsWith(`/admin/${route.slug}`) &&
+                        (location.pathname == `/admin/${route.slug}` ||
+                          location.pathname[`/admin/${route.slug}`.length] ===
+                            "/")
                           ? "#FFF"
                           : "#8C94A3",
                     }}>
@@ -188,7 +194,10 @@ function AdminLayout({ name, children }) {
                     primary={route.name}
                     sx={{
                       color:
-                        location.pathname === `/admin/${route.slug}`
+                        location.pathname.startsWith(`/admin/${route.slug}`) &&
+                        (location.pathname == `/admin/${route.slug}` ||
+                          location.pathname[`/admin/${route.slug}`.length] ===
+                            "/")
                           ? "#FFF"
                           : "#8C94A3",
                     }}
