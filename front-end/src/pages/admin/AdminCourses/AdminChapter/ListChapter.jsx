@@ -17,6 +17,7 @@ import axios from "axios";
 import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar";
 
 function ListChapter({ listChapters, getChapterOfCourse }) {
+  const [updateListChapter, setUpdateListChapter] = useState([]);
   const [sortedChapter, setSortedChapter] = useState([]);
   const { updateChapterAction } = updateChapter();
   const [isDragged, setIsDragged] = useState(false);
@@ -53,7 +54,20 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
     e.stopPropagation();
     updateIndexesOnDelete(index);
     await deleteChapterAction(id);
-    await updateChapterAction(sortedChapter);
+    try {
+      await Promise.all(
+        sortedChapter.map(
+          async (chapter) =>
+            await axios.put(`http://localhost:5187/api/Chapter/${chapter.id}`, {
+              ...chapter,
+              index: chapter?.index,
+            })
+        ),
+        showSnackbar("Cập nhật thứ tự chương thành công", "success")
+      );
+    } catch (err) {
+      throw new Error(err);
+    }
     getChapterOfCourse(idCourse);
   };
 
@@ -64,19 +78,23 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
+    console.log(active);
+    updateListChapter.push({
+      id: active.id,
+      index: Number(active?.data?.current?.sortable?.index) + 1,
+    });
     if (active.id !== over.id) {
       const data = (items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
-
         newItems.forEach((item, index) => {
           item.index = index + 1;
         });
 
         return newItems;
       };
-
+      data(sortedChapter);
       setSortedChapter(data(sortedChapter));
     }
   };
@@ -86,10 +104,15 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
   };
 
   const handleUpdateOrderChapter = async () => {
+    console.log(updateListChapter);
     try {
       await Promise.all(
-        sortedChapter.map((chapter) =>
-          axios.put(`http://localhost:5187/api/Chapter/${chapter.id}`, chapter)
+        sortedChapter.map(
+          async (chapter) =>
+            await axios.put(`http://localhost:5187/api/Chapter/${chapter.id}`, {
+              ...chapter,
+              index: chapter?.index,
+            })
         ),
         showSnackbar("Cập nhật thứ tự chương thành công", "success")
       );
