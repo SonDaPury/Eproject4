@@ -135,6 +135,7 @@ namespace backend.Service
                                        video = g.lesson.Video != null ? _imageServices.GetFile(g.lesson.Video) : null,
                                        view = g.lesson.View,
                                        status = g.lesson.Status,
+                                       description = g.lesson.Description,
                                        examID = g.serial.ExamId
                                    })
                                }).ToListAsync();
@@ -193,6 +194,7 @@ namespace backend.Service
                     lesson.View = update.View;
                     lesson.Status = update.Status;
                     lesson.ChapterId = update.ChapterId;
+                    lesson.Description = update.Description;
 
                     await _context.SaveChangesAsync();
                     var serial = new SerialDtoUpdate

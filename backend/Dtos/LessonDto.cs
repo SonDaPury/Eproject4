@@ -10,6 +10,7 @@
         public bool Status { get; set; }
         public int ChapterId { get; set; }
         public string? FileVideoNameSource { get; set; }
+        public string? Description { get; set; }
     }
     public class LessonDtoCreate : LessonDto
     {

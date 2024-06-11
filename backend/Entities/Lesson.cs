@@ -38,6 +38,9 @@ namespace backend.Entities
         //[StringLength(20)]
         //public string? StaticFolder { get; set; }
 
+        [Column("description")]
+        public string? Description { get; set; }
+
         [Column("chapter_id")]
         public int ChapterId { get; set; }
 
