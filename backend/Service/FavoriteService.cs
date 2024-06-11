@@ -1,4 +1,5 @@
-﻿using backend.Data;
+﻿using backend.Base;
+using backend.Data;
 using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -36,11 +37,13 @@ namespace backend.Service
             _context.FavoriteSources.Remove(favorite);
             await _context.SaveChangesAsync();  
         }
-        public async Task<List<Source>> GetSourcesFavoriteByUserId(int userId)
+        public async Task<List<Source>> GetSourcesFavoriteByUserId(int userId , Pagination pagination)
         {
             var sources = await _context.Sources
                 .Include(s => s.FavoriteSources)
                 .Where(s => s.FavoriteSources.Any(f => f.UserId == userId))
+                .Skip(pagination.PageSize*(pagination.PageIndex-1))
+                .Take(pagination.PageSize)
                 .ToListAsync();
             if (sources.Count != 0)
                 foreach (var source in sources)
@@ -68,6 +71,11 @@ namespace backend.Service
                         source.VideoIntro = _imageServices.GetFile(source.VideoIntro);
                 }
             return topSources;
+        }
+        public async Task<List<FavoriteSource>> GetAll()
+        {
+            var list = await _context.FavoriteSources.ToListAsync();
+            return list;
         }
     }
 }
