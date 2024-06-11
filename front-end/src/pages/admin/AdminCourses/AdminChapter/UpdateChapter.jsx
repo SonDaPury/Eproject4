@@ -148,7 +148,7 @@ function UpdateChapter({
                   width: "78px",
                   height: "48px",
                 }}>
-                Thêm
+                Sửa
               </Button>
             </Box>
           </Box>

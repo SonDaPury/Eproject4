@@ -75,6 +75,7 @@ export const updateChapter = () => {
         "Cập nhật chương thành công",
         true
       );
+      return res;
     } catch (err) {
       throw new Error(err);
     }
