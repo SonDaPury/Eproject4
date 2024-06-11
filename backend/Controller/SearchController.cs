@@ -102,12 +102,10 @@ namespace backend.Controller
             return test;
         }
         [HttpPost("searchfulltext")]
-        public async Task<object> SearchFullText(string search)
+        public async Task<object> SearchFullTextTEST(string search)
         {
-            var result = _elasticSearchRepository.GetData<SourcesElasticSearch>(s => s
+            var result = _elasticSearchRepository.GetDataSearch<TopicElasticSearch>(s => s
             .Index("sources_index")
-            .From(0)
-            .Size(10)
             .Query(q => q
                 .Nested(n => n
                     .Path("subTopics")
@@ -132,23 +130,34 @@ namespace backend.Controller
                         .Name("filtered_subTopics")
             )
         )
-            ));
-            var test = result.Select(x => new
-            {
-                Id = x.Id,
-                Title = x.Title,
-                Description = x.Description,
-                Thumbnail = _IimageServices.GetFile(x.Thumbnail),
-                Slug = x.Slug,
-                Status = x.Status,
-                Benefit = x.Benefit,
-                Video_intro = _IimageServices.GetFile(x.Video_intro),
-                Price = x.Price,
-                Rating = x.Rating,
-                UserId = x.UserId
+           ));
+            result.ForEach(x => x.Source.Thumbnail = _IimageServices.GetFile(x.Source.Thumbnail));
+            result.ForEach(x => x.Source.Video_intro = _IimageServices.GetFile(x.Source.Video_intro));
 
-            }
-          ).ToList();
+            var test = result.GroupBy(s => new {s.TopicName,s.TopicId }).Select(x => new
+            {
+                TopicName = x.Key.TopicName,
+                TopicId = x.Key.TopicId,
+                SubTopics = x.GroupBy(s => new {s.SubTopicName,s.SubTopicId}).Select(y => new
+                {
+                    SubTopicName = y.Key.SubTopicName,
+                    SubTopicId = y.Key.SubTopicId,
+                    Sources = y.Select(z => new
+                    {
+                        Id = z.Source.Id,
+                        Title = z.Source.Title,
+                        Description = z.Source.Description,
+                        Thumbnail = z.Source.Thumbnail,
+                        Slug = z.Source.Slug,
+                        Status = z.Source.Status,
+                        Benefit = z.Source.Benefit,
+                        Video_intro = z.Source.Video_intro,
+                        Price = z.Source.Price,
+                        Rating = z.Source.Rating,
+                        UserId = z.Source.UserId
+                    }).ToList()
+                }).ToList()
+            }).ToList();
             return test;
         }
     }

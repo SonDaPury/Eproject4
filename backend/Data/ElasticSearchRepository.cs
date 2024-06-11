@@ -1,8 +1,18 @@
 ﻿using backend.Dtos;
+using backend.Entities;
 using Nest;
 
 namespace backend.Data
 {
+    public class SearchResult
+    {
+        public SourcesElasticSearch Source { get; set; }
+        public string TopicName { get; set; }
+        public int TopicId { get; set; }
+        public string SubTopicName { get; set; }
+        public int SubTopicId { get; set; }
+    }
+
     public class ElasticSearchRepository : IElasticSearchRepository
     {
         private IElasticClient _client;
@@ -45,6 +55,7 @@ namespace backend.Data
                             {
                                 if (subTopicHit.InnerHits.ContainsKey("filtered_sources"))
                                 {
+                                    var subTopic = subTopicHit.Source.As<SubTopcElasticSearch>();
                                     var filteredSourcesHits = subTopicHit.InnerHits["filtered_sources"].Hits;
                                     for (int i = 0; i < filteredSourcesHits.Hits.Count; i++)
                                     {
@@ -70,7 +81,60 @@ namespace backend.Data
                 return new List<T>();
             }
         }
-
+        public List<SearchResult> GetDataSearch<T>(Func<SearchDescriptor<TopicElasticSearch>, ISearchRequest> selector) where T : class
+        {
+            var list = new List<SearchResult>();
+            try
+            {
+                var response = _client.Search<TopicElasticSearch>(selector);
+                if (response.IsValid)
+                {
+                    TopicElasticSearch topic = new TopicElasticSearch();
+                    var hits = response.Hits;
+                    foreach (var hit in hits)
+                    {
+                        topic = hit.Source;
+                        var innerHits = hit.InnerHits;
+                        if (innerHits.ContainsKey("filtered_subTopics"))
+                        {
+                            var filteredSubTopicsHits = innerHits["filtered_subTopics"].Hits;
+                            foreach (var subTopicHit in filteredSubTopicsHits.Hits)
+                            {
+                                if (subTopicHit.InnerHits.ContainsKey("filtered_sources"))
+                                {
+                                    var subTopic = subTopicHit.Source.As<SubTopcElasticSearch>();
+                                    var filteredSourcesHits = subTopicHit.InnerHits["filtered_sources"].Hits;
+                                    for (int i = 0; i < filteredSourcesHits.Hits.Count; i++)
+                                    {
+                                        var sourceHit = filteredSourcesHits.Hits[i];
+                                        var source = sourceHit.Source.As<SourcesElasticSearch>();
+                                        list.Add(new SearchResult
+                                        {
+                                            Source = source,
+                                            TopicName = topic.TopicName,
+                                            TopicId = topic.TopicId,
+                                            SubTopicName = subTopic.SubTopicName,
+                                            SubTopicId = subTopic.SubTopicId
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return list;
+                }
+                else
+                {
+                    Console.WriteLine($"Search failed: {response.ServerError?.Error?.Reason ?? "Unknown error"}");
+                    return new List<SearchResult>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception occurred: {ex.Message}");
+                return new List<SearchResult>();
+            }
+        }
 
         public bool RemoveDocument(string id, string index = "sources_index")
         {
