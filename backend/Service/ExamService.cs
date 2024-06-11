@@ -14,7 +14,7 @@ using System.Timers;
 
 namespace backend.Service
 {
-    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService, IServiceScopeFactory scopeFactory, IimageServices imageServices, IRedisService redisService) : IExamService
+    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService, IServiceScopeFactory scopeFactory, IimageServices imageServices, IRedisService redisService, IQuestionService questionService, IAnswerService answerService, IQuizQuestionService quizQuestionService) : IExamService
     {
         private readonly LMSContext _context = context;
         private readonly IHubContext<ExamHub> _hubContext = hubContext;
@@ -22,6 +22,9 @@ namespace backend.Service
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IimageServices _imageServices = imageServices;
         private readonly IRedisService _redisService = redisService;
+        private readonly IQuestionService _questionService = questionService;
+        private readonly IAnswerService _answerService = answerService;
+        private readonly IQuizQuestionService _quizQuestionService = quizQuestionService;
         //private static volatile bool _continueExam = true;
 
         public async Task<Exam> CreateAsync(Exam exam)
@@ -191,27 +194,67 @@ namespace backend.Service
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var exam = await _context.Exams.FindAsync(id);
-            if (exam == null) return false;
-            var quiz_question = await _context.QuizQuestions.Where(q => q.ExamId == id).ToListAsync();
-            if (quiz_question != null)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                _context.QuizQuestions.RemoveRange(quiz_question);
-            }
-            var serials = await _context.Serials.Where(q => q.ExamId == id).ToListAsync();
-            if (serials != null)
-            {
-                _context.Serials.RemoveRange(serials);
-            }
+                try
+                {
+                    var exam = await _context.Exams.FindAsync(id);
+                    if (exam == null) return false;
 
-            var answer = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
-            if (answer != null)
-            {
-                _context.Answers.RemoveRange(answer);
+                    var quiz_questions = await _context.QuizQuestions.Where(q => q.ExamId == id).ToListAsync();
+                    if (quiz_questions != null)
+                    {
+                        foreach (var quiz_question in quiz_questions)
+                        {
+                            await _questionService.DeleteAsync(quiz_question.QuestionId);
+                            await _quizQuestionService.DeleteAsync(quiz_question.Id);
+                        }
+                        //_context.QuizQuestions.RemoveRange(quiz_questions);
+                        //await _context.SaveChangesAsync();
+                    }
+
+                    var serials = await _context.Serials.Where(q => q.ExamId == id).ToListAsync();
+                    if (serials != null)
+                    {
+                        foreach (var serial in serials)
+                        {
+                            await _serialService.DeleteAsync(serial.Id);
+                        }
+                        //_context.Serials.RemoveRange(serials);
+                        //await _context.SaveChangesAsync();
+                    }
+
+                    var answers = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
+                    if (answers != null)
+                    {
+                        foreach(var answer in answers)
+                        {
+                            await _answerService.DeleteAsync(answer.Id);
+                        }
+                        //_context.Answers.RemoveRange(answers);
+                    }
+
+                    _context.Exams.Remove(exam);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    await transaction.RollbackAsync();
+                    // Xử lý lỗi đồng thời ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
+                    Console.WriteLine("Concurrency conflict occurred. Data may have been modified or deleted by another process.");
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    // Xử lý các lỗi khác ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                    return false;
+                }
             }
-            _context.Exams.Remove(exam);
-            await _context.SaveChangesAsync();
-            return true;
         }
         //public async Task StartExam(int examId)
         //{
