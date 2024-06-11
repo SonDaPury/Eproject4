@@ -89,9 +89,9 @@ namespace backend.Service
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
-                return "failed";
+                return filename;
             }
-            return filename;
+            return "failed";
         }
         public string GetFile(string relativePath)
         {
