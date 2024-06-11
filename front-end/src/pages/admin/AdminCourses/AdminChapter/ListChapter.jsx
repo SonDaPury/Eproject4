@@ -1,8 +1,5 @@
 import { Box, Button } from "@mui/material";
-import {
-  deleteChapter,
-  updateChapter,
-} from "@eproject4/services/chapter.service";
+import { deleteChapter } from "@eproject4/services/chapter.service";
 import { useSearchParams } from "react-router-dom";
 import UpdateChapter from "./UpdateChapter";
 import { useEffect, useState } from "react";
@@ -18,7 +15,6 @@ import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar";
 
 function ListChapter({ listChapters, getChapterOfCourse }) {
   const [sortedChapter, setSortedChapter] = useState([]);
-  const { updateChapterAction } = updateChapter();
   const [isDragged, setIsDragged] = useState(false);
   const [searchParams] = useSearchParams();
   const idCourse = searchParams.get("id-course");
@@ -53,7 +49,20 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
     e.stopPropagation();
     updateIndexesOnDelete(index);
     await deleteChapterAction(id);
-    await updateChapterAction(sortedChapter);
+    try {
+      await Promise.all(
+        sortedChapter.map(
+          async (chapter) =>
+            await axios.put(`http://localhost:5187/api/Chapter/${chapter.id}`, {
+              ...chapter,
+              index: chapter?.index,
+            })
+        ),
+        showSnackbar("Cập nhật thứ tự chương thành công", "success")
+      );
+    } catch (err) {
+      throw new Error(err);
+    }
     getChapterOfCourse(idCourse);
   };
 
@@ -64,19 +73,19 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
+
     if (active.id !== over.id) {
       const data = (items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         const newItems = arrayMove(items, oldIndex, newIndex);
-
         newItems.forEach((item, index) => {
           item.index = index + 1;
         });
 
         return newItems;
       };
-
+      data(sortedChapter);
       setSortedChapter(data(sortedChapter));
     }
   };
@@ -88,8 +97,12 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
   const handleUpdateOrderChapter = async () => {
     try {
       await Promise.all(
-        sortedChapter.map((chapter) =>
-          axios.put(`http://localhost:5187/api/Chapter/${chapter.id}`, chapter)
+        sortedChapter.map(
+          async (chapter) =>
+            await axios.put(`http://localhost:5187/api/Chapter/${chapter.id}`, {
+              ...chapter,
+              index: chapter?.index,
+            })
         ),
         showSnackbar("Cập nhật thứ tự chương thành công", "success")
       );
