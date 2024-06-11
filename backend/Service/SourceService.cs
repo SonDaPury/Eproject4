@@ -99,7 +99,9 @@ namespace backend.Service
                  {
                      Source = _mapper.Map<SourceViewDto>(s),
                      //Source =s,
-                     TopicId = s.SubTopic.TopicId ?? null
+                     TopicId = s.SubTopic.TopicId ?? null,
+                     TopicName = s.SubTopic.Topic.TopicName ?? null,
+
                  })
                  .ToListAsync();
             if (sources.Any())
@@ -125,7 +127,8 @@ namespace backend.Service
                  {
                      Source = _mapper.Map<SourceViewDto>(s),
                      //Source = s,
-                     TopicId = s.SubTopic != null ? s.SubTopic.TopicId : null
+                     TopicId = s.SubTopic != null ? s.SubTopic.TopicId : null,
+                     TopicName = s.SubTopic.Topic != null ? s.SubTopic.Topic.TopicName : null
                  })
                 //.Include(s => s.Chapters)
                 .Skip((pagination.PageIndex - 1) * pagination.PageSize)
