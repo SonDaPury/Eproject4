@@ -15,6 +15,7 @@ function AdminLession() {
   const getChapterOfCourse = async (idSource) => {
     const res = await getChapterBySourceIdAction(idSource);
     setChapterOfCourse(res?.data);
+    return res?.data;
   };
 
   return (

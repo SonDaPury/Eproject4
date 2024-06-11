@@ -214,7 +214,9 @@ function AdminLayout({ name, children }) {
           flexGrow: 1,
           marginLeft: "240px",
           marginTop: "70px",
-          marginBottom: "70px",
+          // marginBottom: "70px",
+          paddingBottom: "40px",
+          height: "100%",
         }}>
         {children}
       </Box>
