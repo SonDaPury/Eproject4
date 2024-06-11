@@ -12,5 +12,6 @@ namespace backend.Service.Interface
         Task<(List<SourceWithTopicId>, int)> GetAllAsync(Pagination pagination);
         Task<SourceViewDto?> GetByIdAsync(int id);
         Task<Source?> UpdateAsync(int id, SourceDto updatedSource);
+        Task<object> GroupByTopic();
     }
 }

@@ -36,7 +36,7 @@ function LessionDetail({
       await deleteExamAction(id);
       fetchDataAllLessonsOfChapter();
     } else {
-      await deleteLessonAction(Number(id));
+    await deleteLessonAction(Number(id));
       fetchDataAllLessonsOfChapter();
     }
   };
@@ -86,16 +86,18 @@ function LessionDetail({
     <Box>
       <Box>
         {mergeList?.map((lession, index) => (
-          <Box key={index}>
-            <Box
-              sx={{
-                padding: "12px 20px",
-                backgroundColor: "#FFF",
-                marginBottom: "15px",
-                display: "flex",
-                justifyContent: "space-between",
+            <Box key={index}>
+              {lession?.lesson.map((item, index) => {
+                return (
+                  <Box
+                    sx={{
+                      padding: "12px 20px",
+                      backgroundColor: "#FFF",
+                      marginBottom: "15px",
+                      display: "flex",
+                      justifyContent: "space-between",
               }}>
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
                 {lession?.timeLimit ? (
                   <>
                     <DriveFileRenameOutlineIcon sx={{ marginRight: "15px" }} />
@@ -108,13 +110,13 @@ function LessionDetail({
                     />
                   </>
                 ) : (
-                  <FormatListBulletedIcon sx={{ marginRight: "15px" }} />
+                      <FormatListBulletedIcon sx={{ marginRight: "15px" }} />
                 )}
                 <Typography>{lession?.title}</Typography>
-              </Box>
-              <Box>
-                <IconButton
-                  onClick={() => {
+                    </Box>
+                    <Box>
+                      <IconButton
+                        onClick={() => {
                     handleUpdateExamAndLesson(lession?.id, lession?.timeLimit);
                   }}>
                   <BorderColorIcon />
@@ -122,12 +124,14 @@ function LessionDetail({
                 <IconButton
                   onClick={() => {
                     handleDeleteLession(lession?.id, lession?.timeLimit);
-                  }}>
-                  <DeleteOutlineIcon />
-                </IconButton>
-              </Box>
+                        }}>
+                        <DeleteOutlineIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                );
+              })}
             </Box>
-          </Box>
         ))}
       </Box>
     </Box>

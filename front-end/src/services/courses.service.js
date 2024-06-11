@@ -76,8 +76,15 @@ export const getAllCourses = () => {
       throw new Error(err);
     }
   };
-
-  return { getCoursesAction };
+  const getCourseActionGroupByTopic = async () => {
+    try {
+      const res = await callApi("/Source/groupbytopic", "get", null, null, false);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+  return { getCoursesAction,getCourseActionGroupByTopic };
 };
 
 // Get course pagination
