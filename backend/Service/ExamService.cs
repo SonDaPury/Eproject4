@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Timers;
+using Microsoft.Extensions.Options;
 
 namespace backend.Service
 {
@@ -90,19 +91,30 @@ namespace backend.Service
                         {
                             question.Image = _imageServices.UpdateFile(updateQuestionDto.Image, question.Image, "Questions", "Image");
                         }
-                    }
-                    if (updateQuestionDto.Options != null)
-                    {
-                        List<Option> options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
+                        List<Option> options =new List<Option>();
+                        if (updateQuestionDto.Options != null)
+                        {
+                            options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
 
-                        _context.Options.UpdateRange(options);
-                    }
-                    await _context.SaveChangesAsync();
+                            _context.Options.UpdateRange(options);
+                        }
+                        var optionIds = options.Select(o => new
+                        {
+                            o.Id,
+                            o.Answer
+                        }).ToList();
+                        await _context.SaveChangesAsync();
 
-                    return new
+                        return new
+                        {
+                            QuestionID = question.Id,
+                            OptionIDs = optionIds
+                        };
+                    }
+                    else
                     {
-                        mess = "Success"
-                    };
+                        throw new Exception("questionid is required");
+                    }
                 }
                 catch (Exception)
                 {
@@ -235,7 +247,7 @@ namespace backend.Service
                     {
                         //foreach (var serial in serials)
                         //{
-                            await _serialService.UpdateSerialDeleteExam(serials.Id);
+                        await _serialService.UpdateSerialDeleteExam(serials.Id);
                         //}
                         //_context.Serials.RemoveRange(serials);
                         //await _context.SaveChangesAsync();
@@ -244,7 +256,7 @@ namespace backend.Service
                     var answers = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
                     if (answers != null)
                     {
-                        foreach(var answer in answers)
+                        foreach (var answer in answers)
                         {
                             await _answerService.DeleteAsync(answer.Id);
                         }
