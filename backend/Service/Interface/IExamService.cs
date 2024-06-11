@@ -10,7 +10,7 @@ namespace backend.Service.Interface
             int examId, int userId);
         Task<dynamic> GetDetailsExam(int examId);
         //Task StartExam(int examId);
-        Task<Exam> CreateAsync(Exam exam, int index);
+        Task<Exam> CreateAsync(Exam exam);
         Task<(List<Exam>, int)> GetAllAsync(Pagination pagination);
         Task<Exam?> GetByIdAsync(int id);
         Task<Exam?> UpdateAsync(int id, Exam updatedItem);

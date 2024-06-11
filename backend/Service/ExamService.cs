@@ -24,7 +24,7 @@ namespace backend.Service
         private readonly IRedisService _redisService = redisService;
         //private static volatile bool _continueExam = true;
 
-        public async Task<Exam> CreateAsync(Exam exam, int index)
+        public async Task<Exam> CreateAsync(Exam exam)
         {
             await _context.Exams.AddAsync(exam);
             await _context.SaveChangesAsync();
