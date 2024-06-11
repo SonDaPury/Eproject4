@@ -45,5 +45,6 @@ namespace backend.Entities
         public ICollection<Source>? Sources { get; set; }
         public ICollection<Answer>? Answers { get; set; }  
         public ICollection<Attemp>? Attemps { get; set; }
+        public ICollection<FavoriteSource>? FavoriteSources { get; set; }
     }
 }

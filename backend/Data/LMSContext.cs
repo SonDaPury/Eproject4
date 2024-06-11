@@ -27,6 +27,7 @@ namespace backend.Data
         public virtual DbSet<UserRefreshTokens> UserRefreshTokens { get; set; }
         public virtual DbSet<Serial> Serials { get; set; }
         public virtual DbSet<Order> Orders { get; set; }
+        public virtual DbSet<FavoriteSource> FavoriteSources { get; set; }
 
         public virtual DbSet<UserConnection> UserConnections { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
