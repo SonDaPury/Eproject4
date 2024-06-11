@@ -12,6 +12,6 @@ namespace backend.Service.Interface
         Task<Serial> CreateSerial(SerialDtoCreate chapter);
         Task<Serial?> UpdateSerial(SerialDtoUpdate updateSerial);
         Task<bool> DeleteAsync(int id);
-
+        Task UpdateSerialDeleteExam(int id);
     }
 }

@@ -125,7 +125,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Source with ID {id} not found." });
             }
-            return Ok(_mapper.Map<SourceDto>(updatedSource));
+            return Ok(_mapper.Map<SourceViewDto>(updatedSource));
         }
 
         // DELETE: api/Sources/5

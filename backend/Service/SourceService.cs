@@ -212,34 +212,51 @@ namespace backend.Service
             //source.StaticFolder = updatedSource.StaticFolder;
 
             // Update thumbnail file if a new file is provided
-            //if (updatedSource.Thumbnail != null && !string.IsNullOrWhiteSpace(updatedSource.Thumbnail.FileName))
-            //{
-            //    if (!string.IsNullOrWhiteSpace(source.Thumbnail))
-            //    {
-            // Assuming Thumbnail stores a relative path under wwwroot
-            string existingThumbnailPath = source.Thumbnail;
-            source.Thumbnail = _imageServices.UpdateFile(updatedSource.Thumbnail, existingThumbnailPath, "sources", "thumbnails");
-            //    }
-            //    else
-            //    {
-            //        source.Thumbnail = _imageServices.AddFile(updatedSource.Thumbnail, "sources", "thumbnails");
-            //    }
-            //}
+            if (updatedSource.Thumbnail != null && !string.IsNullOrWhiteSpace(updatedSource.Thumbnail.FileName))
+            {
+                if (!string.IsNullOrWhiteSpace(source.Thumbnail))
+                {
+                    // Assuming Thumbnail stores a relative path under wwwroot
+                    string existingThumbnailPath = source.Thumbnail;
+                    source.Thumbnail = _imageServices.UpdateFile(updatedSource.Thumbnail, existingThumbnailPath, "sources", "thumbnails");
+                }
+                else
+                {
+                    source.Thumbnail = _imageServices.AddFile(updatedSource.Thumbnail, "sources", "thumbnails");
+                }
+            }else if(source.Thumbnail == null && updatedSource.Thumbnail == null)
+            {
+                _imageServices.DeleteFile(source.Thumbnail);
+                source.Thumbnail = null;
+            }
+            else
+            {
+                source.Thumbnail = null;
+            }
 
             // Update video file if a new file is provided
-            //if (updatedSource.VideoIntro != null && !string.IsNullOrWhiteSpace(updatedSource.VideoIntro.FileName))
-            //{
-            //    if (!string.IsNullOrWhiteSpace(source.VideoIntro))
-            //    {
-            // Assuming VideoIntro stores a relative path under wwwroot
-            string existingVideoPath = source.VideoIntro;
-            source.VideoIntro = _imageServices.UpdateFile(updatedSource.VideoIntro, existingVideoPath, "sources", "videos");
-            //    }
-            //    else
-            //    {
-            //        source.VideoIntro = _imageServices.AddFile(updatedSource.VideoIntro, "sources", "videos");
-            //    }
-            //}
+            if (updatedSource.VideoIntro != null && !string.IsNullOrWhiteSpace(updatedSource.VideoIntro.FileName))
+            {
+                if (!string.IsNullOrWhiteSpace(source.VideoIntro))
+                {
+                    // Assuming VideoIntro stores a relative path under wwwroot
+                    string existingVideoPath = source.VideoIntro;
+                    source.VideoIntro = _imageServices.UpdateFile(updatedSource.VideoIntro, existingVideoPath, "sources", "videos");
+                }
+                else
+                {
+                    source.VideoIntro = _imageServices.AddFile(updatedSource.VideoIntro, "sources", "videos");
+                }
+            }
+            else if(source.VideoIntro != null && updatedSource.VideoIntro == null)
+            {
+                _imageServices.DeleteFile(source.VideoIntro);
+                source.VideoIntro = null;
+            }
+            else
+            {
+                source.VideoIntro = null;
+            }
             // Lưu các thay đổi vào cơ sở dữ liệu
             int check = await _context.SaveChangesAsync();
             if (check > 0)
