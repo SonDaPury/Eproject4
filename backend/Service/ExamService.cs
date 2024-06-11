@@ -14,13 +14,14 @@ using System.Timers;
 
 namespace backend.Service
 {
-    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService, IServiceScopeFactory scopeFactory, IimageServices imageServices) : IExamService
+    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService, IServiceScopeFactory scopeFactory, IimageServices imageServices, IRedisService redisService) : IExamService
     {
         private readonly LMSContext _context = context;
         private readonly IHubContext<ExamHub> _hubContext = hubContext;
         private readonly ISerialService _serialService = serialService;
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IimageServices _imageServices = imageServices;
+        private readonly IRedisService _redisService = redisService;
         //private static volatile bool _continueExam = true;
 
         public async Task<Exam> CreateAsync(Exam exam, int index)
@@ -235,7 +236,10 @@ namespace backend.Service
 
             //_continueExam = false;
             var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId);
-            var userConnection = await _context.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
+            //var userConnection = await _context.UserConnections.OrderByDescending(x => x.ConnectedAt).FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);
+            var cacheKey = CreateCacheKey.BuildUserConnectionCacheKey(userId);
+            var userConnectionJson = await _redisService.GetValueAsync(cacheKey);
+            var userConnection = System.Text.Json.JsonSerializer.Deserialize<UserConnection>(userConnectionJson);
             if (exam == null || userConnection == null) throw new Exception("Exam or User not found");
             await _hubContext.Clients.Client(userConnection.ConnectionId).SendAsync("ReceiveExamEnd");
             //await _hubContext.Clients.Group($"Exam-{examId}").SendAsync("ReceiveExamEnd", "The exam has ended.");
