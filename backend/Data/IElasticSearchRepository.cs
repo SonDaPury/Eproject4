@@ -1,4 +1,5 @@
-﻿using Nest;
+﻿using backend.Dtos;
+using Nest;
 
 namespace backend.Data
 {
@@ -8,5 +9,6 @@ namespace backend.Data
         List<T> GetData<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class;
         bool RemoveDocument(string id, string index = "sources_index");
         bool UpdateScript(string id, Func<UpdateDescriptor<object, object>, IUpdateRequest<object, object>> selector);
+        List<SearchResult> GetDataSearch<T>(Func<SearchDescriptor<TopicElasticSearch>, ISearchRequest> selector) where T : class;
     }
 }
