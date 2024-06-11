@@ -168,7 +168,8 @@ namespace backend.Service
 
                 SourceViewDto sourceViewDto = _mapper.Map<SourceViewDto>(source);
 
-                sourceViewDto.TopicId = source.SubTopic != null ? source.SubTopic.TopicId : null;
+                var subtopic = await _context.SubTopics.FirstOrDefaultAsync(s => s.Id == source.SubTopicId);
+                sourceViewDto.TopicId = subtopic.TopicId;
                 return sourceViewDto;
             }
             return null;
