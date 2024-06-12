@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   TextField,
@@ -22,11 +22,56 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StarIcon from "@mui/icons-material/Star";
 import theme from "@eproject4/theme";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { searchFullText } from "@eproject4/services/search.service";
 
-function FilterPanel({ isShowFilter, topics, handleClickFilter }) {
+function FilterPanel({
+  isShowFilter,
+  topics,
+  handleClickFilter,
+  handleSearchResults,
+}) {
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const { searchFullTextAction } = searchFullText();
   const navigate = useNavigate();
   const handleCourseClick = (topic) => {
     navigate(`/course-list/${topic}`);
+  };
+
+  // useEffect(() => {
+  //   window.addEventListener("keyup", handleSearchChange);
+  //   return () => {
+  //     window.removeEventListener("keyup", handleSearchChange);
+  //   };
+  // }, []);
+  const handleSearchChange = async (event) => {
+    const keyword = event.target.value;
+    setSearchKeyword(keyword);
+  };
+
+  const handleSearchKeyUp = async (event) => {
+    if (event.keyCode === 13 && searchKeyword.length > 2) {
+      try {
+        const res = await searchFullTextAction(searchKeyword);
+        console.log("Full Response:", res); // Log toàn bộ đối tượng res
+
+        // Kiểm tra và log định dạng của res.data
+        if (res?.data && Array.isArray(res.data)) {
+          const items = res.data;
+          console.log("Items found:", items);
+          handleSearchResults(items); // Truyền kết quả tìm kiếm lên ListCourses
+        } else {
+          console.log("No items found or data is not an array");
+          handleSearchResults([]); // Truyền mảng rỗng nếu không có items
+        }
+
+        console.log("Title:", res?.data || []);
+      } catch (err) {
+        console.error(err);
+      }
+    } else if (searchKeyword.length <= 2) {
+      handleSearchResults([]); // Clear search results if keyword is less than 3 characters
+    }
   };
   return (
     <Box sx={{ marginTop: "56px" }}>
@@ -65,6 +110,9 @@ function FilterPanel({ isShowFilter, topics, handleClickFilter }) {
           <TextField
             id="input-with-icon-textfield"
             placeholder="Search..."
+            value={searchKeyword}
+            onChange={handleSearchChange}
+            onKeyUp={handleSearchKeyUp}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

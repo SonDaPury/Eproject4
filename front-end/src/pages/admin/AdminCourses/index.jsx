@@ -37,6 +37,7 @@ function AdminCourses() {
     };
 
     fetchTopicData();
+    console.log(fetchTopicData());
     fetchSubTopicData();
     fetchCoursesData();
   }, [pageIndex, pageSize]);
@@ -68,11 +69,14 @@ function AdminCourses() {
     joinSubtopicToCourses(dataCourses?.items, subcategories),
     categories
   );
+  console.log(newItems);
 
   // handleChangePagination
   const handleChangePagination = (e, newPage) => {
     setPageIndex(newPage);
+    console.log("ádasdsad");
   };
+  console.log("ádasdsad");
 
   return (
     <Box>

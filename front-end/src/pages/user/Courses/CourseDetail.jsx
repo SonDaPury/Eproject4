@@ -1,5 +1,6 @@
 import * as React from "react";
 import seedData from "@eproject4/utils/seedData";
+import DOMPurify from "dompurify";
 import PropTypes from "prop-types";
 import {
   Box,
@@ -16,7 +17,7 @@ import {
   Tab,
   Tabs,
 } from "@mui/material";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -33,6 +34,12 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { useEffect, useState } from "react";
 import ButtonCustomize from "@eproject4/components/ButtonCustomize";
+import {
+  getAllCourses,
+  getCourseById,
+} from "@eproject4/services/courses.service";
+import { getAllTopics, getTopicById } from "@eproject4/services/topic.service";
+import { getSubTopics } from "@eproject4/services/subTopic.service";
 
 // Tabs
 function CustomTabPanel(props) {
@@ -73,12 +80,29 @@ function a11yProps(index) {
     "aria-controls": `simple-tabpanel-${index}`,
   };
 }
+
+// ----------------------------------------------------------------
 const CourseDetail = () => {
-  const { category, title } = useParams();
-  const courseTopics = [];
-  seedData().forEach((course) => {
-    courseTopics.push(course?.topic);
-  });
+  const { getCourseByIdAction } = getCourseById();
+  const { getCoursesAction } = getAllCourses();
+  const { getAllTopicsAction } = getAllTopics();
+  const { getTopicByIdAction } = getTopicById();
+
+  const [courseData, SetcourseData] = useState([]);
+  //  const [filteredData, setFilteredData] = useState([]);
+  const [subTopicName, setSubTopicName] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+  //toan bo data
+  const [coursesWithSubTopicName, setCoursesWithSubTopicName] = useState([]);
+
+  const { category, title, id } = useParams();
+  const navigate = useNavigate();
+  const handleCardClick = (item) => {
+    const path = `/course-detail/${item?.topicName}/${encodeURIComponent(item?.source?.title)}/${item?.source.id}`;
+    window.location.href = path; // Sử dụng window.location.href để tải lại trang
+  };
+
+  const cleanDescription = DOMPurify.sanitize(courseData.description);
 
   //Button
   const buttonStyle = {
@@ -119,17 +143,66 @@ const CourseDetail = () => {
     setValue(newValue);
   };
 
-  const [filteredData, setFilteredData] = useState([]);
-  // Xử lý xét Topic
   useEffect(() => {
-    const data = seedData();
-    const filteredData = data.filter((course) => course.topic === category);
-    setFilteredData(filteredData);
-  }, [category]);
-  // Sắp xếp số lượng View
-  const ViewStudent = filteredData.sort((a, b) => b.views - a.views);
+    const fetchCourseDetailData = async () => {
+      try {
+        const res = await getCourseByIdAction(id);
 
-  const TopCourse = ViewStudent.slice(0, 5);
+        SetcourseData(res?.data);
+
+        if (res?.data?.subTopicId) {
+          const subTopicRes = await getTopicByIdAction(res.data.subTopicId);
+
+          setSubTopicName(subTopicRes?.data?.topicName || "");
+        }
+        // if()
+      } catch (err) {
+        throw new Error(err);
+      }
+    };
+    if (id) {
+      // Chỉ gọi hàm fetchCourseDetailData khi id tồn tại
+      fetchCourseDetailData();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    const FetchData = async () => {
+      try {
+        // gọi Api song song
+        const [coursesResponse, topicsResponse] = await Promise.all([
+          getCoursesAction(),
+          getAllTopicsAction(),
+        ]);
+        const courses = coursesResponse?.data;
+        const topics = topicsResponse?.data?.items;
+
+        const topicMap = topics.reduce((acc, topic) => {
+          acc[topic.id] = topic.topicName;
+          return acc;
+        }, {});
+        // Kết hợp dữ liệu từ hai API
+        const combinedData = courses.map((course) => ({
+          ...course,
+          topicName: topicMap[course.topicId] || "Unknown SubTopic",
+        }));
+        console.log(combinedData);
+
+        setCoursesWithSubTopicName(combinedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    FetchData();
+  }, []);
+
+  // Lọc các khóa học theo chủ đề khi topicName hoặc newItems thay đổi
+  useEffect(() => {
+    const filter = coursesWithSubTopicName
+      .filter((c) => c.topicName === category && c.source.status === 1)
+      .slice(0, 5);
+    setFilteredData(filter);
+  }, [coursesWithSubTopicName, category]);
 
   return (
     <Box>
@@ -232,27 +305,13 @@ const CourseDetail = () => {
               display: "flex",
               justifyContent: "space-between",
             }}>
-            {/* {filteredData.map((item, i) => (
-              <Box xs={12} sm={6} md={3} lg={3} key={i}>
-                <CardCourse
-                  path={`/course-detail/${item?.topic}/${encodeURIComponent(item?.title)}`}
-                  title={item?.title}
-                  category={item?.topic}
-                  price={item?.price}
-                  students={item?.views}
-                  image={item?.imageThumbnail}
-                  rating={item?.rating}
-                />
-              </Box>
-            ))} */}
-
             <Box>
               {" "}
               <CardMedia
                 sx={{ width: "835px", height: "471px", objectFit: "cover" }}
                 component="video"
                 controls
-                src="your-video-url.mp4" // Thay thế 'your-video-url.mp4' bằng URL của video bạn muốn hiển thị
+                src={courseData.videoIntro} // Thay thế 'your-video-url.mp4' bằng URL của video bạn muốn hiển thị
               >
                 Your browser does not support the video tag.
               </CardMedia>
@@ -269,7 +328,6 @@ const CourseDetail = () => {
                 <CustomTabPanel value={value} index={0}>
                   Tổng quan
                   <Typography
-                    variant="p"
                     component="div"
                     sx={{
                       textAlign: "justify",
@@ -277,9 +335,9 @@ const CourseDetail = () => {
                       fontSize: "14px",
                       fontWeight: 400,
                       paddingTop: "20px",
-                    }}>
-                    ádasdasdasd
-                  </Typography>
+                    }}
+                    dangerouslySetInnerHTML={{ __html: cleanDescription }}
+                  />
                 </CustomTabPanel>
 
                 <CustomTabPanel value={value} index={1}>
@@ -287,13 +345,14 @@ const CourseDetail = () => {
                 </CustomTabPanel>
               </Box>
             </Box>
+
             {/* Crad */}
             <Box>
               {" "}
               <Card sx={{ maxWidth: "424px" }}>
                 <CardContent sx={{ textAlign: "justify" }}>
                   <Typography variant="h5" component="div">
-                    $14.00
+                    {courseData.price !== 0 && <p> {courseData.price}</p>}
                   </Typography>
                   <Divider
                     sx={{
@@ -455,12 +514,15 @@ const CourseDetail = () => {
                       }}
                     />
                   </Box>
-                  <ButtonCustomize
-                    text="Thêm vào giỏ hàng"
-                    width="100%"
-                    height="56px"
-                    sx={{ marginBottom: "15px" }}
-                  />
+                  {/* Hiển thị nút nếu courseData.price khác 0 */}
+                  {courseData.price !== 0 && (
+                    <ButtonCustomize
+                      text="Thêm vào giỏ hàng"
+                      width="100%"
+                      height="56px"
+                      sx={{ marginBottom: "15px" }}
+                    />
+                  )}
                   <ButtonCustomize
                     text="Đăng Ký Ngay"
                     width="100%"
@@ -503,7 +565,6 @@ const CourseDetail = () => {
                       Tất cả khóa học sẽ được hoàn tiền trong 30 ngày
                     </Typography>
                   </Box>
-
                   <Divider sx={{ my: 2 }} />
                   <Box>
                     <Typography
@@ -691,6 +752,7 @@ const CourseDetail = () => {
               text="Xem Thêm"
               backgroundColor="#FFEEE8"
               sx={{ color: "#FF6636" }}
+              navigateTo={`/course-list/${category}`}
             />
           </Box>
           {/* Top5 */}
@@ -703,15 +765,22 @@ const CourseDetail = () => {
                 gap: "25px",
                 flexWrap: "wrap",
               }}>
-              {TopCourse.map((item, i) => (
-                <Box key={i}>
+              {filteredData.map((item, i) => (
+                <Box key={i} onClick={() => handleCardClick(item)}>
                   <CardCourse
-                    title={item?.title}
-                    category={item?.topic}
-                    price={item?.price}
-                    students={item?.views}
-                    image={item?.imageThumbnail}
-                    rating={item?.rating}
+                    // path={`/course-detail/${item?.topicName}/${encodeURIComponent(item?.source?.title)}/${item?.source.id}`}
+                    title={item?.source?.title}
+                    category={item?.topicName}
+                    price={
+                      item?.source?.price === 0
+                        ? "Miễn phí"
+                        : item?.source?.price
+                    }
+                    image={
+                      item?.source?.thumbnail
+                        ? item?.source?.thumbnail
+                        : "https://bom.so/vV4j7x"
+                    }
                   />
                 </Box>
               ))}
