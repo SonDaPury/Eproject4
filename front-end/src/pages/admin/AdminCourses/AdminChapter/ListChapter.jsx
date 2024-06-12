@@ -1,8 +1,5 @@
 import { Box, Button } from "@mui/material";
-import {
-  deleteChapter,
-  updateChapter,
-} from "@eproject4/services/chapter.service";
+import { deleteChapter } from "@eproject4/services/chapter.service";
 import { useSearchParams } from "react-router-dom";
 import UpdateChapter from "./UpdateChapter";
 import { useEffect, useState } from "react";
@@ -19,7 +16,6 @@ import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar";
 function ListChapter({ listChapters, getChapterOfCourse }) {
   const [updateListChapter, setUpdateListChapter] = useState([]);
   const [sortedChapter, setSortedChapter] = useState([]);
-  const { updateChapterAction } = updateChapter();
   const [isDragged, setIsDragged] = useState(false);
   const [searchParams] = useSearchParams();
   const idCourse = searchParams.get("id-course");
@@ -78,11 +74,6 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    console.log(active);
-    updateListChapter.push({
-      id: active.id,
-      index: Number(active?.data?.current?.sortable?.index) + 1,
-    });
     if (active.id !== over.id) {
       const data = (items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);

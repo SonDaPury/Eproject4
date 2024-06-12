@@ -24,7 +24,7 @@ const CardCourse = ({
             <CardContent sx={{ padding: 0, paddingBottom: "13px !important" }}>
               <CardMedia
                 component="img"
-                sx={{ height: "183px" }}
+                sx={{ height: "183px", width:"244px" }}
                 image={image}
                 alt="Error"
               />

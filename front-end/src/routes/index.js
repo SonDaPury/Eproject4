@@ -23,7 +23,7 @@ export const publicRoutes = [
   { path: "/ve-chung-toi", component: About },
   { path: "/category/:topicName", component: Category },
   { path: "/course-list/:topicName", component: ListCourses },
-  { path: "/course-detail/:category/:title", component: CourseDetail },
+  { path: "/course-detail/:category/:title/:id", component: CourseDetail },
   { path: "/dang-nhap", component: Login },
   { path: "/dang-ky", component: Register },
 ];
