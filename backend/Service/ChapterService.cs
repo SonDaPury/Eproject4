@@ -31,19 +31,19 @@ namespace backend.Service
         }
         public async Task<Chapter> CreateAsync(ChapterDtoUpdate chapter)
         {
-            int maxIndex = await GetMaxIndex(chapter.SourceId);
-            if (chapter.Index > maxIndex)
-            {
-                chapter.Index = maxIndex + 1;
-            }
-            else
-            {
-                var chaptersToUpdate = await GetChapterGTE(chapter.Index, chapter.SourceId);
-                foreach (var c in chaptersToUpdate)
-                {
-                    c.Index++;
-                }
-            }
+            //int maxIndex = await GetMaxIndex(chapter.SourceId);
+            //if (chapter.Index > maxIndex)
+            //{
+            //    chapter.Index = maxIndex + 1;
+            //}
+            //else
+            //{
+            //    var chaptersToUpdate = await GetChapterGTE(chapter.Index, chapter.SourceId);
+            //    foreach (var c in chaptersToUpdate)
+            //    {
+            //        c.Index++;
+            //    }
+            //}
             var chapter1 = new Chapter
             {
                 Description = chapter.Description,
@@ -87,21 +87,21 @@ namespace backend.Service
             var chapter = await _context.Chapters.FindAsync(id);
             if (chapter == null) return null;
 
-            if (chapter.Index != updatedChapter.Index)
-            {
-                int minIndex = Math.Min((int)chapter.Index, (int)updatedChapter.Index);
-                int maxIndex = Math.Max((int)chapter.Index, (int)updatedChapter.Index);
-                var GetChapter = await _context.Chapters.Where(c => c.SourceId == chapter.SourceId && c.Index >= minIndex && c.Index <= maxIndex && c.Id != chapter.Id).ToListAsync();
+            //if (chapter.Index != updatedChapter.Index)
+            //{
+            //    int minIndex = Math.Min((int)chapter.Index, (int)updatedChapter.Index);
+            //    int maxIndex = Math.Max((int)chapter.Index, (int)updatedChapter.Index);
+            //    var GetChapter = await _context.Chapters.Where(c => c.SourceId == chapter.SourceId && c.Index >= minIndex && c.Index <= maxIndex && c.Id != chapter.Id).ToListAsync();
 
-                if (chapter.Index > updatedChapter.Index)
-                {
-                    GetChapter.ForEach(s => s.Index++);
-                }
-                else
-                {
-                    GetChapter.ForEach(s => s.Index--);
-                }
-            }
+            //    if (chapter.Index > updatedChapter.Index)
+            //    {
+            //        GetChapter.ForEach(s => s.Index++);
+            //    }
+            //    else
+            //    {
+            //        GetChapter.ForEach(s => s.Index--);
+            //    }
+            //}
             chapter.Index = (int)updatedChapter.Index;
             chapter.Title = updatedChapter.Title;
             chapter.Description = updatedChapter.Description;
@@ -128,11 +128,11 @@ namespace backend.Service
             {
                 _context.Lessons.RemoveRange(list_lession);
             }
-            var chapters = await GetChapterGByIndex(chapter.Index, chapter.SourceId);
-            foreach (var chapter1 in chapters)
-            {
-                chapter1.Index--;
-            }
+            //var chapters = await GetChapterGByIndex(chapter.Index, chapter.SourceId);
+            //foreach (var chapter1 in chapters)
+            //{
+            //    chapter1.Index--;
+            //}
 
             _context.Chapters.Remove(chapter);
             await _context.SaveChangesAsync();

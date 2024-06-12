@@ -320,6 +320,11 @@ namespace backend.Service
             {
                 _context.Chapters.RemoveRange(list_chapter);
             }
+            var list_favorite = await _context.FavoriteSources.Where(f => f.SourceId == id).ToListAsync();
+            if (list_favorite != null)
+            {
+                _context.FavoriteSources.RemoveRange(list_favorite);
+            }
             if (!string.IsNullOrEmpty(source.Thumbnail))
             {
                 _imageServices.DeleteFile(source.Thumbnail);  // Delete thumbnail file

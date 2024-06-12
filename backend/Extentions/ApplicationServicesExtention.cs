@@ -32,6 +32,7 @@ namespace backend.Extentions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISerialService, SerialService>();
             services.AddScoped<IimageServices, ImageServices>();
+            services.AddScoped<IFavoriteService, FavoriteService>();
             services.AddAutoMapper(typeof(CreateAutoMapper));
 
             services.AddTransient<IRedisService, RedisService>();
