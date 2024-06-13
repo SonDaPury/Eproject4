@@ -1,4 +1,11 @@
 import { Box, Typography } from "@mui/material";
+import * as Yup from "yup";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required("Title is required"),
+  description: Yup.string().required("Description is required"),
+  video: Yup.mixed().required("Video is required"),
+});
 
 function CreateLession() {
   const chunkSize = 1048576 * 3;
