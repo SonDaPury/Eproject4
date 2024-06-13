@@ -14,7 +14,6 @@ import axios from "axios";
 import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar";
 
 function ListChapter({ listChapters, getChapterOfCourse }) {
-  const [updateListChapter, setUpdateListChapter] = useState([]);
   const [sortedChapter, setSortedChapter] = useState([]);
   const [isDragged, setIsDragged] = useState(false);
   const [searchParams] = useSearchParams();
@@ -95,7 +94,6 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
   };
 
   const handleUpdateOrderChapter = async () => {
-    console.log(updateListChapter);
     try {
       await Promise.all(
         sortedChapter.map(
