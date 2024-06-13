@@ -12,8 +12,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(LMSContext))]
-    [Migration("20240612033247_v4")]
-    partial class v4
+    [Migration("20240613041750_V1000")]
+    partial class V1000
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

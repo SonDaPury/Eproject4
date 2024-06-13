@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 function CreateExam() {
   return (
     <Box>
-      <div>Create Exam</div>
+      <div>Create Exam Test</div>
     </Box>
   );
 }

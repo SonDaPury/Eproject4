@@ -38,7 +38,7 @@ function a11yProps(index) {
   };
 }
 
-function CreateLessionExam({ openCreateModal, handleClose }) {
+function CreateLessionExam({ openCreateModal, handleClose, chapter }) {
   const [value, setValue] = useState(0);
 
   const handleChange = (event, newValue) => {
@@ -63,7 +63,7 @@ function CreateLessionExam({ openCreateModal, handleClose }) {
             </Tabs>
           </Box>
           <TabPanel value={value} index={0}>
-            <CreateLession />
+            <CreateLession chapter={chapter} handleClose={handleClose} />
           </TabPanel>
           <TabPanel value={value} index={1}>
             <CreateExam />
