@@ -64,57 +64,79 @@ function CreateExam({
   }, []);
 
   const onSubmit = async (data) => {
+    let maxIndex1 = 0;
     lessionsOfChapter?.forEach(async (item) => {
-      if (item?.lesson[item?.lesson.length - 1]?.examID !== null) {
-        showSnackbar("Bài học đã có bài kiểm tra", "error");
-        return;
-      } else {
-        // create question
-        const resQuestion = await createQuestionExamAction(data);
-        resQuestion.map((item) => {
-          questionArray.push(item);
-        });
-        // create exam
-        const examData = {
-          title: data?.title,
-          timeLimit: data?.duration,
-          maxQuestion: 0,
-          status: true,
-          sourceId: idCourse,
-        };
-        const resExam = await createExamAction(examData);
-        questionArray.forEach((item) => {
-          idQuestionExam.push(item?.questionID);
-        });
-        const dataConnect = {
-          examID: resExam?.data?.id,
-          questionId: idQuestionExam,
-        };
-        // connect exam with question
-        await connectExamWithQuestionAction(dataConnect);
-        await Promise.all(
-          lessionsOfChapter?.map(async (item) => {
-            const dataLessonUpdate = {
-              id: item?.lesson[item?.lesson.length - 1]?.id,
-              title: item?.lesson[item?.lesson.length - 1]?.title,
-              author: item?.lesson[item?.lesson.length - 1]?.author,
-              description: item?.lesson[item?.lesson.length - 1]?.description,
-              videoDuration:
-                item?.lesson[item?.lesson.length - 1]?.videoDuration,
-              view: item?.lesson[item?.lesson.length - 1]?.view,
-              status: true,
-              chapterId: chapter?.id,
-              serialDto: {
-                index: item?.lesson[item?.lesson.length - 1]?.index,
-                exam_ID: resExam?.data?.id,
-              },
-            };
-            await updateLessonAction(dataLessonUpdate);
-          })
-        );
-        fetchDataAllExam();
-        fetchDataAllLessonsOfChapter();
+      for (const l of item?.lesson || []) {
+        if (l?.index > maxIndex1) {
+          maxIndex1 = l?.index;
+        }
       }
+
+      for (const l of item?.lesson || []) {
+        if (l?.index === maxIndex1) {
+          if (l?.examID !== null) {
+            showSnackbar("Bài học đã có bài kiểm tra", "error");
+            return;
+          }
+        }
+      }
+
+      // create question
+      const resQuestion = await createQuestionExamAction(data);
+      resQuestion.map((item) => {
+        questionArray.push(item);
+      });
+      // create exam
+      const examData = {
+        title: data?.title,
+        timeLimit: data?.duration,
+        maxQuestion: 0,
+        status: false,
+        sourceId: idCourse,
+      };
+      const resExam = await createExamAction(examData);
+      questionArray.forEach((item) => {
+        idQuestionExam.push(item?.questionID);
+      });
+      const dataConnect = {
+        examID: resExam?.data?.id,
+        questionId: idQuestionExam,
+      };
+      // connect exam with question
+      await connectExamWithQuestionAction(dataConnect);
+
+      let maxIndex = 0;
+      await Promise.all(
+        lessionsOfChapter?.map(async (item) => {
+          item?.lesson?.forEach((l) => {
+            if (l?.index > maxIndex) {
+              maxIndex = l?.index;
+            }
+          });
+
+          item?.lesson?.forEach(async (l) => {
+            if (l?.index === maxIndex) {
+              const dataLessonUpdate = {
+                id: l?.id,
+                title: l?.title,
+                author: l?.author,
+                description: l?.description,
+                videoDuration: l?.videoDuration,
+                view: Number(l?.view),
+                status: false,
+                chapterId: Number(chapter?.id),
+                serialDto: {
+                  index: l?.index,
+                  exam_ID: Number(resExam?.data?.id),
+                },
+              };
+              await updateLessonAction(dataLessonUpdate);
+            }
+          });
+        })
+      );
+      fetchDataAllExam();
+      fetchDataAllLessonsOfChapter();
     });
     handleClose();
   };

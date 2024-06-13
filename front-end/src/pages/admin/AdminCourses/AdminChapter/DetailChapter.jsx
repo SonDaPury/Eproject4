@@ -45,7 +45,12 @@ function DetailChapter({
 
   const fetchDataAllExam = async () => {
     const res = await getAllExamAction();
-    setExams(res?.data);
+
+    setExams(
+      res?.data?.filter((item) => {
+        return item.chapterId === chapter?.id;
+      })
+    );
   };
 
   useEffect(() => {
@@ -136,6 +141,7 @@ function DetailChapter({
               chapter={chapter}
               lessionsOfChapter={lessionsOfChapter}
               exams={exams}
+              fetchDataAllExam={fetchDataAllExam}
             />
           </AccordionDetails>
         </Accordion>
