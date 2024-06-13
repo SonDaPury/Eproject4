@@ -5,19 +5,45 @@ import seedData from "@eproject4/utils/seedData";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import Happy from "@eproject4/assets/images/happy.png";
-
+import { useEffect, useState } from "react";
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
-
+import { debounce } from "lodash";
 import "@eproject4/styles/styles.css";
 import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import CourseGrid from "@eproject4/components/CourseGrid";
-
+import { searchFullText } from "@eproject4/services/search.service";
+import "./index.css";
 function Home() {
   const Allcourses = seedData();
   const courses = Allcourses.slice(0, 10);
   const couresFive = Allcourses.slice(0, 5);
+  const [search, setSearch] = useState(""); // State lưu giá trị từ ô search
+  const { searchFullTextAction } = searchFullText();
+  const [dataToShow, setDataToShow] = useState([]);
+
+
+  const handleChangesearch = (e) => {
+    console.log(e.target.value + "test");
+    if (e.target.value === "") {
+      setSearch(" ");
+    } else {
+      setSearch(e.target.value);
+    }
+  };
+  const debouncedSearch = debounce((searchTerm) => {
+    searchFullTextAction(searchTerm).then((res) => {
+      console.log(res.data);
+      setDataToShow(res.data);
+    });
+  }, 500);
+
+  useEffect(() => {
+    if (search) {
+      debouncedSearch(search);
+    }
+  }, [search]);
   const sections = [
     {
       title: "Top khóa học bán chạy",
@@ -106,7 +132,7 @@ function Home() {
       </>
       <Box>
         {/* Search */}
-        <Box className="text-center pt-[30px] relative flex justify-center">
+        <Box className="text-center pt-[30px] relative flex justify-center CustomeBox">
           {" "}
           <div className="relative w-[513px]">
             <input
@@ -114,9 +140,22 @@ function Home() {
               name="search"
               placeholder="Search"
               className="border-1 border-gray-800 bg-[#EBEBEB] p-2 pl-10 rounded-[20px] mt-[35px] focus:outline-none w-full h-[54px]"
+              onChange={handleChangesearch}
             />
             <SearchIcon className="absolute left-3 top-[70%] transform -translate-y-1/2 text-gray-600" />
           </div>
+          {dataToShow && dataToShow.length > 0 && (
+            <div className="results">
+              {dataToShow.map((item) => (
+                <div key={item.id} className="result-item">
+                  <img src="https://th.bing.com/th/id/OIP.pqzQpx8Wg5fEHznAKKY6ugHaJ4?rs=1&pid=ImgDetMain" alt="" className="thumbnail" />
+                  <span className="title">{item.title.input[0]}</span>
+                  <span className="price">{item.price == 0 ? "Miễn phí" : item.price}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
         </Box>
         {/* Danh Muc */}
         <Box className="text-center pt-[30px] ">

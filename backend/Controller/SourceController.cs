@@ -110,6 +110,12 @@ namespace backend.Controller
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("groupbytopic")]
+        public async Task<IActionResult> GroupByTopic()
+        {
+            var result = await _sourceService.GroupByTopic();
+            return Ok(result);
+        }
 
         // PUT: api/Sources/5
         [HttpPut("{id}")]

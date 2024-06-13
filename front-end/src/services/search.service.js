@@ -4,10 +4,13 @@ export const searchFullText = () => {
   const { callApi } = useAxiosWithLoading();
   const searchFullTextAction = async (keyword) => {
     try {
+      const body = {
+        query: keyword,
+      };
       const res = await callApi(
-        `/Search/searchfulltext?search=${keyword}`,
+        `/Search/searchfulltext`,
         "post",
-        null,
+        body,
         null,
         false
       );
