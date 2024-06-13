@@ -12,7 +12,10 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import AddIcon from "@mui/icons-material/Add";
 import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
+import CreateLessionExam from "./CreateLessionExam";
 
 const useStyles = makeStyles((theme) => ({
   content: {
@@ -29,6 +32,9 @@ function DetailChapter({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const handleOpen = () => setOpenCreateModal(true);
+  const handleClose = () => setOpenCreateModal(false);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -52,6 +58,11 @@ function DetailChapter({
               content: classes.content,
             }}>
             <Box sx={{ display: "flex", alignItems: "center" }}>
+              <IconButton
+                {...listeners}
+                onMouseDown={(e) => e.stopPropagation()}>
+                <DragIndicatorIcon />
+              </IconButton>
               <Typography
                 sx={{
                   fontSize: "16px",
@@ -68,9 +79,11 @@ function DetailChapter({
             </Box>
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <IconButton
-                {...listeners}
-                onMouseDown={(e) => e.stopPropagation()}>
-                <DragIndicatorIcon />
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpen();
+                }}>
+                <AddIcon />
               </IconButton>
               <IconButton
                 onClick={(e) => {
@@ -97,6 +110,10 @@ function DetailChapter({
           </AccordionDetails>
         </Accordion>
       </Box>
+      <CreateLessionExam
+        handleClose={handleClose}
+        openCreateModal={openCreateModal}
+      />
     </Box>
   );
 }
