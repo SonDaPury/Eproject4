@@ -12,7 +12,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
+    // [JwtAuthorize("user", "admin")]
     public class QuestionController : ControllerBase
     {
         private readonly IQuestionService _questionService;
@@ -39,9 +39,10 @@ namespace backend.Controller
                 var createdQuestion = await _questionService.CreateAsync(questionDto);
                 var createdQuestionDto = _mapper.Map<QuestionViewModel>(createdQuestion);
                 return Ok(createdQuestionDto);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                return BadRequest(new {message =  ex.Message});
+                return BadRequest(new { message = ex.Message });
             }
         }
 

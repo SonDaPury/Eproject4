@@ -32,7 +32,7 @@ namespace backend.Controller
                 if (examDetails.Item1 == null)
                     return NotFound();
 
-                return Ok(new {LessonId = examDetails.Item2, Exam = examDetails.Item1 });
+                return Ok(new { LessonId = examDetails.Item2, Exam = examDetails.Item1 });
             }
             catch (Exception)
             {
@@ -64,7 +64,7 @@ namespace backend.Controller
         }
 
         [HttpPut("updatequestion")]
-        public async Task<IActionResult> UpdateQuestion([FromForm] UpdateQuestionDto updateQuestionDto)
+        public async Task<IActionResult> UpdateQuestion([FromBody] UpdateQuestionDto updateQuestionDto)
         {
             var updatedQuestion = await _examService.UpdateQuestionandOption(updateQuestionDto);
             return Ok(updatedQuestion);
@@ -172,7 +172,7 @@ namespace backend.Controller
                 var attempId = await _examService.EndExam(
                     //submission.UserAnswers, 
                     examId, userId);
-                return Ok(new { AttempId =  attempId });
+                return Ok(new { AttempId = attempId });
             }
             catch (System.Exception ex)
             {
