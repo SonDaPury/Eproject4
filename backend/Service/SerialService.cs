@@ -80,7 +80,7 @@ namespace backend.Service
                 }
                 else
                 {
-                    serial.Index = maxIndex ?? 0 + 1;
+                    serial.Index = maxIndex != null ? maxIndex + 1 : 1;
                 }
                 _context.Serials.Add(serial);
                 await context.SaveChangesAsync();
