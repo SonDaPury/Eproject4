@@ -64,6 +64,7 @@ function Register() {
   const onSubmit = async (data) => {
     try {
       await registerFormAction(data);
+      navigate("/dang-nhap");
     } catch (error) {
       throw new Error(error);
     }

@@ -14,10 +14,12 @@ import BorderColorIcon from "@mui/icons-material/BorderColor";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import AddIcon from "@mui/icons-material/Add";
 import { CSS } from "@dnd-kit/utilities";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateLessionExam from "./CreateLessionExam";
+import { getAllLessionsByChapterId } from "@eproject4/services/lession.service";
+import LessionDetail from "./LessionDetail";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   content: {
     justifyContent: "space-between",
   },
@@ -35,12 +37,27 @@ function DetailChapter({
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const handleOpen = () => setOpenCreateModal(true);
   const handleClose = () => setOpenCreateModal(false);
+  const { getAllLessionsByChapterIdAction } = getAllLessionsByChapterId();
+  const [lessionsOfChapter, setLessionsOfChapter] = useState([]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     marginBottom: "15px",
   };
+
+  const fetchDataAllLessonsOfChapter = async () => {
+    try {
+      const res = await getAllLessionsByChapterIdAction(chapter?.id);
+      setLessionsOfChapter(res?.data);
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDataAllLessonsOfChapter();
+  }, []);
 
   const classes = useStyles();
   return (
@@ -102,17 +119,17 @@ function DetailChapter({
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-              eget.
-            </Typography>
+            <LessionDetail
+              fetchDataAllLessonsOfChapter={fetchDataAllLessonsOfChapter}
+              lessionsOfChapter={lessionsOfChapter}
+            />
           </AccordionDetails>
         </Accordion>
       </Box>
       <CreateLessionExam
         handleClose={handleClose}
         openCreateModal={openCreateModal}
+        chapter={chapter}
       />
     </Box>
   );
