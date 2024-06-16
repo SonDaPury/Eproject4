@@ -27,5 +27,11 @@ namespace backend.Data
             var db = _redis.GetDatabase();
             await db.StringSetAsync(key, value, expiry);
         }
+        public async Task RemoveValueAsync(string key)
+        {
+            var db = _redis.GetDatabase();
+            await db.KeyDeleteAsync(key);
+        }
+
     }
 }

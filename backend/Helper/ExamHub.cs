@@ -3,6 +3,7 @@ using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace backend.Helper
@@ -13,10 +14,12 @@ namespace backend.Helper
         //private static Dictionary<int, (System.Timers.Timer Timer, DateTime EndTime)> _examTimers = new Dictionary<int, (System.Timers.Timer, DateTime)>();
         private readonly IExamService _examService;
         //private static Dictionary<int, bool> _continueExams = new Dictionary<int, bool>();
-        public ExamHub(LMSContext context, IExamService examService)
+        private readonly IRedisService _redisService;
+        public ExamHub(LMSContext context, IExamService examService, IRedisService redisService)
         {
             _context = context;
             _examService = examService;
+            _redisService = redisService;
         }
         public override async Task OnConnectedAsync()
         {
@@ -27,18 +30,31 @@ namespace backend.Helper
         {
             var userId = 1;
             //int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
-            var userConnection = await _context.UserConnections
-               .OrderByDescending(x => x.ConnectedAt)
-               .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);  // Giả định UserId = 1
+            //var userConnection = await _context.UserConnections
+            //   .OrderByDescending(x => x.ConnectedAt)
+            //   .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);  // Giả định UserId = 1
+            var cacheKey = CreateCacheKey.BuildUserConnectionCacheKey(userId);
+            var userConnectionJson = await _redisService.GetValueAsync(cacheKey);
 
-            if (userConnection != null)
+            //if (userConnection != null)
+            //{
+            //    userConnection.DisconnectedAt = DateTime.UtcNow;
+            //    await _context.SaveChangesAsync();
+            //    //if (_continueExams.ContainsKey(userConnection.UserId) && _continueExams[userConnection.UserId])
+            //    //{
+            //    await _examService.EndExam((int)userConnection.ExamId, userId);
+            //    //}
+            //}
+            if (userConnectionJson != null)
             {
+                var userConnection = JsonSerializer.Deserialize<UserConnection>(userConnectionJson);
                 userConnection.DisconnectedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-                //if (_continueExams.ContainsKey(userConnection.UserId) && _continueExams[userConnection.UserId])
-                //{
+
+                // Cập nhật lại cache với thông tin DisconnectedAt
+                var updatedUserConnectionJson = JsonSerializer.Serialize(userConnection);
+                await _redisService.SetValueWithExpiryAsync(cacheKey, updatedUserConnectionJson, userConnection.EndTime - DateTime.UtcNow);
+
                 await _examService.EndExam((int)userConnection.ExamId, userId);
-                //}
             }
 
             await base.OnDisconnectedAsync(exception);
@@ -73,8 +89,11 @@ namespace backend.Helper
                 ExamId = examId
             };
 
-            _context.UserConnections.Add(userConnection);
-            await _context.SaveChangesAsync();
+            //_context.UserConnections.Add(userConnection);
+            //await _context.SaveChangesAsync();
+            var cacheKey = CreateCacheKey.BuildUserConnectionCacheKey(userId);
+            var userConnectionJson = JsonSerializer.Serialize(userConnection);
+            await _redisService.SetValueWithExpiryAsync(cacheKey, userConnectionJson, TimeSpan.FromMinutes(exam.TimeLimit));
             while (DateTime.UtcNow < endTime)
             {
                 var remainingTime = endTime - DateTime.UtcNow;

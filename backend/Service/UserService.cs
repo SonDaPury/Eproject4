@@ -14,6 +14,7 @@ using backend.Dtos.UserDto;
 using System.Security.Cryptography;
 using AutoMapper;
 using backend.Dtos;
+using System.Text.Json;
 
 namespace backend.Service
 {
@@ -25,8 +26,9 @@ namespace backend.Service
         private readonly IimageServices _imageServiecs;
         private readonly IMapper _mapper;
         private readonly IimageServices _imageServices;
+        private readonly IRedisService _redisService;
 
-        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context, IimageServices imageServiecs, IMapper mapper, IimageServices imageServices)
+        public UserService(IConfiguration configuration, SmtpClient smtpClient, LMSContext context, IimageServices imageServiecs, IMapper mapper, IimageServices imageServices, IRedisService redisService)
         {
             _config = configuration;
             _smtpClient = new SmtpClient
@@ -45,6 +47,7 @@ namespace backend.Service
             _imageServiecs = imageServiecs;
             _mapper = mapper;
             _imageServices = imageServices;
+            _redisService = redisService;
         }
 
         public async Task<List<ListUserDto>> GetListUsers()
@@ -231,8 +234,11 @@ namespace backend.Service
                     UserName = user.Username,
                     RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(24)
                 };
-                await _context.UserRefreshTokens.AddAsync(rfToken);
-                await _context.SaveChangesAsync();
+                //await _context.UserRefreshTokens.AddAsync(rfToken);
+                //await _context.SaveChangesAsync();
+                var key = CreateCacheKey.BuildUserCacheKey(user.Id);
+                var saveRfToken = JsonSerializer.Serialize(rfToken.RefreshToken);
+                await _redisService.SetValueWithExpiryAsync(key, saveRfToken, TimeSpan.FromHours(24));
                 var userInfo = new User
                 {
                     Id = user.Id,
@@ -255,48 +261,79 @@ namespace backend.Service
             var userId = int.Parse(principal.Identity.Name);
             var user = await _context.Users.FindAsync(userId);
             var roleId = user.RoleId;
-            var savedRefreshToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(
-                u => u.UserName == user.Username && u.RefreshToken == tokens.RefreshToken && u.IsActived == true
-            );
-            if (
-                savedRefreshToken?.RefreshToken != tokens.RefreshToken
-                || savedRefreshToken?.RefreshTokenExpiryTime <= DateTime.UtcNow
-            )
+            //var savedRefreshToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(
+            //    u => u.UserName == user.Username && u.RefreshToken == tokens.RefreshToken && u.IsActived == true
+            //);
+            var key = CreateCacheKey.BuildUserCacheKey(userId);
+            var savedRefreshToken = await _redisService.GetValueAsync(key);
+            //if (
+            //    savedRefreshToken?.RefreshToken != tokens.RefreshToken
+            //    || savedRefreshToken?.RefreshTokenExpiryTime <= DateTime.UtcNow
+            //)
+            //{
+            //    throw new BadRequestException("Invalid attempt!");
+            //}
+            if (savedRefreshToken != tokens.RefreshToken || string.IsNullOrEmpty(savedRefreshToken))
             {
-                throw new BadRequestException("Invalid attempt!");
+                throw new BadRequestException("Invalid refresh token");
             }
             var newJwtToken = GenerateJWTTokens(user.Id.ToString(), roleId.ToString());
             if (newJwtToken == null)
             {
                 throw new BadRequestException("Invalid attempt!");
             }
-            UserRefreshTokens rfToken = new UserRefreshTokens
+            var rfToken = JsonSerializer.Serialize (new UserRefreshTokens
             {
                 RefreshToken = newJwtToken.RefreshToken,
                 UserName = user.Username,
                 RefreshTokenExpiryTime = DateTime.UtcNow.AddHours(24)
-            };
-            UserRefreshTokens item = await _context.UserRefreshTokens.FirstOrDefaultAsync(
-                u => u.UserName == user.Username && u.RefreshToken == tokens.RefreshToken
-            );
-            if (item != null)
-            {
-                _context.UserRefreshTokens.Remove(item);
-                await _context.UserRefreshTokens.AddAsync(rfToken);
-                await _context.SaveChangesAsync();
-            }
+            });
+            //UserRefreshTokens item = await _context.UserRefreshTokens.FirstOrDefaultAsync(
+            //    u => u.UserName == user.Username && u.RefreshToken == tokens.RefreshToken
+            //);
+            //if (item != null)
+            //{
+            //    _context.UserRefreshTokens.Remove(item);
+            //    await _context.UserRefreshTokens.AddAsync(rfToken);
+            //    await _context.SaveChangesAsync();
+            //}
+            await _redisService.SetValueWithExpiryAsync(key, rfToken, TimeSpan.FromHours(24));
             return newJwtToken;
         }
 
         public async Task Logout(Tokens tokens)
         {
-            var rfToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(u => u.RefreshToken == tokens.RefreshToken);
-            if (rfToken == null)
+            //var rfToken = await _context.UserRefreshTokens.FirstOrDefaultAsync(u => u.RefreshToken == tokens.RefreshToken);
+            //if (rfToken == null)
+            //{
+            //    throw new NotFoundException("Invalid refresh token");
+            //}
+            //_context.UserRefreshTokens.Remove(rfToken);
+            //await _context.SaveChangesAsync();
+            // Truy xuất userId từ access token
+            var principal = GetPrincipalFromExpiredToken(tokens.AccessToken);
+            var userId = int.Parse(principal.Identity.Name);
+
+            // Xây dựng key cho Redis
+            var key = CreateCacheKey.BuildUserCacheKey(userId);
+
+            // Lấy giá trị từ Redis
+            var rfTokenJson = await _redisService.GetValueAsync(key);
+            if (string.IsNullOrEmpty(rfTokenJson))
             {
                 throw new NotFoundException("Invalid refresh token");
             }
-            _context.UserRefreshTokens.Remove(rfToken);
-            await _context.SaveChangesAsync();
+
+            var savedRefreshToken = JsonSerializer.Deserialize<UserRefreshTokens>(rfTokenJson);
+
+            // Kiểm tra refresh token
+            if (savedRefreshToken?.RefreshToken != tokens.RefreshToken)
+            {
+                throw new NotFoundException("Invalid refresh token");
+            }
+
+            // Xóa refresh token khỏi Redis
+            await _redisService.RemoveValueAsync(key);
         }
 
         public async Task AddRequest(ForgotPasswordRequest request)
