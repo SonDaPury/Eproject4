@@ -1,6 +1,7 @@
 ﻿using backend.Data;
 using backend.Dtos;
 using backend.Service.Interface;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Nest;
 
@@ -20,10 +21,13 @@ namespace backend.Controller
     {
         private readonly IElasticSearchRepository _elasticSearchRepository;
         private readonly IimageServices _IimageServices;
-        public SearchController(IElasticSearchRepository elasticSearchRepository, IimageServices iimageServices)
+        private readonly IElasticClient _elasticClient;
+
+        public SearchController(IElasticSearchRepository elasticSearchRepository, IimageServices iimageServices, IElasticClient client)
         {
             _elasticSearchRepository = elasticSearchRepository;
             _IimageServices = iimageServices;
+            _elasticClient = client;
         }
         [HttpPost]
         public async Task<object> SearchQuery([FromBody] SearchQuery searchquery)
@@ -97,11 +101,10 @@ namespace backend.Controller
                 UserId = x.UserId
 
             }
-
              ).ToList();
             return test;
         }
-        [HttpPost("searchfulltext")]
+ /*       [HttpPost("searchfulltext")]
         public async Task<object> SearchFullTextTEST(string search)
         {
             var result = _elasticSearchRepository.GetDataSearch<TopicElasticSearch>(s => s
@@ -134,11 +137,11 @@ namespace backend.Controller
             result.ForEach(x => x.Source.Thumbnail = _IimageServices.GetFile(x.Source.Thumbnail));
             result.ForEach(x => x.Source.Video_intro = _IimageServices.GetFile(x.Source.Video_intro));
 
-            var test = result.GroupBy(s => new {s.TopicName,s.TopicId }).Select(x => new
+            var test = result.GroupBy(s => new { s.TopicName, s.TopicId }).Select(x => new
             {
                 TopicName = x.Key.TopicName,
                 TopicId = x.Key.TopicId,
-                SubTopics = x.GroupBy(s => new {s.SubTopicName,s.SubTopicId}).Select(y => new
+                SubTopics = x.GroupBy(s => new { s.SubTopicName, s.SubTopicId }).Select(y => new
                 {
                     SubTopicName = y.Key.SubTopicName,
                     SubTopicId = y.Key.SubTopicId,
@@ -159,6 +162,32 @@ namespace backend.Controller
                 }).ToList()
             }).ToList();
             return test;
+        }*/
+        [HttpPost("searchfulltext")]
+        public async Task<object> SearchFullText([FromBody] SearchRequest request)
+        {
+            var response = await _elasticClient.SearchAsync<OnlySources>(s => s
+                .Index("only_sources")
+                .Suggest(su => su
+                    .Completion("my_suggestion", c => c
+                        .Field("Title")
+                        .Prefix(request.Query)
+                        .Fuzzy(f => f
+                            .Fuzziness(Fuzziness.Auto)
+                        )
+                    )
+                )
+            );
+            var suggestions = response.Suggest["my_suggestion"].SelectMany(s => s.Options).Select(o => o.Source).ToList();
+            suggestions.ForEach(x => x.Thumbnail = _IimageServices.GetFile(x.Thumbnail));
+            suggestions.ForEach(x => x.Video_intro = _IimageServices.GetFile(x.Video_intro));
+            return suggestions;
+        }
+        // Models/SearchRequest.cs
+        public class SearchRequest
+        {
+            public string Query { get; set; }
         }
     }
 }
+
