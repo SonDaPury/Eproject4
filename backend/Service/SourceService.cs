@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Text;
 using AutoMapper;
+using Nest;
 
 namespace backend.Service
 {
@@ -87,6 +88,22 @@ namespace backend.Service
      .Params(scriptParams)
  )
 );
+            var onlySource = new OnlySources
+            {
+                Id = source.Id,
+                Title = new CompletionField { Input = new List<string> { source.Title } },
+                Description = source.Description,
+                Thumbnail = source.Thumbnail,
+                Slug = source.Slug,
+                Status = source.Status ? 1 : 0,
+                Benefit = "",
+                Video_intro = source.VideoIntro,
+                Price = source.Price,
+                Rating = source.Rating,
+                UserId = (int)source.UserId
+            };
+            var createSource = _elasticsearchRepository.AddorUpdateDataSources<OnlySources>(onlySource, source.Id.ToString());
+
             return source;
         }
 
@@ -294,6 +311,24 @@ namespace backend.Service
                     )
                 );
             }
+
+
+
+            var OnlySource = @"
+        ctx._source.Title = params.Title;
+        ctx._source.Description = params.Description;
+        ctx._source.Thumbnail = params.Thumbnail;
+        ctx._source.Slug = params.Slug;
+        ctx._source.Status = params.Status;
+        ctx._source.Benefit = params.Benefit;
+        ctx._source.Video_intro = params.Video_intro;
+        ctx._source.Price = params.Price;
+        ctx._source.Rating = params.Rating;
+        ctx._source.UserId = params.UserId;
+    ";
+            var check2 = _elasticsearchRepository.UpdateScript(id.ToString(), u => u.Index("only_sources")
+           .Script(s => s.Source($"ctx._source.TopicName = params.Title")
+           .Params(p => p.Add("Title", new CompletionField { Input = "abc"}))));
             return source;
         }
 

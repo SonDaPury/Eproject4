@@ -33,9 +33,21 @@ namespace backend.Data
             {
                 throw ex;
             }
-
         }
-
+        public bool AddorUpdateDataSources<T>(T document, string id) where T : class
+        {
+            try
+            {
+                var indexResponse = _client.Index(document, i => i
+              .Index("only_sources")
+              .Id(id));
+                return indexResponse.IsValid;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public List<T> GetData<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class
         {
             var list = new List<T>();
