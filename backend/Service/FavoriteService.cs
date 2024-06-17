@@ -34,6 +34,7 @@ namespace backend.Service
                 throw new Exception("not found cource favorite");
             }
             _context.FavoriteSources.Remove(favorite);
+            await _context.SaveChangesAsync();  
         }
         public async Task<List<Source>> GetSourcesFavoriteByUserId(int userId)
         {
