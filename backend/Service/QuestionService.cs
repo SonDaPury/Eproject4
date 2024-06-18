@@ -13,12 +13,13 @@ namespace backend.Service
         private readonly LMSContext _context;
         private readonly IMapper _mapper;
         private readonly IimageServices _imageServices;
-
-        public QuestionService(LMSContext context, IMapper mapper, IimageServices imageServices)
+        private readonly IOptionService _optionService;
+        public QuestionService(LMSContext context, IMapper mapper, IimageServices imageServices, IOptionService optionService)
         {
             _context = context;
             _mapper = mapper;
             _imageServices = imageServices;
+            _optionService = optionService;
         }
 
         public async Task<Question> CreateAsync(QuestionDto questionDto)
@@ -123,7 +124,11 @@ namespace backend.Service
             var options = await _context.Options.Where(a => a.QuestionId == id).ToListAsync();
             if (options != null)
             {
-                _context.Options.RemoveRange(options);
+                foreach (var option in options)
+                {
+                    await _optionService.DeleteAsync(option.Id);
+                }
+                //_context.Options.RemoveRange(options);
             }
             if (question.Image != null)
             {
