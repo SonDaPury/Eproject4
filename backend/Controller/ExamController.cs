@@ -43,7 +43,7 @@ namespace backend.Controller
 
         // POST: api/Exams
         [HttpPost]
-        public async Task<ActionResult<ExamDto>> CreateExam([FromBody] ExamDto examDto, int index)
+        public async Task<ActionResult<ExamDto>> CreateExam([FromBody] ExamDto examDto)
         {
             if (examDto == null)
             {
@@ -51,7 +51,7 @@ namespace backend.Controller
             }
 
             var exam = _mapper.Map<Exam>(examDto);
-            var createdExam = await _examService.CreateAsync(exam, index);
+            var createdExam = await _examService.CreateAsync(exam);
             var createdExamDto = _mapper.Map<ExamDto>(createdExam);
             return CreatedAtAction(nameof(GetExam), new { id = createdExam.Id }, createdExamDto);
         }
