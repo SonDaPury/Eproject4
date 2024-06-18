@@ -133,6 +133,7 @@ namespace backend.Service
                                        videoDuration = g.lesson.VideoDuration,
                                        thumbnail = g.lesson.Thumbnail,
                                        video = g.lesson.Video != null ? _imageServices.GetFile(g.lesson.Video) : null,
+                                       fileVideoNameSource = g.lesson.Video != null ? System.IO.Path.GetFileName(g.lesson.Video) : null,
                                        view = g.lesson.View,
                                        status = g.lesson.Status,
                                        description = g.lesson.Description,

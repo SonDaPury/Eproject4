@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using backend.Base;
 using backend.Dtos;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Http;
@@ -43,11 +44,11 @@ namespace backend.Controller
             }
         }
         [HttpGet("getsourcefavoritebyuserid/{userId}")] 
-        public async Task<IActionResult> GetSourceFavoriteByUserId (int userId)
+        public async Task<IActionResult> GetSourceFavoriteByUserId (int userId, Pagination pagination)
         {
             try
             {
-                var list = await _favoriteService.GetSourcesFavoriteByUserId(userId);
+                var list = await _favoriteService.GetSourcesFavoriteByUserId(userId,pagination);
                 var listDto = _mapper.Map<List<SourceViewDto>>(list);
                 return Ok(new { UserId = userId , Sources = listDto });
             }catch (Exception ex)
@@ -66,6 +67,20 @@ namespace backend.Controller
             }catch (Exception ex)
             {
                 return BadRequest(new {message = ex.Message});
+            }
+        }
+
+        [HttpGet("getall")]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var list = await _favoriteService.GetAll();
+                if (list == null) return Ok(new { massage = "not found favorite source" });
+                return Ok(list);
+            }catch(Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

@@ -81,7 +81,7 @@ namespace backend.Controller
         {
             var lessons = await _lessonService.GetAllAsync(chapterID);
             //var lessonDtos = _mapper.Map<List<LessonDto>>(lessons);
-            return Ok(lessons);
+            return Ok(new { ChapterID = chapterID, Lessons = lessons });
         }
 
         // GET: api/Lessons/5
