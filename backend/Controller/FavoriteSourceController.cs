@@ -44,13 +44,13 @@ namespace backend.Controller
             }
         }
         [HttpGet("getsourcefavoritebyuserid/{userId}")] 
-        public async Task<IActionResult> GetSourceFavoriteByUserId (int userId, Pagination pagination)
+        public async Task<IActionResult> GetSourceFavoriteByUserId (int userId, int PageSize, int PageIndex)
         {
             try
             {
-                var list = await _favoriteService.GetSourcesFavoriteByUserId(userId,pagination);
-                var listDto = _mapper.Map<List<SourceViewDto>>(list);
-                return Ok(new { UserId = userId , Sources = listDto });
+                var list = await _favoriteService.GetSourcesFavoriteByUserId(userId,PageSize,PageIndex);
+                var listDto = _mapper.Map<List<SourceViewDto>>(list.Item1);
+                return Ok(new { UserId = userId ,TotalCount = list.Item2, Sources = listDto });
             }catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });

@@ -7,7 +7,7 @@ namespace backend.Service.Interface
     {
         Task<FavoriteSource> AddFavorite(int userId, int sourceId);
         Task<List<FavoriteSource>> GetAll();
-        Task<List<Source>> GetSourcesFavoriteByUserId(int userId, Pagination pagination);
+        Task<(List<Source>,int)> GetSourcesFavoriteByUserId(int userId, int PageSize, int PageIndex);
         Task<List<Source>> GetTop5FavoriteSources();
         Task UnFavorite(int id);
     }
