@@ -89,12 +89,12 @@ namespace backend.Controller
         public async Task<ActionResult<LessonDto>> GetLesson(int id)
         {
             var lesson = await _lessonService.GetByIdAsync(id);
-            if (lesson == null)
+            if (lesson.Item1 == null)
             {
                 return NotFound(new { message = $"Lesson with ID {id} not found." });
             }
             //var lessonDto = _mapper.Map<LessonDto>(lesson);
-            return Ok(lesson);
+            return Ok(new { Index = lesson.Item2, Lesson = lesson.Item1 });
         }
 
         // update
