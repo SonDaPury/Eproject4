@@ -138,7 +138,7 @@ namespace backend.Service
                      TimeLimit = e.TimeLimit,
                      MaxQuestion = e.MaxQuestion,
                      Status = e.Status,
-                     IsStarted = e.IsStarted,
+                     //IsStarted = e.IsStarted,
                      SourceId = e.SourceId,
                      LessonId = e.Serials.FirstOrDefault().LessonId
                  })
@@ -161,12 +161,14 @@ namespace backend.Service
         public async Task<(dynamic, int)> GetDetailsExam(int examId)
         {
             var exam = await _context.Exams
+                .Include(e => e.Serials)
                 .Where(e => e.Id == examId)
                 .Select(e => new
                 {
                     e.Id,
                     e.Title,
                     e.TimeLimit,
+                    e.Serials.FirstOrDefault().Index,
                     Questions = e.QuizQuestions.Select(qq => new
                     {
                         QuestionID = qq.QuestionId,
