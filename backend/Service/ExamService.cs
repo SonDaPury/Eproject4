@@ -127,9 +127,22 @@ namespace backend.Service
             return quizQuestions;
         }
 
-        public async Task<List<Exam>> GetAllAsync()
+        public async Task<List<ExamWithLessonId>> GetAllAsync()
         {
-            return await _context.Exams.ToListAsync();
+            return await _context.Exams
+                .Include(e => e.Serials)
+                 .Select(e => new ExamWithLessonId
+                 {
+                     Id = e.Id,
+                     Title = e.Title,
+                     TimeLimit = e.TimeLimit,
+                     MaxQuestion = e.MaxQuestion,
+                     Status = e.Status,
+                     IsStarted = e.IsStarted,
+                     SourceId = e.SourceId,
+                     LessonId = e.Serials.FirstOrDefault().LessonId
+                 })
+                .ToListAsync();
         }
 
         public async Task<(List<Exam>, int)> GetAllAsync(Pagination pagination)
@@ -145,7 +158,7 @@ namespace backend.Service
             return (exams, count);
         }
 
-        public async Task<dynamic> GetDetailsExam(int examId)
+        public async Task<(dynamic, int)> GetDetailsExam(int examId)
         {
             var exam = await _context.Exams
                 .Where(e => e.Id == examId)
@@ -162,8 +175,10 @@ namespace backend.Service
                     })
                 })
                 .FirstOrDefaultAsync();
+            var serial = await _context.Serials.FirstOrDefaultAsync(s => s.ExamId == examId);
+            if (examId == null) throw new NotFoundException($"exam not found with id : {examId} ");
 
-            return exam ?? throw new NotFoundException($"exam not found with id : {examId} ");
+            return (exam, (int)serial.LessonId);
         }
 
 

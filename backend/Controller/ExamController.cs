@@ -29,10 +29,10 @@ namespace backend.Controller
             try
             {
                 var examDetails = await _examService.GetDetailsExam(examId);
-                if (examDetails == null)
+                if (examDetails.Item1 == null)
                     return NotFound();
 
-                return Ok(examDetails);
+                return Ok(new {LessonId = examDetails.Item2, Exam = examDetails.Item1 });
             }
             catch (Exception)
             {
@@ -85,11 +85,11 @@ namespace backend.Controller
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExams()
+        public async Task<ActionResult<IEnumerable<ExamWithLessonId>>> GetAllExams()
         {
             var exams = await _examService.GetAllAsync();
-            var examDtos = _mapper.Map<List<ExamDto>>(exams);
-            return Ok(examDtos);
+            //var examDtos = _mapper.Map<List<ExamDto>>(exams);
+            return Ok(exams);
         }
         // GET: api/Exams/5
         [HttpGet("{id}")]
