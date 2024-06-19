@@ -23,7 +23,6 @@ import StarIcon from "@mui/icons-material/Star";
 import theme from "@eproject4/theme";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { searchFullText } from "@eproject4/services/search.service";
 
 function FilterPanel({
   isShowFilter,
@@ -32,7 +31,6 @@ function FilterPanel({
   handleSearchResults,
 }) {
   const [searchKeyword, setSearchKeyword] = useState("");
-  const { searchFullTextAction } = searchFullText();
   const navigate = useNavigate();
   const handleCourseClick = (topic) => {
     navigate(`/course-list/${topic}`);

@@ -1,14 +1,14 @@
 import useAxiosWithLoading from "@eproject4/utils/hooks/useAxiosWithLoading";
 
-export const searchFullText = () => {
+export const searchHome = () => {
   const { callApi } = useAxiosWithLoading();
-  const searchFullTextAction = async (keyword) => {
+  const searchDebounceAction = async (keyword) => {
     try {
       const body = {
         query: keyword,
       };
       const res = await callApi(
-        `/Search/searchfulltext`,
+        `/Search/searchDebounce`,
         "post",
         body,
         null,
@@ -19,5 +19,5 @@ export const searchFullText = () => {
       throw new Error(err);
     }
   };
-  return { searchFullTextAction };
+  return { searchDebounceAction };
 };

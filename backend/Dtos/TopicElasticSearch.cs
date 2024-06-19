@@ -44,6 +44,11 @@ namespace backend.Dtos
         [PropertyName("UserId")]
         public int UserId { get; set; }
     }
+    public class CompletionField3
+    {
+        public IEnumerable<string> Input { get; set; }
+        public string Contexts { get; set; }
+    }
     public class OnlySources
     {
         [PropertyName("Id")]
@@ -68,5 +73,14 @@ namespace backend.Dtos
         public string Rating { get; set; }
         [PropertyName("UserId")]
         public int UserId { get; set; }
+        [PropertyName("TopicId")]
+        public int TopicId { get; set; }
+        [PropertyName("TopicName")]
+        public string TopicName { get; set; }
+        [PropertyName("SubTopicId")]
+        public int SubTopicId { get; set; }
+        [PropertyName("SubTopicName")]
+        public string SubTopicName { get; set; }
     }
+
 }

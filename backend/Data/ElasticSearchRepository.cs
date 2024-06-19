@@ -39,7 +39,7 @@ namespace backend.Data
             try
             {
                 var indexResponse = _client.Index(document, i => i
-              .Index("only_sources")
+              .Index("only_sources_v2")
               .Id(id));
                 return indexResponse.IsValid;
             }
@@ -148,7 +148,17 @@ namespace backend.Data
             }
         }
 
-        public bool RemoveDocument(string id, string index = "sources_index")
+        public List<T> searchDebounce<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class
+        {
+            var response = _client.Search<T>(selector);
+            if (response.IsValid)
+            {
+                return response.Suggest["my_suggestion"].SelectMany(s => s.Options).Select(o => o.Source).ToList();
+            }
+            return null;
+        }
+
+        public bool RemoveDocument(string id, string index = "only_sources_v2")
         {
             var response = _client.Delete(new DeleteRequest(index, id));
             return response.IsValid;
@@ -174,5 +184,27 @@ namespace backend.Data
             }
         }
 
+        public List<T> Filter<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class
+        {
+            try
+            {
+                var response = _client.Search<T>(selector);
+                if (response.IsValid)
+                {
+                    return response.Documents.ToList();
+                }
+                else
+                {
+                    // Log thông tin chi tiết về lỗi
+                    Console.WriteLine($"Elasticsearch error: {response.DebugInformation}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log thông tin chi tiết về ngoại lệ
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+            return null;
+        }
     }
 }

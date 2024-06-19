@@ -13,17 +13,38 @@ import { debounce } from "lodash";
 import "@eproject4/styles/styles.css";
 import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import CourseGrid from "@eproject4/components/CourseGrid";
-import { searchFullText } from "@eproject4/services/search.service";
+import { searchHome } from "@eproject4/services/search.service";
 import "./index.css";
+import { getAllCourses } from "@eproject4/services/courses.service";
+import { useNavigate } from 'react-router-dom';
+
 function Home() {
-  const Allcourses = seedData();
+  const { getCoursesAction } = getAllCourses();
+  const [Allcourses, setAllCourses] = useState([]);
+  useEffect(() => {
+    const fetchCourses = async () => {
+    
+        const data = await getCoursesAction();
+        setAllCourses(data.data); // Assuming the API response has a 'data' property
+    }
+    
+    fetchCourses();
+  }, []);
+  useEffect(() => { 
+    console.log(Allcourses);
+  }, [Allcourses]);
+  //const Allcourses = seedData();  
   const courses = Allcourses.slice(0, 10);
   const couresFive = Allcourses.slice(0, 5);
   const [search, setSearch] = useState(""); // State lưu giá trị từ ô search
-  const { searchFullTextAction } = searchFullText();
+  const { searchDebounceAction } = searchHome();
   const [dataToShow, setDataToShow] = useState([]);
+  const navigate = useNavigate();
 
-
+  const handleCourseClick = (category, title, id) => {
+    console.log("vafo");
+    navigate(`/course-detail/${category}/${title}/${id}`);
+  };
   const handleChangesearch = (e) => {
     console.log(e.target.value + "test");
     if (e.target.value === "") {
@@ -33,7 +54,7 @@ function Home() {
     }
   };
   const debouncedSearch = debounce((searchTerm) => {
-    searchFullTextAction(searchTerm).then((res) => {
+    searchDebounceAction(searchTerm).then((res) => {
       console.log(res.data);
       setDataToShow(res.data);
     });
@@ -72,7 +93,7 @@ function Home() {
           modules={[Pagination, Navigation]}
           className="mySwiper">
           {courses.map((course) => (
-            <SwiperSlide key={course.id}>
+            <SwiperSlide key={course.source.id}>
               <Box
                 sx={{
                   display: "flex",
@@ -98,7 +119,7 @@ function Home() {
                         fontSize: { md: "72px", sx: "22px" },
                         fontWeight: 600,
                       }}>
-                      {course.topic}
+                      {/* {course.topic} */} Tin học cơ bản
                     </Typography>
 
                     <Typography
@@ -109,14 +130,14 @@ function Home() {
                         margin: "40px 0px",
                       }}
                       variant="subtitle1">
-                      {course.title}
+                      {course.source.title}
                     </Typography>
                     <ButtonCustomize text="Tạo tài khoản" />
                   </Box>
                 </Box>
                 <Box sx={{ width: "50%" }}>
                   <img
-                    src={course.imageThumbnail}
+                    src={course.source.thumbnail == "" ? "https://via.placeholder.com/300" : course.source.thumbnail}
                     alt="Banner"
                     style={{
                       width: "100%",
@@ -144,17 +165,28 @@ function Home() {
             />
             <SearchIcon className="absolute left-3 top-[70%] transform -translate-y-1/2 text-gray-600" />
           </div>
-          {dataToShow && dataToShow.length > 0 && (
-            <div className="results">
-              {dataToShow.map((item) => (
-                <div key={item.id} className="result-item">
-                  <img src="https://th.bing.com/th/id/OIP.pqzQpx8Wg5fEHznAKKY6ugHaJ4?rs=1&pid=ImgDetMain" alt="" className="thumbnail" />
-                  <span className="title">{item.title.input[0]}</span>
-                  <span className="price">{item.price == 0 ? "Miễn phí" : item.price}</span>
+          <div>
+      {dataToShow && dataToShow.length > 0 && (
+        <div className="results">
+          {dataToShow.map((item) => (
+            item.subTopic.map((sub) => (
+              sub.sources.map((source) => (
+                <div key={source.id} className="result-item" onClick={() => handleCourseClick(item.topicName, source.title.input[0], source.id)}
+                style={{ cursor: 'pointer' }}>
+                  <img 
+                    src={source.thumbnail} 
+                    alt={source.title.input[0]} 
+                    className="thumbnail" 
+                  />
+                  <span className="title">{source.title.input[0]}</span>
+                  <span className="price">{source.price === 0 ? "Miễn phí" : `$${source.price}`}</span>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            ))
+          ))}
+        </div>
+      )}
+    </div>
 
         </Box>
         {/* Danh Muc */}
@@ -196,7 +228,7 @@ function Home() {
               className="mySwiper w-[90%]">
               {courses.map((course) => (
                 <SwiperSlide
-                  key={course.id}
+                  key={course.source.id}
                   style={{
                     display: "flex",
                     justifyContent: "center",
@@ -224,7 +256,7 @@ function Home() {
                           fontWeight: 500,
                           lineHeight: "30px",
                         }}>
-                        {course.topic}
+                        {/* {course.topic} */} Design
                       </Typography>
                       <Typography
                         variant="h1"
@@ -238,7 +270,7 @@ function Home() {
                           lineHeight: "22px", // Tương đương với 157.143% fontSize
                           letterSpacing: "-0.14px",
                         }}>
-                        {course.views}
+                        {/* {course.views} */}4000
                       </Typography>
                     </Box>
                   </Card>

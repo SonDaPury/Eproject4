@@ -60,47 +60,23 @@ namespace backend.Service
             }
             var result = await GetWithToppicIdAsync(source.Id);
 
-            var scirptSource = @"for (int i = 0; i < ctx._source.subTopics.size(); i++) { if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) { ctx._source.subTopics[i].sources.add(params.sources); } }";
-            var scriptParams = new Dictionary<string, object>
-{
-    { "SubTopicId", source.SubTopicId },
-                {"sources", new SourcesElasticSearch
-                {
-                    Id = result.Id,
-                    Title = result.Title,
-                    Description = result.Description,
-                    Thumbnail = result.Thumbnail,
-                    Slug = result.Slug,
-                    Status = result.Status,
-                    Benefit = "",
-                    Video_intro = result.VideoIntro,
-                    Price = result.Price,
-                    Rating = result.Rating,
-                    UserId = (int)result.UserId,
-                }
-                }
-
-};
-            var CreateResponse = _elasticsearchRepository.UpdateScript(result.TopicId.ToString(), u => u
- .Index("sources_index")
- .Script(s => s
-     .Source(scirptSource)
-     .Params(scriptParams)
- )
-);
             var onlySource = new OnlySources
             {
-                Id = source.Id,
-                Title = new CompletionField { Input = new List<string> { source.Title } },
-                Description = source.Description,
-                Thumbnail = source.Thumbnail,
-                Slug = source.Slug,
+                Id = result.Id,
+                Title = new CompletionField { Input = new List<string> { result.Title } },
+                Description = result.Description,
+                Thumbnail = result.Thumbnail,
+                Slug = result.Slug,
                 Status = source.Status ? 1 : 0,
                 Benefit = "",
-                Video_intro = source.VideoIntro,
-                Price = source.Price,
-                Rating = source.Rating,
-                UserId = (int)source.UserId
+                Video_intro = result.VideoIntro,
+                Price = result.Price,
+                Rating = result.Rating,
+                UserId = (int)result.UserId,
+                TopicId = (int)result.SubTopicId,
+                TopicName = result.TopicName,
+                SubTopicId = (int)result.SubTopicId,
+                SubTopicName = result.SubTopicName
             };
             var createSource = _elasticsearchRepository.AddorUpdateDataSources<OnlySources>(onlySource, source.Id.ToString());
 
@@ -204,8 +180,10 @@ namespace backend.Service
                 //    source.VideoIntro = _imageServices.GetFile(source.VideoIntro);
 
                 SourceViewDto sourceViewDto = _mapper.Map<SourceViewDto>(source);
-                var subtopic = await _context.SubTopics.FirstOrDefaultAsync(s => s.Id == source.SubTopicId);
+                var subtopic = await _context.SubTopics.Include(p => p.Topic).FirstOrDefaultAsync(s => s.Id == source.SubTopicId);
                 sourceViewDto.TopicId = subtopic.TopicId;
+                sourceViewDto.TopicName = subtopic.Topic.TopicName;
+                sourceViewDto.SubTopicName = subtopic.SubTopicName;
                 return sourceViewDto;
             }
             return null;
@@ -262,77 +240,54 @@ namespace backend.Service
             if (check > 0)
             {
                 // Lấy thông tin về Source đã được cập nhật từ cơ sở dữ liệu
-                var result = await GetByIdAsync(source.Id);
+                var result = await GetWithToppicIdAsync(source.Id);
+                var OnlySource = @"
+  ctx._source.Title = params.Title;
+  ctx._source.Description = params.Description;
+  ctx._source.Thumbnail = params.Thumbnail;
+  ctx._source.Slug = params.Slug;
+  ctx._source.Status = params.Status;
+  ctx._source.Benefit = params.Benefit;
+  ctx._source.Video_intro = params.Video_intro;
+  ctx._source.Price = params.Price;
+  ctx._source.Rating = params.Rating;
+  ctx._source.UserId = params.UserId;
+  ctx._source.TopicId = params.TopicId;
+  ctx._source.TopicName = params.TopicName;
+  ctx._source.SubTopicId = params.SubTopicId;
+  ctx._source.SubTopicName = params.SubTopicName;
+";
 
-                var scriptSource = @"
-        for (int i = 0; i < ctx._source.subTopics.size(); i++) {
-            if (ctx._source.subTopics[i].SubTopicId == params.SubTopicId) {
-                for (int j = 0; j < ctx._source.subTopics[i].sources.size(); j++) {
-                    if (ctx._source.subTopics[i].sources[j].Id == params.id) {
-                        ctx._source.subTopics[i].sources[j].Title = params.Title;
-                        ctx._source.subTopics[i].sources[j].Description = params.Description;
-                        ctx._source.subTopics[i].sources[j].Thumbnail = params.Thumbnail;
-                        ctx._source.subTopics[i].sources[j].Slug = params.Slug;
-                        ctx._source.subTopics[i].sources[j].Benefit = params.Benefit;
-                        ctx._source.subTopics[i].sources[j].Status = params.Status;
-                        ctx._source.subTopics[i].sources[j].Video_intro = params.Video_intro;
-                        ctx._source.subTopics[i].sources[j].Price = params.Price;
-                        ctx._source.subTopics[i].sources[j].Rating = params.Rating;
-                        ctx._source.subTopics[i].sources[j].UserId = params.UserId;
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-    ";
-                var scriptParams = new Dictionary<string, object>
-    {
-        { "SubTopicId", source.SubTopicId },
-        { "id", source.Id },
-        { "Title", source.Title },
-        { "Description", source.Description },
-        { "Thumbnail", source.Thumbnail },
-        { "Slug", source.Slug },
-        { "Status", source.Status ? 1 : 0 },
-        { "Benefit", "" },
-        { "Video_intro", source.VideoIntro },
-        { "Price", source.Price },
-        { "Rating", source.Rating },
-        { "UserId", source.UserId }
-    };
+                var params1 = new Dictionary<string, object>
+{
+    { "Title", new CompletionField { Input = new List<string> { result.Title } } },
+    { "Description", result.Description },
+    { "Thumbnail", result.Thumbnail },
+    { "Slug", result.Slug },
+    { "Status", result.Status },
+    { "Benefit", " " },
+    { "Video_intro", result.VideoIntro },
+    { "Price", result.Price },
+    { "Rating", result.Rating },
+    { "UserId", result.UserId },
+    { "TopicId", result.TopicId },
+    { "TopicName", result.TopicName },
+    { "SubTopicId", result.SubTopicId },
+    { "SubTopicName", result.SubTopicName }
+};
 
-                // Cập nhật thông tin trong Elasticsearch
-                var updateResponse = _elasticsearchRepository.UpdateScript(result.TopicId.ToString(), u => u
-                    .Index("sources_index")
+                var updateResponse = _elasticsearchRepository.UpdateScript(id.ToString(), u => u
+                    .Index("only_sources_v2")
                     .Script(s => s
-                        .Source(scriptSource)
-                        .Params(scriptParams)
+                        .Source(OnlySource)
+                        .Params(params1)
                     )
                 );
             }
 
 
-
-            var OnlySource = @"
-        ctx._source.Title = params.Title;
-        ctx._source.Description = params.Description;
-        ctx._source.Thumbnail = params.Thumbnail;
-        ctx._source.Slug = params.Slug;
-        ctx._source.Status = params.Status;
-        ctx._source.Benefit = params.Benefit;
-        ctx._source.Video_intro = params.Video_intro;
-        ctx._source.Price = params.Price;
-        ctx._source.Rating = params.Rating;
-        ctx._source.UserId = params.UserId;
-    ";
-            var check2 = _elasticsearchRepository.UpdateScript(id.ToString(), u => u.Index("only_sources")
-           .Script(s => s.Source($"ctx._source.TopicName = params.Title")
-           .Params(p => p.Add("Title", new CompletionField { Input = "abc"}))));
             return source;
         }
-
-
         public async Task<bool> DeleteAsync(int id)
         {
 
@@ -372,19 +327,14 @@ namespace backend.Service
             int check = await _context.SaveChangesAsync();
             if (check > 0)
             {
-                var result = await GetByIdAsync(source.Id);
-                var scriptSource = @"ctx._source.subTopics.forEach(subTopic -> { subTopic.sources.removeIf(source -> source.Id == params.id); })";
-                var updateResponse = _elasticsearchRepository.UpdateScript(result.TopicId.ToString(), u => u
-                       .Index("sources_index")
-                       .Script(s => s
-                           .Source(scriptSource)
-                           .Params(p => p.Add("id", id))
-                       )
-                   );
-                return updateResponse;
+                bool check2 = _elasticsearchRepository.RemoveDocument(id.ToString());
+                return check2;
+            }
+            else
+            {
+                return false;
             }
 
-            return false;
         }
 
         private static string GenerateSlug(string title)
