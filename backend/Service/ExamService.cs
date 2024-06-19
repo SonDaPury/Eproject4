@@ -230,13 +230,13 @@ namespace backend.Service
                         //await _context.SaveChangesAsync();
                     }
 
-                    var serials = await _context.Serials.Where(q => q.ExamId == id).ToListAsync();
+                    var serials = await _context.Serials.FirstOrDefaultAsync(q => q.ExamId == id);
                     if (serials != null)
                     {
-                        foreach (var serial in serials)
-                        {
-                            await _serialService.DeleteAsync(serial.Id);
-                        }
+                        //foreach (var serial in serials)
+                        //{
+                            await _serialService.UpdateSerialDeleteExam(serials.Id);
+                        //}
                         //_context.Serials.RemoveRange(serials);
                         //await _context.SaveChangesAsync();
                     }

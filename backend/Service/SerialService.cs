@@ -158,6 +158,12 @@ namespace backend.Service
             }
             return serial;
         }
+        public async Task UpdateSerialDeleteExam(int id)
+        {
+            var serial = await _context.Serials.FindAsync(id);
+            serial.ExamId = null;
+            await _context.SaveChangesAsync();
+        }
         private async Task<List<Serial>> GetSerialG(int chapter_ID, int Index)
         {
             var result = from serial in context.Serials
