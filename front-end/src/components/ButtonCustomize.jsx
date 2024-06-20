@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 
 const ButtonCustomize = ({
+  onClick,
   text = "Text mặc định",
   width = "130px",
   height = "40px",
@@ -11,12 +12,16 @@ const ButtonCustomize = ({
   backgroundColor = "main.primary",
   variant = "contained",
   sx = {},
-  navigateTo = "/", // Thêm prop này để xác định URL điều hướng
+  navigateTo , // Thêm prop này để xác định URL điều hướng
 }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(navigateTo); // Sử dụng navigate khi nhấn vào nút
+    if (navigateTo) {
+      navigate(navigateTo); // Sử dụng navigate khi cần điều hướng
+    } else if (onClick) {
+      onClick(); // Sử dụng onClick khi không cần điều hướng
+    }
   };
 
   return (

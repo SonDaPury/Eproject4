@@ -23,6 +23,7 @@ export const createCourse = () => {
       formData.append("thumbnail", dataForm.thumbnail);
       formData.append("slug", dataForm.slug);
       formData.append("status", dataForm.status);
+      formData.append("rating", "1");
       if (dataForm?.benefit.length > 0) {
         dataForm.benefit.map((item) => {
           formData.append("benefit", item);

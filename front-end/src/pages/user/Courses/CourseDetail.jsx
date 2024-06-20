@@ -1,5 +1,4 @@
 import * as React from "react";
-import seedData from "@eproject4/utils/seedData";
 import DOMPurify from "dompurify";
 import PropTypes from "prop-types";
 import {
@@ -17,7 +16,7 @@ import {
   Tab,
   Tabs,
 } from "@mui/material";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -39,7 +38,19 @@ import {
   getCourseById,
 } from "@eproject4/services/courses.service";
 import { getAllTopics, getTopicById } from "@eproject4/services/topic.service";
-import { getSubTopics } from "@eproject4/services/subTopic.service";
+import {
+  AddFavoriteSource,
+  deleteFavoriteSource,
+  getAllFavorite,
+} from "@eproject4/services/favorite.service";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addFavoriteSuccess,
+  removeFavoriteSuccess,
+  setFavoriteStatus,
+  setInitialFavorites,
+} from "@eproject4/redux/slices/favoriteSlice";
+import { favoriteSelector } from "@eproject4/redux/selectors";
 
 // Tabs
 function CustomTabPanel(props) {
@@ -82,21 +93,35 @@ function a11yProps(index) {
 }
 
 // ----------------------------------------------------------------
+
 const CourseDetail = () => {
   const { getCourseByIdAction } = getCourseById();
   const { getCoursesAction } = getAllCourses();
   const { getAllTopicsAction } = getAllTopics();
   const { getTopicByIdAction } = getTopicById();
 
+  const { getAllFavoriteAction } = getAllFavorite();
+  const { addFavoriteSourceAction } = AddFavoriteSource();
+  const { DeleteFavoriteSourceAction } = deleteFavoriteSource();
+  const { category, title, id } = useParams();
+
   const [courseData, SetcourseData] = useState([]);
-  //  const [filteredData, setFilteredData] = useState([]);
+  const [courseDetail, setCourseDetail] = useState(null); // Đối tượng để lưu chi tiết khóa học
+
+  const favoriteData = useSelector(
+    (state) => state.favorites.favoritedCourses[id]
+  );
+  const isFavorited = favoriteData ? favoriteData.isFavorite : false;
+  const favoriteId = favoriteData ? favoriteData.favoriteId : null;
+
+  const dispatch = useDispatch();
+  const favorites = useSelector(favoriteSelector);
+
   const [subTopicName, setSubTopicName] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   //toan bo data
   const [coursesWithSubTopicName, setCoursesWithSubTopicName] = useState([]);
 
-  const { category, title, id } = useParams();
-  const navigate = useNavigate();
   const handleCardClick = (item) => {
     const path = `/course-detail/${item?.topicName}/${encodeURIComponent(item?.source?.title)}/${item?.source.id}`;
     window.location.href = path; // Sử dụng window.location.href để tải lại trang
@@ -143,12 +168,33 @@ const CourseDetail = () => {
     setValue(newValue);
   };
 
+  //Get all Favorite
+
+  useEffect(() => {
+    const fetchFavoriteData = async () => {
+      try {
+        const res = await getAllFavoriteAction();
+        if (res.status === 200) {
+          dispatch(setInitialFavorites(res.data));
+        } else {
+          console.error("Failed to fetch initial favorites:", res);
+        }
+      } catch (err) {
+        throw new Error(err);
+      }
+    };
+    fetchFavoriteData();
+  }, [dispatch]);
+
+  // Get Course by Id
   useEffect(() => {
     const fetchCourseDetailData = async () => {
       try {
         const res = await getCourseByIdAction(id);
 
         SetcourseData(res?.data);
+        setCourseDetail(res?.data);
+
 
         if (res?.data?.subTopicId) {
           const subTopicRes = await getTopicByIdAction(res.data.subTopicId);
@@ -186,7 +232,6 @@ const CourseDetail = () => {
           ...course,
           topicName: topicMap[course.topicId] || "Unknown SubTopic",
         }));
-        console.log(combinedData);
 
         setCoursesWithSubTopicName(combinedData);
       } catch (error) {
@@ -203,6 +248,85 @@ const CourseDetail = () => {
       .slice(0, 5);
     setFilteredData(filter);
   }, [coursesWithSubTopicName, category]);
+
+  // Fetch favorite status
+  useEffect(() => {
+    const fetchFavoriteStatus = async () => {
+      if (!courseDetail?.userId) {
+        console.log("Waiting for courseDetail to be populated...");
+        return;
+      }
+      try {
+        const res = await addFavoriteSourceAction(courseDetail.userId, id);
+        console.log("Fetch favorite status response:", res);
+
+        if (res.status === 200 && res.data) {
+          const isFavorite = res.data.isFavorite; // Giả sử isFavorite là boolean
+          dispatch(
+            setFavoriteStatus({
+              courseId: id,
+              isFavorited: isFavorite,
+              favoriteId: res.data.id,
+            })
+          );
+        } else {
+          dispatch(
+            setFavoriteStatus({
+              courseId: id,
+              isFavorited: false,
+              favoriteId: null,
+            })
+          );
+        }
+      } catch (e) {
+        console.error("Error fetching favorite status:", e);
+      }
+    };
+
+    if (courseDetail?.userId) {
+      fetchFavoriteStatus();
+    }
+  }, [id, dispatch]);
+
+  const handleAddFavorite = async () => {
+    if (isFavorited) return;
+    try {
+      const res = await addFavoriteSourceAction(courseDetail.userId, id);
+      if (res.status !== 200) {
+        throw new Error(res.data.message || "Failed to add favorite");
+      }
+      dispatch(addFavoriteSuccess({ ...res.data, sourceId: id }));
+      dispatch(
+        setFavoriteStatus({
+          courseId: id,
+          isFavorited: true,
+          favoriteId: res.data.id,
+        })
+      );
+    } catch (e) {
+      console.error("Error adding favorite:", e);
+    }
+  };
+
+  const handleRemoveFavorite = async () => {
+    if (!isFavorited || !favoriteId) return;
+    try {
+      const res = await DeleteFavoriteSourceAction(favoriteId);
+      if (res.status !== 200) {
+        throw new Error(res.data.message || "Failed to delete favorite");
+      }
+      dispatch(removeFavoriteSuccess(favoriteId));
+      dispatch(
+        setFavoriteStatus({
+          courseId: id,
+          isFavorited: false,
+          favoriteId: null,
+        })
+      );
+    } catch (e) {
+      console.error("Error removing favorite:", e);
+    }
+  };
 
   return (
     <Box>
@@ -231,7 +355,6 @@ const CourseDetail = () => {
             variant="p"
             sx={{
               color: "var(--Gray-700, #4E5566)", // Using CSS custom properties with fallback
-
               fontSize: "20px",
               fontStyle: "normal",
               fontWeight: 400,
@@ -531,15 +654,22 @@ const CourseDetail = () => {
                     sx={{ marginBottom: "15px", color: "#FF6636" }}
                   />
                   <ButtonCustomize
-                    text="Thêm vào danh sách yêu thích"
-                    width="213px"
+                    text={
+                      isFavorited
+                        ? "Xóa khỏi danh sách yêu thích "
+                        : "Thêm vào danh sách yêu thích"
+                    }
+                    onClick={
+                      isFavorited ? handleRemoveFavorite : handleAddFavorite
+                    }
                     height="40px"
-                    backgroundColor="#FFF"
+                    backgroundColor={isFavorited ? "#FF6636" : "#FFF"}
                     fontSize="10px"
                     sx={{
                       marginBottom: "15px",
                       color: "#4E5566",
                       border: "1px solid",
+                      width: "213px",
                     }}
                   />
                   <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -768,7 +898,6 @@ const CourseDetail = () => {
               {filteredData.map((item, i) => (
                 <Box key={i} onClick={() => handleCardClick(item)}>
                   <CardCourse
-                    // path={`/course-detail/${item?.topicName}/${encodeURIComponent(item?.source?.title)}/${item?.source.id}`}
                     title={item?.source?.title}
                     category={item?.topicName}
                     price={

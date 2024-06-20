@@ -6,3 +6,5 @@ export const topicsSelector = (state) => state.topics;
 
 // Sub topics selector
 export const subTopicsSelector = (state) => state.subTopics;
+
+export const favoriteSelector = (state) => state.favorites;
