@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -22,7 +23,7 @@ const validationSchema = Yup.object().shape({
 
 const chunkSize = 3 * 1024 * 1024;
 
-function CreateLession({ chapter, handleClose }) {
+function CreateLession({ chapter, handleClose, fetchDataAllLessonsOfChapter }) {
   const { chunkedFileAction } = chunkedFile();
   const [uploadProgress, setUploadProgress] = useState(0);
   let isChunkedSuccess = false;
@@ -103,6 +104,7 @@ function CreateLession({ chapter, handleClose }) {
           setShowProgress(false);
           handleClose();
           reset();
+          fetchDataAllLessonsOfChapter();
         }, 1000);
       }
     } catch (error) {
@@ -122,9 +124,11 @@ function CreateLession({ chapter, handleClose }) {
       return 1;
     }
     const lastIndex =
-      lessons[lessons.length - 1].lesson[
-        lessons[lessons.length - 1].lesson.length - 1
-      ]?.index;
+      lessons.lessons.length > 0
+        ? lessons.lessons[lessons.lessons.length - 1].lesson[
+            lessons.lessons[lessons.lessons.length - 1].lesson.length - 1
+          ]?.index
+        : 1;
 
     return lastIndex + 1;
   };

@@ -1,29 +1,13 @@
 import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import TuneIcon from "@mui/icons-material/Tune";
-import InputAdornment from "@mui/material/InputAdornment";
-import SearchIcon from "@mui/icons-material/Search";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import theme from "@eproject4/theme";
 import CardCourse from "@eproject4/components/CardCourse.jsx";
-import Accordion from "@mui/material/Accordion";
-import StarIcon from "@mui/icons-material/Star";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import Checkbox from "@mui/material/Checkbox";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import seedData from "@eproject4/utils/seedData";
 import "swiper/css";
 import "swiper/css/navigation";
 import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import { useEffect, useState } from "react";
-import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import FilterPanel from "@eproject4/components/FilterPanel";
 import { getAllCourses } from "@eproject4/services/courses.service";
 import { getAllTopics } from "@eproject4/services/topic.service";
@@ -53,7 +37,6 @@ function Courses() {
   newItems.forEach((course) => {
     courseTopics.push(course?.topics);
   });
-  console.log(newItems);
   // Loại bỏ các chủ đề trùng lặp từ courseTopics và lưu vào mảng topics
   const topics = removeDuplicate(courseTopics);
 
@@ -79,7 +62,6 @@ function Courses() {
     };
 
     fetchTopicData();
-    console.log(fetchTopicData());
     fetchSubTopicData();
     fetchCoursesData();
   }, []);
@@ -193,7 +175,7 @@ function Courses() {
                         },
                       }}>
                       {newItems.map((item, i) => {
-                        if (  
+                        if (
                           item?.topics === topic &&
                           item?.source?.status === 1
                         ) {

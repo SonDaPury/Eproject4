@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Grid, Typography, Pagination } from "@mui/material";
 import { useParams } from "react-router-dom";
 
@@ -149,8 +149,6 @@ const Category = () => {
   const paginatedData = displayData
     .slice((pageIndex - 1) * pageSize, pageIndex * pageSize)
     .filter((item) => item.source.status === 1);
-
-  console.log(paginatedData);
 
   return (
     <Box sx={{ maxWidth: "1320px", margin: "auto" }}>

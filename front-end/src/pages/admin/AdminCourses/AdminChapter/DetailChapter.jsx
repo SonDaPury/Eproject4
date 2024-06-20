@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import CreateLessionExam from "./CreateLessionExam";
 import { getAllLessionsByChapterId } from "@eproject4/services/lession.service";
 import LessionDetail from "./LessionDetail";
+import { getAllExam } from "@eproject4/services/exam.service";
 
 const useStyles = makeStyles(() => ({
   content: {
@@ -39,6 +40,17 @@ function DetailChapter({
   const handleClose = () => setOpenCreateModal(false);
   const { getAllLessionsByChapterIdAction } = getAllLessionsByChapterId();
   const [lessionsOfChapter, setLessionsOfChapter] = useState([]);
+  const { getAllExamAction } = getAllExam();
+  const [exams, setExams] = useState([]);
+
+  const fetchDataAllExam = async () => {
+    const res = await getAllExamAction();
+    setExams(res?.data);
+  };
+
+  useEffect(() => {
+    fetchDataAllExam();
+  }, []);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -121,15 +133,20 @@ function DetailChapter({
           <AccordionDetails>
             <LessionDetail
               fetchDataAllLessonsOfChapter={fetchDataAllLessonsOfChapter}
+              chapter={chapter}
               lessionsOfChapter={lessionsOfChapter}
+              exams={exams}
             />
           </AccordionDetails>
         </Accordion>
       </Box>
       <CreateLessionExam
+        fetchDataAllLessonsOfChapter={fetchDataAllLessonsOfChapter}
         handleClose={handleClose}
         openCreateModal={openCreateModal}
         chapter={chapter}
+        lessionsOfChapter={lessionsOfChapter}
+        fetchDataAllExam={fetchDataAllExam}
       />
     </Box>
   );

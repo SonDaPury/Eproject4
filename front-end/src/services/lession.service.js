@@ -9,7 +9,6 @@ export const getAllLessionsByChapterId = () => {
     try {
       const res = await callApi(
         `/Lesson/GetAllLessonsByChapterID?chapterID=${chapterId}`,
-
         "get",
         null,
         null,
@@ -90,4 +89,42 @@ export const deleteLesson = () => {
   };
 
   return { deleteLessonAction };
+};
+
+// update lesson
+export const updateLesson = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const updateLessonAction = async (data) => {
+    try {
+      const res = await callApi(
+        "/Lesson/UpdateLesson",
+        "put",
+        data,
+        "Cập nhật bài giảng thành công",
+        true
+      );
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { updateLessonAction };
+};
+
+// Get lesson by id
+export const getLessonById = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const getLessonByIdAction = async (id) => {
+    try {
+      const res = await callApi(`/Lesson/${id}`, "get", null, null, null);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { getLessonByIdAction };
 };
