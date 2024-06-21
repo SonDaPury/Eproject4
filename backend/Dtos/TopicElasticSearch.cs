@@ -65,7 +65,7 @@ namespace backend.Dtos
         [PropertyName("Price")]
         public double? Price { get; set; }
         [PropertyName("Rating")]
-        public string Rating { get; set; }
+        public int Rating { get; set; }
         [PropertyName("UserId")]
         public int UserId { get; set; }
         [PropertyName("TopicId")]
