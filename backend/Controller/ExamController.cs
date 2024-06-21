@@ -53,7 +53,7 @@ namespace backend.Controller
             var exam = _mapper.Map<Exam>(examDto);
             var createdExam = await _examService.CreateAsync(exam);
             var createdExamDto = _mapper.Map<ExamDto>(createdExam);
-            return CreatedAtAction(nameof(GetExam), new { id = createdExam.Id }, createdExamDto);
+            return Ok(createdExamDto);
         }
 
         [HttpPost("createquestion")]
