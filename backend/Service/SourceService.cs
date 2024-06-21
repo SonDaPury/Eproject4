@@ -12,14 +12,14 @@ using Nest;
 
 namespace backend.Service
 {
-    public class SourceService(LMSContext context, IMapper mapper, IimageServices imageServices, IExamService examService, IElasticSearchRepository elasticsearchRepository) : ISourceService
+    public class SourceService(LMSContext context, IMapper mapper, IimageServices imageServices, IExamService examService, IElasticSearchRepository elasticsearchRepository, IChapterService chapterService) : ISourceService
     {
         private readonly LMSContext _context = context;
         private readonly IMapper _mapper = mapper;
         private readonly IimageServices _imageServices = imageServices;
         private readonly IExamService _examService = examService;
         private readonly IElasticSearchRepository _elasticsearchRepository = elasticsearchRepository;
-
+        private readonly IChapterService _chapterService = chapterService;
 
         public async Task<Source> CreateAsync(SourceDto sourceDto)
         {
@@ -222,7 +222,8 @@ namespace backend.Service
                 {
                     source.Thumbnail = _imageServices.AddFile(updatedSource.Thumbnail, "sources", "thumbnails");
                 }
-            }else if(source.Thumbnail == null && updatedSource.Thumbnail == null)
+            }
+            else if (source.Thumbnail == null && updatedSource.Thumbnail == null)
             {
                 _imageServices.DeleteFile(source.Thumbnail);
                 source.Thumbnail = null;
@@ -246,7 +247,7 @@ namespace backend.Service
                     source.VideoIntro = _imageServices.AddFile(updatedSource.VideoIntro, "sources", "videos");
                 }
             }
-            else if(source.VideoIntro != null && updatedSource.VideoIntro == null)
+            else if (source.VideoIntro != null && updatedSource.VideoIntro == null)
             {
                 _imageServices.DeleteFile(source.VideoIntro);
                 source.VideoIntro = null;
@@ -314,20 +315,24 @@ namespace backend.Service
 
             if (source == null) return false;
             // xóa exam theo source
-            //var list_exam = await _context.Exams.Where(l => l.SourceId == id).ToListAsync();
-            //if (list_exam != null)
-            //{
-            //    foreach (var exam in list_exam)
-            //    {
-            //        await _examService.DeleteAsync(exam.Id);
-            //    }
-            //    //_context.Exams.RemoveRange(list_exam);
-            //}
+            var list_exam = await _context.Exams.Where(l => l.SourceId == id).ToListAsync();
+            if (list_exam != null)
+            {
+                foreach (var exam in list_exam)
+                {
+                    await _examService.DeleteAsync(exam.Id);
+                }
+                //_context.Exams.RemoveRange(list_exam);
+            }
             // xóa exam theo chapter
             var list_chapter = await _context.Chapters.Where(l => l.SourceId == id).ToListAsync();
             if (list_chapter != null)
             {
-                _context.Chapters.RemoveRange(list_chapter);
+                foreach(var chapter in list_chapter)
+                {
+                    await _chapterService.DeleteAsync(chapter.Id);
+                }
+                //_context.Chapters.RemoveRange(list_chapter);
             }
             var list_favorite = await _context.FavoriteSources.Where(f => f.SourceId == id).ToListAsync();
             if (list_favorite != null)

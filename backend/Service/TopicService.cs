@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Service
 {
-    public class TopicService(LMSContext context, IElasticSearchRepository elasticSearchRepository) : ITopicService
+    public class TopicService(LMSContext context, IElasticSearchRepository elasticSearchRepository, ISubTopicService subTopicService) : ITopicService
     {
         private readonly LMSContext _context = context;
         private readonly IElasticSearchRepository _elasticSearchRepository = elasticSearchRepository;
-
+        private readonly ISubTopicService _subTopicService = subTopicService;
         // Tạo mới một topic
         public async Task<Topic> CreateAsync(Topic topic)
         {
@@ -62,7 +62,11 @@ namespace backend.Service
             var sub_topic = await _context.SubTopics.Where(t => t.TopicId == id).ToListAsync();
             if (sub_topic != null)
             {
-                _context.SubTopics.RemoveRange(sub_topic);
+                foreach(var s in sub_topic)
+                {
+                    await _subTopicService.DeleteAsync(s.Id);
+                }
+                //_context.SubTopics.RemoveRange(sub_topic);
             }
             _context.Topics.Remove(topic);
             await _context.SaveChangesAsync();

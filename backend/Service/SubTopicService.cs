@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Service
 {
-    public class SubTopicService(LMSContext context, IElasticSearchRepository elasticsearchRepository) : ISubTopicService
+    public class SubTopicService(LMSContext context, IElasticSearchRepository elasticsearchRepository, ISourceService sourceService) : ISubTopicService
     {
         private readonly LMSContext _context = context;
         private readonly IElasticSearchRepository _elasticsearchRepository = elasticsearchRepository;
+        private readonly ISourceService _sourceService = sourceService;
         public async Task<SubTopic> CreateAsync(SubTopic subTopic)
         {
             _context.SubTopics.Add(subTopic);
@@ -96,7 +97,11 @@ namespace backend.Service
             var sources = await _context.Sources.Where(s => s.SubTopicId == id).ToListAsync();
             if (sources != null && sources.Any())
             {
-                _context.Sources.RemoveRange(sources);
+                foreach ( var source in sources)
+                {
+                    await _sourceService.DeleteAsync(source.Id);
+                }
+                //_context.Sources.RemoveRange(sources);
             }
 
             _context.SubTopics.Remove(subTopic);
