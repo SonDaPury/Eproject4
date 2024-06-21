@@ -32,6 +32,5 @@ namespace backend.Data
             var db = _redis.GetDatabase();
             await db.KeyDeleteAsync(key);
         }
-
     }
 }

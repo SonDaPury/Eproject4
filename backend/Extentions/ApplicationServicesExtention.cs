@@ -2,6 +2,7 @@
 using backend.Data;
 using backend.Service;
 using backend.Service.Interface;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 
@@ -25,6 +26,7 @@ namespace backend.Extentions
             services.AddScoped<ISourceService, SourceService>();
             services.AddScoped<ISubTopicService, SubTopicService>();
             services.AddScoped<ITopicService, TopicService>();
+            services.AddScoped<ICartService, CartService>();
             /*            services.AddScoped<IChukedFileService, ChunkedFileService>();
             */
             services.AddScoped<IOrderService, OrderService>();

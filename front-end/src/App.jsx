@@ -9,6 +9,7 @@ import { DefaultLayout } from "./components/layout";
 import { Fragment } from "react";
 import NotFound from "./components/NotFound";
 import { getToken, getUser } from "./helpers/authHelper";
+import WatchCourse from "./pages/user/Courses/WatchCourse";
 
 function App() {
   const token = getToken();

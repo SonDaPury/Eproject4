@@ -11,7 +11,6 @@ import "./index.css";
 import theme from "./theme.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
     <Provider store={store}>
       <CssVarsProvider theme={theme}>
         <CssBaseline />
@@ -20,5 +19,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </SnackbarProvider>
       </CssVarsProvider>
     </Provider>
-  </React.StrictMode>
 );

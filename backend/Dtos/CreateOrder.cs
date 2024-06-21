@@ -3,14 +3,13 @@
     public class CreateOrder
     {
         public int UserID { get; set; }
-        public double Price { get; set; }
-        public int SourceID { get; set; }
         public DateTime CreateAt { get; set; } = DateTime.Now;
         public string PortURLreturn { get; set; }
+        public double TotalPrice { get; set; }
     }
     public class ConfirmPayment
     {
-        public long vnp_Amount { get; set; }
+        public long? vnp_Amount { get; set; }
         public string? vnp_BankCode { get; set; }
         public string? vnp_BankTranNo { get; set; }
         public string? vnp_CardType { get; set; }
@@ -22,6 +21,7 @@
         public string? vnp_TransactionStatus { get; set; }
         public long vnp_TxnRef { get; set; }
         public string? vnp_SecureHash { get; set; }
+        public int UserID { get; set; }
     }
     public class InsertSourceFree
     {

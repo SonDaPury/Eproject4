@@ -16,7 +16,8 @@ import AdminCourses from "@eproject4/pages/admin/AdminCourses";
 import AdminDetailCourse from "@eproject4/pages/admin/AdminCourses/AdminDetailCourse.jsx";
 import AdminLession from "@eproject4/pages/admin/AdminCourses/AdminLession";
 import WatchCourse from "@eproject4/pages/user/Courses/WatchCourse";
-
+import CheckoutCart from "@eproject4/pages/user/Order/CheckoutCart";
+import { ConfirmPayment } from "@eproject4/pages/user/Order/ConfirmPayment";
 // Route khong can login van xem duoc
 export const publicRoutes = [
   { path: "/", component: Home },
@@ -33,8 +34,8 @@ export const publicRoutes = [
 export const privateRoutes = [
   { path: "/dashboard-student", component: UserDashboard },
   { path: "/watch-course/:title/:id", component: WatchCourse },
-  { path: "/watch-course/:title/:id/:slug", component: WatchCourse },
-];
+  {path: "/checkoutCart", component: CheckoutCart },
+  {path:"/confirmPayment", component: ConfirmPayment}];
 
 // Route chi danh cho admin
 export const adminRoutes = [

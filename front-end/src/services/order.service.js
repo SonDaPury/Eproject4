@@ -1,4 +1,5 @@
 import useAxiosWithLoading from "@eproject4/utils/hooks/useAxiosWithLoading";
+import { data } from "autoprefixer";
 
 export const getOrderforFree = () => {
   const { callApi } = useAxiosWithLoading();
@@ -23,8 +24,28 @@ export const getOrderforFree = () => {
     }
   };
 
-  return { getOrderforFreeAction };
+  return { getOrderforFreeAction, };
 };
+export const OrderPaid = () =>{
+  const { callApi,loading } = useAxiosWithLoading();
+  const createOrder = async (data) =>{
+    try{
+      const res = await callApi("/Order/create-order","post",data,null,false);
+      return res;
+    }catch(err){
+      throw new Error(err);
+    }
+  }
+  const confirmPayment = async(data) =>{
+    try{
+      const res = await callApi("/Order/confirm-payment","post",data,null,false);
+      return res;
+    }catch(err){
+      throw new Error(err);
+    }
+  }
+  return {createOrder,confirmPayment,loading}
+}
 
 // get all order
 export const getAllOrder = () => {
@@ -67,3 +88,4 @@ export const getAllOrdersPag = () => {
 
   return { getAllOrdersPagAction };
 };
+
