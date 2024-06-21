@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 
 const ButtonCustomize = ({
   onClick,
-  text = "Text mặc định",
+  text = "",
   width = "130px",
   height = "40px",
   fontSize = "12px",
