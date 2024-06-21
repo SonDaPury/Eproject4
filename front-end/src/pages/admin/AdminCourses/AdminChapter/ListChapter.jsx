@@ -116,7 +116,6 @@ function ListChapter({ listChapters, getChapterOfCourse }) {
     getChapterOfCourse(idCourse);
     setIsDragged(false);
   };
-
   return (
     <Box sx={{ marginTop: "30px" }}>
       <DndContext

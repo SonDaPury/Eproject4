@@ -45,6 +45,7 @@ function CreateLession({ chapter, handleClose, fetchDataAllLessonsOfChapter }) {
   useEffect(() => {
     const fetchDataLessonsByChapterId = async () => {
       const res = await getAllLessionsByChapterIdAction(chapter?.id);
+
       setLessionByChapterId(res?.data);
     };
 

@@ -51,10 +51,7 @@ import {
   setInitialFavorites,
 } from "@eproject4/redux/slices/favoriteSlice";
 import { favoriteSelector } from "@eproject4/redux/selectors";
-<<<<<<< HEAD
-=======
 import SourceDetail from "@eproject4/components/SourceDetail";
->>>>>>> 622c5df (dangtay_03)
 
 // Tabs
 function CustomTabPanel(props) {
@@ -198,10 +195,6 @@ const CourseDetail = () => {
 
         SetcourseData(res?.data);
         setCourseDetail(res?.data);
-<<<<<<< HEAD
-
-=======
->>>>>>> 622c5df (dangtay_03)
 
         if (res?.data?.subTopicId) {
           const subTopicRes = await getTopicByIdAction(res.data.subTopicId);
@@ -471,7 +464,6 @@ const CourseDetail = () => {
                 </CustomTabPanel>
 
                 <CustomTabPanel value={value} index={1}>
-                 
                   <SourceDetail />
                 </CustomTabPanel>
               </Box>

@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import {
   Box,
   Button,
@@ -18,12 +19,23 @@ import {
   useFieldArray,
   useForm,
 } from "react-hook-form";
-import { useEffect } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  deleteQuestion,
+  updateExam,
+  updateQuestions,
+} from "@eproject4/services/exam.service";
+import { useSearchParams } from "react-router-dom";
 
 const defaultQuestion = {
   text: "",
-  options: ["", "", "", ""],
+  idOptions: [
+    { id: "", answer: "" },
+    { id: "", answer: "" },
+    { id: "", answer: "" },
+    { id: "", answer: "" },
+  ],
+  correctOption: null,
 };
 
 function UpdateExam({
@@ -32,15 +44,16 @@ function UpdateExam({
   lesson,
   fetchDataExamDetail,
   examDetail,
+  fetchDataAllLessonsOfChapter,
 }) {
   const methods = useForm({
     defaultValues: {
       title: "",
       duration: "30",
       questions: [],
-      correctOption: "",
     },
   });
+
   const {
     handleSubmit,
     control,
@@ -52,6 +65,13 @@ function UpdateExam({
     name: "questions",
   });
 
+  const { updateQuestionAction } = updateQuestions();
+  const { updateExamAction } = updateExam();
+  const { deleteQuestionAction } = deleteQuestion();
+
+  const [searchParams] = useSearchParams();
+  const idCourse = searchParams.get("id-course");
+
   useEffect(() => {
     if (lesson?.id && openUpdateExamModal) {
       fetchDataExamDetail(lesson.id);
@@ -60,17 +80,28 @@ function UpdateExam({
 
   useEffect(() => {
     if (examDetail) {
-      let correctOption = "";
-      const questions = examDetail?.exam?.questions?.map((question) => ({
-        text: question?.questionText,
-        options: question?.options?.map((option, index) => {
-          if (option?.isCorrect) {
-            correctOption = index;
-          }
-          return option.answer;
-        }) || ["", "", "", ""],
-        correctOption: correctOption || "",
-      }));
+      const questions = examDetail?.exam?.questions?.map((question) => {
+        let correctOption = null;
+        return {
+          text: question?.questionText,
+          questionId: question?.questionID,
+          idOptions: question?.options?.map((option, index) => {
+            if (option?.isCorrect) {
+              correctOption = index;
+            }
+            return {
+              id: option?.id,
+              answer: option?.answer,
+            };
+          }) || [
+            { id: "", answer: "" },
+            { id: "", answer: "" },
+            { id: "", answer: "" },
+            { id: "", answer: "" },
+          ],
+          correctOption: correctOption,
+        };
+      });
 
       reset({
         title: examDetail?.exam?.title || "",
@@ -81,7 +112,42 @@ function UpdateExam({
   }, [examDetail, reset]);
 
   const onSubmit = async (data) => {
-    console.log(data);
+    if (data.questions.length < examDetail?.exam?.questions.length) {
+      const result = examDetail?.exam?.questions?.filter(
+        (item2) =>
+          !data.questions.some((item1) => item1.questionId === item2.questionID)
+      );
+
+      await Promise.all(
+        result.map(async (item) => {
+          await deleteQuestionAction(item.questionID);
+        })
+      );
+
+      await updateQuestionAction(data, examDetail?.exam?.id);
+      const examData = {
+        title: data?.title,
+        timeLimit: data?.duration,
+        maxQuestion: 0,
+        status: true,
+        sourceId: idCourse,
+      };
+      await updateExamAction(examDetail?.exam?.id, examData);
+      handleUpdateExamModalClose();
+      fetchDataAllLessonsOfChapter();
+    } else {
+      await updateQuestionAction(data, examDetail?.exam?.id);
+      const examData = {
+        title: data?.title,
+        timeLimit: data?.duration,
+        maxQuestion: 0,
+        status: true,
+        sourceId: idCourse,
+      };
+      await updateExamAction(examDetail?.exam?.id, examData);
+      handleUpdateExamModalClose();
+      fetchDataAllLessonsOfChapter();
+    }
   };
 
   return (
@@ -154,7 +220,7 @@ function UpdateExam({
               <Box component="form" onSubmit={handleSubmit(onSubmit)} mt={3}>
                 {fields.map((question, index) => (
                   <Box
-                    key={index}
+                    key={question.id} // Use question.id here to ensure React tracks each item correctly
                     mb={3}
                     p={2}
                     border={1}
@@ -188,7 +254,7 @@ function UpdateExam({
                       sx={{ width: "95%" }}>
                       <FormLabel component="legend">Các lựa chọn</FormLabel>
                       <RadioGroup>
-                        {question.options.map((option, optIndex) => (
+                        {question.idOptions.map((option, optIndex) => (
                           <Box
                             key={optIndex}
                             display="flex"
@@ -196,7 +262,7 @@ function UpdateExam({
                             width="100%"
                             justifyContent="space-between">
                             <Controller
-                              name={`questions.${index}.options.${optIndex}`}
+                              name={`questions.${index}.idOptions.${optIndex}.answer`}
                               control={control}
                               rules={{
                                 required: "Lựa chọn không được bỏ trống",
@@ -204,20 +270,20 @@ function UpdateExam({
                               render={({ field }) => (
                                 <TextField
                                   {...field}
-                                  label={`Lựa chọn ${optIndex + 1}`}
                                   sx={{ marginRight: "15px" }}
+                                  label={`Lựa chọn ${optIndex + 1}`}
                                   variant="outlined"
                                   fullWidth
                                   margin="normal"
                                   error={
-                                    !!errors?.questions?.[index]?.options?.[
+                                    !!errors?.questions?.[index]?.idOptions?.[
                                       optIndex
-                                    ]
+                                    ]?.answer
                                   }
                                   helperText={
-                                    errors?.questions?.[index]?.options?.[
+                                    errors?.questions?.[index]?.idOptions?.[
                                       optIndex
-                                    ]?.message
+                                    ]?.answer?.message
                                   }
                                 />
                               )}
@@ -247,7 +313,9 @@ function UpdateExam({
                 <Button
                   variant="contained"
                   sx={{ color: "#FFF" }}
-                  onClick={() => append({ ...defaultQuestion })}
+                  onClick={() => {
+                    append({ ...defaultQuestion });
+                  }}
                   fullWidth>
                   Thêm Câu Hỏi
                 </Button>
