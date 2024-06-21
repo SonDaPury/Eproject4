@@ -10,8 +10,6 @@ import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import { useEffect, useState } from "react";
 import FilterPanel from "@eproject4/components/FilterPanel";
 import { getAllCourses } from "@eproject4/services/courses.service";
-import { getAllTopics } from "@eproject4/services/topic.service";
-import { getSubTopics } from "@eproject4/services/subTopic.service";
 
 function Courses() {
   const { getCourseActionGroupByTopic } = getAllCourses();
@@ -51,100 +49,87 @@ function Courses() {
           />
         </div>
         <Box>
-            {allCourses.length > 0 && allCourses.map((topic, index) => {
-            ++i;
-            return (
-              <Box
-                key={index}
-                sx={{
-                  margin: "auto",
-                  backgroundColor: i % 2 === 0 ? "#F5F7FA" : "white",
-                }}>
-                <Box
-                  sx={{
-                    [theme.breakpoints.up("lg")]: {
-                      maxWidth: "1080px",
-                    },
-                    [theme.breakpoints.up("xl")]: {
-                      maxWidth: "1320px",
-                    },
-                    [theme.breakpoints.up("md")]: {
-                      maxWidth: "800px",
-                    },
-                    [theme.breakpoints.up("sm")]: {
-                      maxWidth: "550px",
-                    },
-                    maxWidth: "1320px",
-                    margin: "auto",
-                    paddingTop: "5px",
-                    paddingBottom: "40px",
-                  }}>
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      textAlign: "center",
-                      fontWeight: 500,
-                      marginTop: "30px",
-                    }}>
-                    {topic.topicName}
-                  </Typography>
-                  <Box sx={{ marginTop: "30px", textAlign: "center" }}>
-                    <Swiper
-                      className="mb-[20px]"
-                      style={{
-                        "--swiper-pagination-color": "#626262",
-                        "--swiper-navigation-color": "#626262",
-                      }}
-                      modules={[Navigation]}
-                      navigation
-                      spaceBetween={10}
-                      slidesPerView={5}
-                      breakpoints={{
-                        300: {
-                          slidesPerView: 1,
-                        },
-                        768: {
-                          slidesPerView: 3,
-                        },
-                        1200: {
-                          slidesPerView: 5,
-                        },
-                      }}>
-                      {topic.source.map((item, i) => {
-                        if (
-                          item?.status === 1
-                        ) {
-                          return (
-                            <SwiperSlide key={i}>
-                              <CardCourse
-                                path={`/course-detail/${topic.topicName}/${encodeURIComponent(item?.title)}/${item.id}`}
-                                title={item?.title}
-                                category={item?.topics}
-                                price={
-                                  item?.price === 0
-                                    ? "Miễn phí"
-                                    : item?.price
-                                }
-                                image={
-                                  item?.thumbnail
-                                    ? item?.thumbnail
-                                    : "https://bom.so/vV4j7x"
-                                }
-                              />
-                            </SwiperSlide>
-                          );
-                        }
-                      })}
-                    </Swiper>
-                    <ButtonCustomize
-                      text="Xem tất cả"
-                      navigateTo={`/category/${topic.topicName}`}
+        {allCourses.length > 0 && allCourses.map((topic, index) => {
+  return (
+    <Box
+      key={index}
+      sx={{
+        margin: "auto",
+        backgroundColor: index % 2 === 0 ? "#F5F7FA" : "white",
+      }}>
+      <Box
+        sx={{
+          [theme.breakpoints.up("lg")]: {
+            maxWidth: "1080px",
+          },
+          [theme.breakpoints.up("xl")]: {
+            maxWidth: "1320px",
+          },
+          [theme.breakpoints.up("md")]: {
+            maxWidth: "800px",
+          },
+          [theme.breakpoints.up("sm")]: {
+            maxWidth: "550px",
+          },
+          maxWidth: "1320px",
+          margin: "auto",
+          paddingTop: "5px",
+          paddingBottom: "40px",
+        }}>
+        <Typography
+          variant="h4"
+          sx={{
+            textAlign: "center",
+            fontWeight: 500,
+            marginTop: "30px",
+          }}>
+          {topic.topicName}
+        </Typography>
+        <Box sx={{ marginTop: "30px", textAlign: "center" }}>
+          <Swiper
+            className="mb-[20px]"
+            style={{
+              "--swiper-pagination-color": "#626262",
+              "--swiper-navigation-color": "#626262",
+            }}
+            modules={[Navigation]}
+            navigation
+            spaceBetween={10}
+            slidesPerView={5}
+            breakpoints={{
+              300: {
+                slidesPerView: 1,
+              },
+              768: {
+                slidesPerView: 3,
+              },
+              1200: {
+                slidesPerView: 5,
+              },
+            }}>
+            {topic.source.map((item, i) => {
+              if (item?.status === 1) {
+                return (
+                  <SwiperSlide key={i}>
+                    <CardCourse
+                      path={`/course-detail/${topic.topicName}/${encodeURIComponent(item?.title)}/${item.id}`}
+                      title={item?.title}
+                      category={item?.topics}
+                      price={item?.price === 0 ? "Miễn phí" : item?.price}
+                      image={item?.thumbnail ? item?.thumbnail : "https://bom.so/vV4j7x"}
                     />
-                  </Box>
-                </Box>
-              </Box>
-            );
-          })} 
+                  </SwiperSlide>
+                );
+              }
+            })}
+          </Swiper>
+          <ButtonCustomize text="Xem tất cả" navigateTo={`/category/${topic.topicName}`} />
+        </Box>
+      </Box>
+    </Box>
+  );
+})}
+
         </Box>
       </Box>
     </Box>

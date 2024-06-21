@@ -1,5 +1,6 @@
 import { Grid, Box, Typography, Card, Button, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { useNavigate } from 'react-router-dom';
 import CardCourse from "@eproject4/components/CardCourse";
 import seedData from "@eproject4/utils/seedData";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -15,15 +16,24 @@ import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import CourseGrid from "@eproject4/components/CourseGrid";
 import { searchFullText } from "@eproject4/services/search.service";
 import "./index.css";
+import { getAllCourses } from "@eproject4/services/courses.service";
 function Home() {
-  const Allcourses = seedData();
-  const courses = Allcourses.slice(0, 10);
-  const couresFive = Allcourses.slice(0, 5);
+  const navigate = useNavigate();
+  const { getDataHome } = getAllCourses();
+  const [Allcourses,setAllCourses] = useState([]);
+  const [courses,setcourses] = useState([]);
+  const [couresFive,setcouresFive] = useState([]);
+
+  // const courses = Allcourses.slice(0, 10);
+  // const couresFive = Allcourses.slice(0, 5);
   const [search, setSearch] = useState(""); // State lưu giá trị từ ô search
-  const { searchFullTextAction } = searchFullText();
+  const { searchDebounceAction } = searchFullText();
   const [dataToShow, setDataToShow] = useState([]);
 
-
+  const handleCourseClick = (category, title, id) => {
+    const formattedTitle = title.replace(/\s+/g, '-').toLowerCase();
+    navigate(`/course-detail/${category}/${formattedTitle}/${id}`);
+  };
   const handleChangesearch = (e) => {
     console.log(e.target.value + "test");
     if (e.target.value === "") {
@@ -33,7 +43,7 @@ function Home() {
     }
   };
   const debouncedSearch = debounce((searchTerm) => {
-    searchFullTextAction(searchTerm).then((res) => {
+    searchDebounceAction(searchTerm).then((res) => {
       console.log(res.data);
       setDataToShow(res.data);
     });
@@ -44,6 +54,28 @@ function Home() {
       debouncedSearch(search);
     }
   }, [search]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getDataHome();
+        console.log('API Response:', res.data);
+        setAllCourses(res.data);
+      } catch (err) {
+        console.error('Error fetching courses:', err);
+      }
+    };
+    fetchData();
+  }, []);
+  useEffect(() => {
+     setcourses(Allcourses.slice(0,10));
+     setcouresFive(Allcourses.slice(0,5))
+  },[Allcourses])
+
+  const handleViewAllClick = () => {
+    // Xử lý logic khi nút "Xem tất cả" được click
+    navigate("/khoa-hoc")
+    // Ví dụ: có thể navigate tới trang khác, gọi API, thay đổi state, etc.
+  };
   const sections = [
     {
       title: "Top khóa học bán chạy",
@@ -71,8 +103,8 @@ function Home() {
           navigation={true}
           modules={[Pagination, Navigation]}
           className="mySwiper">
-          {courses.map((course) => (
-            <SwiperSlide key={course.id}>
+          {courses.map((course,index) => (
+            <SwiperSlide key={index}>
               <Box
                 sx={{
                   display: "flex",
@@ -144,17 +176,32 @@ function Home() {
             />
             <SearchIcon className="absolute left-3 top-[70%] transform -translate-y-1/2 text-gray-600" />
           </div>
-          {dataToShow && dataToShow.length > 0 && (
-            <div className="results">
-              {dataToShow.map((item) => (
-                <div key={item.id} className="result-item">
-                  <img src="https://th.bing.com/th/id/OIP.pqzQpx8Wg5fEHznAKKY6ugHaJ4?rs=1&pid=ImgDetMain" alt="" className="thumbnail" />
-                  <span className="title">{item.title.input[0]}</span>
-                  <span className="price">{item.price == 0 ? "Miễn phí" : item.price}</span>
+          <div>
+      {dataToShow && dataToShow.length > 0 && (
+        <div className="results">
+          {dataToShow.map((item) => (
+            item.subTopic.map((sub) => (
+              sub.sources.map((source) => (
+                <div 
+                  key={source.id} 
+                  className="result-item"
+                  onClick={() => handleCourseClick(item.topicName, source.title.input[0], source.id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <img 
+                    src={source.thumbnail} 
+                    alt={source.title.input[0]} 
+                    className="thumbnail" 
+                  />
+                  <span className="title">{source.title.input[0]}</span>
+                  <span className="price">{source.price === 0 ? "Miễn phí" : `$${source.price}`}</span>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            ))
+          ))}
+        </div>
+      )}
+    </div>
 
         </Box>
         {/* Danh Muc */}
@@ -257,6 +304,7 @@ function Home() {
               courses={section.courses}
               index={index}
               showViewAllButton={section.courses.length == 5}
+              onViewAll={handleViewAllClick}
             />
           ))}
         </Box>

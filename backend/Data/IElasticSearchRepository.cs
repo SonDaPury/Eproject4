@@ -15,6 +15,5 @@ namespace backend.Data
         List<T> searchDebounce<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class;
         List<T> Filter<T>(Func<SearchDescriptor<T>, ISearchRequest> selector) where T : class;
 
-
     }
 }

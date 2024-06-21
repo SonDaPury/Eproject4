@@ -84,7 +84,16 @@ export const getAllCourses = () => {
       throw new Error(err);
     }
   };
-  return { getCoursesAction,getCourseActionGroupByTopic };
+  const getDataHome = async () => {
+    try{
+      const res = await callApi("/Search/getDataHome", "get", null, null, false);
+      return res;
+    }catch(err){
+      throw new Error(err);
+    }
+  }
+
+  return { getCoursesAction,getCourseActionGroupByTopic, getDataHome };
 };
 
 // Get course pagination
@@ -94,7 +103,7 @@ export const getCoursesPagination = () => {
   const getCoursesPaginationAction = async (pageIndex, pageSize) => {
     try {
       const res = await callApi(
-        `/Source/pagination?PageIndex=${pageIndex}&PageSize=${pageSize}`,
+        `/Source/pagination?PageIndex=${pageIndex}&PageSize=${pageSize}`, // Sửa thành dấu backticks và đóng dấu ngoặc kép
         "get",
         null,
         null,
@@ -108,6 +117,7 @@ export const getCoursesPagination = () => {
 
   return { getCoursesPaginationAction };
 };
+
 
 // Get course by id
 export const getCourseById = () => {
