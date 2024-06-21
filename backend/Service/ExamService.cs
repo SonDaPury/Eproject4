@@ -76,52 +76,53 @@ namespace backend.Service
         }
         public async Task<object> UpdateQuestionandOption(UpdateQuestionDto updateQuestionDto)
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            //using (var transaction = await _context.Database.BeginTransactionAsync())
+            //{
+            try
             {
-                try
+                if (updateQuestionDto.QuestionId != 0)
                 {
-                    if (updateQuestionDto.QuestionId != 0)
+                    var question = await _context.Questions.FindAsync(updateQuestionDto.QuestionId);
+                    if (updateQuestionDto.Content != null)
                     {
-                        var question = await _context.Questions.FindAsync(updateQuestionDto.QuestionId);
-                        if (updateQuestionDto.Content != null)
-                        {
-                            question.Content = updateQuestionDto.Content;
-                        }
-                        if (updateQuestionDto.Image != null)
-                        {
-                            question.Image = _imageServices.UpdateFile(updateQuestionDto.Image, question.Image, "Questions", "Image");
-                        }
-                        List<Option> options =new List<Option>();
-                        if (updateQuestionDto.Options != null)
-                        {
-                            options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
-
-                            _context.Options.UpdateRange(options);
-                        }
-                        var optionIds = options.Select(o => new
-                        {
-                            o.Id,
-                            o.Answer
-                        }).ToList();
-                        await _context.SaveChangesAsync();
-
-                        return new
-                        {
-                            QuestionID = question.Id,
-                            OptionIDs = optionIds
-                        };
+                        question.Content = updateQuestionDto.Content;
                     }
-                    else
+                    if (updateQuestionDto.Image != null)
                     {
-                        throw new Exception("questionid is required");
+                        question.Image = _imageServices.UpdateFile(updateQuestionDto.Image, question.Image, "Questions", "Image");
                     }
+                    //await _context.SaveChangesAsync();
+                    List<Option> options = new List<Option>();
+                    if (updateQuestionDto.Options != null)
+                    {
+                        options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
+
+                        _context.Options.UpdateRange(options);
+                    }
+                    var optionIds = options.Select(o => new
+                    {
+                        o.Id,
+                        o.Answer
+                    }).ToList();
+                    await _context.SaveChangesAsync();
+
+                    return new
+                    {
+                        QuestionID = question.Id,
+                        OptionIDs = optionIds
+                    };
                 }
-                catch (Exception)
+                else
                 {
-                    await transaction.RollbackAsync();
-                    throw;
+                    throw new Exception("questionid not found");
                 }
             }
+            catch (Exception)
+            {
+                //await transaction.RollbackAsync();
+                throw;
+            }
+            //}
         }
         public async Task<object> ConnectExamWithQuestion(ConnectExamWithQuestion questions)
         {
