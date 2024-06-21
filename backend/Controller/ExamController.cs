@@ -64,7 +64,7 @@ namespace backend.Controller
         }
 
         [HttpPut("updatequestion")]
-        public async Task<IActionResult> UpdateQuestion([FromBody] UpdateQuestionDto updateQuestionDto)
+        public async Task<IActionResult> UpdateQuestion([FromForm] UpdateQuestionDto updateQuestionDto)
         {
             var updatedQuestion = await _examService.UpdateQuestionandOption(updateQuestionDto);
             return Ok(updatedQuestion);

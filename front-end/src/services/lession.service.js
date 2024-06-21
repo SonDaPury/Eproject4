@@ -9,6 +9,7 @@ export const getAllLessionsByChapterId = () => {
     try {
       const res = await callApi(
         `/Lesson/GetAllLessonsByChapterID?chapterID=${chapterId}`,
+
         "get",
         null,
         null,
