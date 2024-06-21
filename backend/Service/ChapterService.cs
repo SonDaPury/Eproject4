@@ -7,9 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Service
 {
-    public class ChapterService(LMSContext context) : IChapterService
+    public class ChapterService(LMSContext context, ILessonService lessonService) : IChapterService
     {
         private readonly LMSContext _context = context;
+        private readonly ILessonService _lessonService = lessonService;
 
         private async Task<int> GetMaxIndex(int SourceID)
         {
@@ -126,7 +127,11 @@ namespace backend.Service
             var list_lession = await _context.Lessons.Where(l => l.ChapterId == id).ToListAsync();
             if (list_lession != null)
             {
-                _context.Lessons.RemoveRange(list_lession);
+                foreach (var item in list_lession)
+                {
+                    await _lessonService.DeleteAsync(item.Id);
+                }
+                //_context.Lessons.RemoveRange(list_lession);
             }
             //var chapters = await GetChapterGByIndex(chapter.Index, chapter.SourceId);
             //foreach (var chapter1 in chapters)
