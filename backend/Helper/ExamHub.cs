@@ -11,15 +11,17 @@ namespace backend.Helper
     public class ExamHub : Hub
     {
         private readonly LMSContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         //private static Dictionary<int, (System.Timers.Timer Timer, DateTime EndTime)> _examTimers = new Dictionary<int, (System.Timers.Timer, DateTime)>();
         private readonly IExamService _examService;
         //private static Dictionary<int, bool> _continueExams = new Dictionary<int, bool>();
         private readonly IRedisService _redisService;
-        public ExamHub(LMSContext context, IExamService examService, IRedisService redisService)
+        public ExamHub(LMSContext context, IExamService examService, IRedisService redisService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _examService = examService;
             _redisService = redisService;
+            _httpContextAccessor = httpContextAccessor;
         }
         public override async Task OnConnectedAsync()
         {
@@ -28,8 +30,8 @@ namespace backend.Helper
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = 
-            int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
+            var userId = (int)_httpContextAccessor.HttpContext.Items["UserId"];
+            // Giả sử bạn có thể trích xuất ID người dùng từ context
             //var userConnection = await _context.UserConnections
             //   .OrderByDescending(x => x.ConnectedAt)
             //   .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);  // Giả định UserId = 1
@@ -60,15 +62,8 @@ namespace backend.Helper
             await base.OnDisconnectedAsync(exception);
         }
 
-        //public async Task SendTimeUpdate(string connectionId, string time)
-        //{
-        //    await Clients.Client(connectionId).SendAsync("ReceiveTimeUpdate", time);
-        //}
-
-        public async Task StartExam(int examId)
+        public async Task StartExam(int examId, int userId)
         {
-            var userId =
-                int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
             var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId);
 
             if (exam == null || exam.IsStarted)
@@ -76,7 +71,7 @@ namespace backend.Helper
                 throw new Exception("Không tìm thấy kỳ thi hoặc kỳ thi đã bắt đầu.");
             }
 
-            exam.IsStarted = true;
+            //exam.IsStarted = true;
             //await _context.SaveChangesAsync();
             var now = DateTime.UtcNow;
             var endTime = now.AddMinutes(exam.TimeLimit);
@@ -93,7 +88,7 @@ namespace backend.Helper
             //await _context.SaveChangesAsync();
             var cacheKey = CreateCacheKey.BuildUserConnectionCacheKey(userId);
             var userConnectionJson = JsonSerializer.Serialize(userConnection);
-            await _redisService.SetValueWithExpiryAsync(cacheKey, userConnectionJson, TimeSpan.FromMinutes(exam.TimeLimit));
+            await _redisService.SetValueWithExpiryAsync(cacheKey, userConnectionJson, TimeSpan.FromMinutes(exam.TimeLimit+3));
             while (DateTime.UtcNow < endTime)
             {
                 var remainingTime = endTime - DateTime.UtcNow;
@@ -108,10 +103,10 @@ namespace backend.Helper
         }
        
 
-        public async Task EndExam( int examId)
+        public async Task EndExam( int examId ,int userId)
         {
-            var userId =
-                int.Parse(Context.User.Identity.Name);
+            //var userId =
+            //    int.Parse(Context.User.Identity.Name);
 
             await _examService.EndExam(examId, userId);
             await Clients.Client(Context.ConnectionId).SendAsync("ReceiveExamEnd");
