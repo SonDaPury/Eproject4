@@ -358,7 +358,7 @@ namespace backend.Service
         }
 
         //tính điểm theo % nếu mỗi câu hỏi có 1 đáp án đúng
-        private async Task<int> CalculateScore(List<UserAnswer> userAnswers, int examId)
+        public async Task<int> CalculateScore(List<UserAnswer> userAnswers, int examId)
         {
 
             // Lấy tất cả câu hỏi và câu trả lời đúng cho kỳ thi này
@@ -381,8 +381,9 @@ namespace backend.Service
                     correctAnswers++; // Người dùng chọn đúng, tăng điểm
                 }
             }
-            return 100;
-            //return (int)correctAnswers / totalQuestions * 100;
+            //return 100;
+            var score = (double)correctAnswers / totalQuestions * 100;
+            return (int)score;
         }
 
         //tính điểm nếu câu hỏi có nhiều đáp án đúng

@@ -20,5 +20,6 @@ namespace backend.Service.Interface
         Task<object> UpdateQuestionandOption(UpdateQuestionDto updateQuestionDto);
         Task<object> ConnectExamWithQuestion(ConnectExamWithQuestion questions);
         Task<List<ExamWithLessonId>> GetAllAsync();
+        Task<int> CalculateScore(List<UserAnswer> userAnswers, int examId);
     }
 }
