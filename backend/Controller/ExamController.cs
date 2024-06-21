@@ -158,10 +158,10 @@ namespace backend.Controller
         [HttpPost("end/{examId}")]
         public async Task<IActionResult> EndExam(
             //ExamSubmissionDto submission,
-            int examId)
+            int examId,int userId)
         {
-            var userId =
-            int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
+            //var userId =
+            //int.Parse(User.FindFirst("UserId")?.Value ?? "0"); // Giả sử bạn đã lưu UserId trong claims khi xác thực
             if (userId == 0)
             {
                 return Unauthorized(new { message = "User is not identified" });
