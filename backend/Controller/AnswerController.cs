@@ -136,5 +136,15 @@ namespace backend.Controller
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }
+        [HttpGet("GetAllByUserIdAndExamId")]
+        public async Task<IActionResult> GetAllByUserIdAndExamId(int userId, int examId)
+        {
+            var result = await _answerService.GetAllByUserIdAndExamId(userId, examId);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
     }
 }

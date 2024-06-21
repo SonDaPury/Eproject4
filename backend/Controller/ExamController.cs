@@ -189,8 +189,8 @@ namespace backend.Controller
 
             try
             {
-                int score = await _examService.CalculateScore(userAnswers, examId);
-                return Ok(new { Score = score });
+                var score = await _examService.CalculateScore(userAnswers, examId);
+                return Ok(new { Answer = score.Item1, ExamDetails = score.Item2 });
             }
             catch (Exception ex)
             {
