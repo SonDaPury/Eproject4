@@ -39,6 +39,10 @@ namespace backend.Entities
 
         [Column("source_id")]
         public int SourceId { get; set; }
+        //[Column("chapter_id")]
+        //public int? ChapterId { get; set; }
+
+        //public virtual Chapter? Chapter { get; set; }
         public virtual Source? Source { get; set; }
         public ICollection<QuizQuestion>? QuizQuestions { get; set; }
         public ICollection<Answer>? Answers { get; set; }

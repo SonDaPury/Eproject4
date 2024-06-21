@@ -8,5 +8,6 @@
         public int MaxQuestion { get; set; }
         public bool Status { get; set; }
         public int SourceId { get; set; }
+        public int? ChapterId { get; set; }
     }
 }
