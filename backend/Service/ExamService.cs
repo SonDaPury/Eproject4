@@ -11,10 +11,11 @@ using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Timers;
+using Microsoft.Extensions.Options;
 
 namespace backend.Service
 {
-    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService, IServiceScopeFactory scopeFactory, IimageServices imageServices, IRedisService redisService) : IExamService
+    public class ExamService(LMSContext context, IHubContext<ExamHub> hubContext, ISerialService serialService, IServiceScopeFactory scopeFactory, IimageServices imageServices, IRedisService redisService, IQuestionService questionService, IAnswerService answerService, IQuizQuestionService quizQuestionService) : IExamService
     {
         private readonly LMSContext _context = context;
         private readonly IHubContext<ExamHub> _hubContext = hubContext;
@@ -22,9 +23,12 @@ namespace backend.Service
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
         private readonly IimageServices _imageServices = imageServices;
         private readonly IRedisService _redisService = redisService;
+        private readonly IQuestionService _questionService = questionService;
+        private readonly IAnswerService _answerService = answerService;
+        private readonly IQuizQuestionService _quizQuestionService = quizQuestionService;
         //private static volatile bool _continueExam = true;
 
-        public async Task<Exam> CreateAsync(Exam exam, int index)
+        public async Task<Exam> CreateAsync(Exam exam)
         {
             await _context.Exams.AddAsync(exam);
             await _context.SaveChangesAsync();
@@ -87,19 +91,43 @@ namespace backend.Service
                         {
                             question.Image = _imageServices.UpdateFile(updateQuestionDto.Image, question.Image, "Questions", "Image");
                         }
-                    }
-                    if (updateQuestionDto.Options != null)
-                    {
-                        List<Option> options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
+                        _context.Questions.Update(question);
+                        List<Option> options = new List<Option>();
+                        if (updateQuestionDto.Options != null)
+                        {
+                            options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
+                            List<Option> existingOptions = _context.Options
+                                               .Where(o => o.QuestionId == updateQuestionDto.QuestionId)
+                                               .ToList();
+                            foreach (var newOption in options)
+                            {
+                                var existingOption = existingOptions.FirstOrDefault(o => o.Id == newOption.Id);
 
-                        _context.Options.UpdateRange(options);
+                                if (existingOption != null)
+                                {
+                                    existingOption.Answer = newOption.Answer;
+                                    existingOption.IsCorrect = newOption.IsCorrect;
+                                }
+                            }
+                            _context.Options.UpdateRange(existingOptions);
+                        }
+                        var optionIds = options.Select(o => new
+                        {
+                            o.Id,
+                            o.Answer
+                        }).ToList();
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();    
+                        return new
+                        {
+                            QuestionID = question.Id,
+                            OptionIDs = optionIds
+                        };
                     }
-                    await _context.SaveChangesAsync();
-
-                    return new
+                    else
                     {
-                        mess = "Success"
-                    };
+                        throw new Exception("questionid is required");
+                    }
                 }
                 catch (Exception)
                 {
@@ -124,9 +152,22 @@ namespace backend.Service
             return quizQuestions;
         }
 
-        public async Task<List<Exam>> GetAllAsync()
+        public async Task<List<ExamWithLessonId>> GetAllAsync()
         {
-            return await _context.Exams.ToListAsync();
+            return await _context.Exams
+                .Include(e => e.Serials)
+                 .Select(e => new ExamWithLessonId
+                 {
+                     Id = e.Id,
+                     Title = e.Title,
+                     TimeLimit = e.TimeLimit,
+                     MaxQuestion = e.MaxQuestion,
+                     Status = e.Status,
+                     //IsStarted = e.IsStarted,
+                     SourceId = e.SourceId,
+                     LessonId = e.Serials.FirstOrDefault().LessonId
+                 })
+                .ToListAsync();
         }
 
         public async Task<(List<Exam>, int)> GetAllAsync(Pagination pagination)
@@ -142,15 +183,17 @@ namespace backend.Service
             return (exams, count);
         }
 
-        public async Task<dynamic> GetDetailsExam(int examId)
+        public async Task<(dynamic, int)> GetDetailsExam(int examId)
         {
             var exam = await _context.Exams
+                .Include(e => e.Serials)
                 .Where(e => e.Id == examId)
                 .Select(e => new
                 {
                     e.Id,
                     e.Title,
                     e.TimeLimit,
+                    e.Serials.FirstOrDefault().Index,
                     Questions = e.QuizQuestions.Select(qq => new
                     {
                         QuestionID = qq.QuestionId,
@@ -159,8 +202,10 @@ namespace backend.Service
                     })
                 })
                 .FirstOrDefaultAsync();
+            var serial = await _context.Serials.FirstOrDefaultAsync(s => s.ExamId == examId);
+            if (examId == null) throw new NotFoundException($"exam not found with id : {examId} ");
 
-            return exam ?? throw new NotFoundException($"exam not found with id : {examId} ");
+            return (exam, (int)serial.LessonId);
         }
 
 
@@ -191,27 +236,67 @@ namespace backend.Service
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var exam = await _context.Exams.FindAsync(id);
-            if (exam == null) return false;
-            var quiz_question = await _context.QuizQuestions.Where(q => q.ExamId == id).ToListAsync();
-            if (quiz_question != null)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                _context.QuizQuestions.RemoveRange(quiz_question);
-            }
-            var serials = await _context.Serials.Where(q => q.ExamId == id).ToListAsync();
-            if (serials != null)
-            {
-                _context.Serials.RemoveRange(serials);
-            }
+                try
+                {
+                    var exam = await _context.Exams.FindAsync(id);
+                    if (exam == null) return false;
 
-            var answer = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
-            if (answer != null)
-            {
-                _context.Answers.RemoveRange(answer);
+                    var quiz_questions = await _context.QuizQuestions.Where(q => q.ExamId == id).ToListAsync();
+                    if (quiz_questions != null)
+                    {
+                        foreach (var quiz_question in quiz_questions)
+                        {
+                            await _questionService.DeleteAsync(quiz_question.QuestionId);
+                            await _quizQuestionService.DeleteAsync(quiz_question.Id);
+                        }
+                        //_context.QuizQuestions.RemoveRange(quiz_questions);
+                        //await _context.SaveChangesAsync();
+                    }
+
+                    var serials = await _context.Serials.FirstOrDefaultAsync(q => q.ExamId == id);
+                    if (serials != null)
+                    {
+                        //foreach (var serial in serials)
+                        //{
+                        await _serialService.UpdateSerialDeleteExam(serials.Id);
+                        //}
+                        //_context.Serials.RemoveRange(serials);
+                        //await _context.SaveChangesAsync();
+                    }
+
+                    var answers = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
+                    if (answers != null)
+                    {
+                        foreach (var answer in answers)
+                        {
+                            await _answerService.DeleteAsync(answer.Id);
+                        }
+                        //_context.Answers.RemoveRange(answers);
+                    }
+
+                    _context.Exams.Remove(exam);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    await transaction.RollbackAsync();
+                    // Xử lý lỗi đồng thời ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
+                    Console.WriteLine("Concurrency conflict occurred. Data may have been modified or deleted by another process.");
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    // Xử lý các lỗi khác ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                    return false;
+                }
             }
-            _context.Exams.Remove(exam);
-            await _context.SaveChangesAsync();
-            return true;
         }
         //public async Task StartExam(int examId)
         //{

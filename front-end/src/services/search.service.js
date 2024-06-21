@@ -8,7 +8,7 @@ export const searchHome = () => {
         query: keyword,
       };
       const res = await callApi(
-        `/Search/searchDebounce`,
+        `/Search/searchfulltext`,
         "post",
         body,
         null,

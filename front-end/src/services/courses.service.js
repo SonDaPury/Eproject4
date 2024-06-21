@@ -23,6 +23,7 @@ export const createCourse = () => {
       formData.append("thumbnail", dataForm.thumbnail);
       formData.append("slug", dataForm.slug);
       formData.append("status", dataForm.status);
+      formData.append("rating", "1");
       if (dataForm?.benefit.length > 0) {
         dataForm.benefit.map((item) => {
           formData.append("benefit", item);
@@ -75,8 +76,15 @@ export const getAllCourses = () => {
       throw new Error(err);
     }
   };
-
-  return { getCoursesAction };
+  const getCourseActionGroupByTopic = async () => {
+    try {
+      const res = await callApi("/Source/groupbytopic", "get", null, null, false);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+  return { getCoursesAction,getCourseActionGroupByTopic };
 };
 
 // Get course pagination

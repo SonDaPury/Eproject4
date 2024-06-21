@@ -29,10 +29,10 @@ namespace backend.Controller
             try
             {
                 var examDetails = await _examService.GetDetailsExam(examId);
-                if (examDetails == null)
+                if (examDetails.Item1 == null)
                     return NotFound();
 
-                return Ok(examDetails);
+                return Ok(new {LessonId = examDetails.Item2, Exam = examDetails.Item1 });
             }
             catch (Exception)
             {
@@ -43,7 +43,7 @@ namespace backend.Controller
 
         // POST: api/Exams
         [HttpPost]
-        public async Task<ActionResult<ExamDto>> CreateExam([FromBody] ExamDto examDto, int index)
+        public async Task<ActionResult<ExamDto>> CreateExam([FromBody] ExamDto examDto)
         {
             if (examDto == null)
             {
@@ -51,7 +51,7 @@ namespace backend.Controller
             }
 
             var exam = _mapper.Map<Exam>(examDto);
-            var createdExam = await _examService.CreateAsync(exam, index);
+            var createdExam = await _examService.CreateAsync(exam);
             var createdExamDto = _mapper.Map<ExamDto>(createdExam);
             return CreatedAtAction(nameof(GetExam), new { id = createdExam.Id }, createdExamDto);
         }
@@ -64,7 +64,7 @@ namespace backend.Controller
         }
 
         [HttpPut("updatequestion")]
-        public async Task<IActionResult> UpdateQuestion([FromBody] UpdateQuestionDto updateQuestionDto)
+        public async Task<IActionResult> UpdateQuestion([FromForm] UpdateQuestionDto updateQuestionDto)
         {
             var updatedQuestion = await _examService.UpdateQuestionandOption(updateQuestionDto);
             return Ok(updatedQuestion);
@@ -85,11 +85,11 @@ namespace backend.Controller
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ExamDto>>> GetAllExams()
+        public async Task<ActionResult<IEnumerable<ExamWithLessonId>>> GetAllExams()
         {
             var exams = await _examService.GetAllAsync();
-            var examDtos = _mapper.Map<List<ExamDto>>(exams);
-            return Ok(examDtos);
+            //var examDtos = _mapper.Map<List<ExamDto>>(exams);
+            return Ok(exams);
         }
         // GET: api/Exams/5
         [HttpGet("{id}")]

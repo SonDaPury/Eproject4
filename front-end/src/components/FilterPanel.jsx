@@ -26,7 +26,7 @@ import { useState } from "react";
 
 function FilterPanel({
   isShowFilter,
-  topics,
+   topics,
   handleClickFilter,
   handleSearchResults,
 }) {
@@ -194,7 +194,7 @@ function FilterPanel({
                           id="panel1-header">
                           <Typography
                             sx={{ fontSize: "14px", fontWeight: 500 }}>
-                            {topic}
+                            {topic.topicName}
                           </Typography>
                         </AccordionSummary>
                         <AccordionDetails>

@@ -28,8 +28,8 @@ namespace backend.Helper
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = 1;
-            //int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
+            var userId = 
+            int.Parse(Context.User.Identity.Name); // Giả sử bạn có thể trích xuất ID người dùng từ context
             //var userConnection = await _context.UserConnections
             //   .OrderByDescending(x => x.ConnectedAt)
             //   .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);  // Giả định UserId = 1

@@ -1,121 +1,39 @@
 import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import TuneIcon from "@mui/icons-material/Tune";
-import InputAdornment from "@mui/material/InputAdornment";
-import SearchIcon from "@mui/icons-material/Search";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import theme from "@eproject4/theme";
 import CardCourse from "@eproject4/components/CardCourse.jsx";
-import Accordion from "@mui/material/Accordion";
-import StarIcon from "@mui/icons-material/Star";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import Checkbox from "@mui/material/Checkbox";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import seedData from "@eproject4/utils/seedData";
 import "swiper/css";
 import "swiper/css/navigation";
 import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import { useEffect, useState } from "react";
-import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import FilterPanel from "@eproject4/components/FilterPanel";
 import { getAllCourses } from "@eproject4/services/courses.service";
 import { getAllTopics } from "@eproject4/services/topic.service";
 import { getSubTopics } from "@eproject4/services/subTopic.service";
 
 function Courses() {
-  const { getCoursesAction } = getAllCourses();
-  const { getAllTopicsAction } = getAllTopics();
-  const { getSubTopicsAction } = getSubTopics();
-  const [categories, setCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
+  const { getCourseActionGroupByTopic } = getAllCourses();
   const [allCourses, setAllCourses] = useState([]);
-  const [newItems, setNewItems] = useState([]);
 
   let i = 0;
-  const courseTopics = [];
   const [isShowFilter, setIsShowFilter] = useState(false);
-
-  //lọc
-
-  // Hàm removeDuplicate nhận vào một mảng và trả về một mảng mới với các phần tử duy nhất
-  const removeDuplicate = (arr) => {
-    return Array.from(new Set(arr));
-  };
-
-  // Duyệt qua từng khóa học trong mảng newItems và thêm chủ đề của nó vào mảng courseTopics
-  newItems.forEach((course) => {
-    courseTopics.push(course?.topics);
-  });
-  console.log(newItems);
-  // Loại bỏ các chủ đề trùng lặp từ courseTopics và lưu vào mảng topics
-  const topics = removeDuplicate(courseTopics);
-
-  //===============================
 
   useEffect(() => {
     const fetchCoursesData = async () => {
       try {
-        const res = await getCoursesAction();
+        const res = await getCourseActionGroupByTopic();
         setAllCourses(res?.data);
       } catch (err) {
         throw new Error(err);
       }
     };
-    const fetchTopicData = async () => {
-      const res = await getAllTopicsAction();
-      setCategories(res?.data?.items);
-    };
-
-    const fetchSubTopicData = async () => {
-      const res = await getSubTopicsAction();
-      setSubcategories(res?.data);
-    };
-
-    fetchTopicData();
-    console.log(fetchTopicData());
-    fetchSubTopicData();
-    fetchCoursesData();
+       fetchCoursesData();
   }, []);
-
-  // Join subtopic, topics and courses
-  const joinSubtopicToCourses = (courses, subCategories) => {
-    return courses?.map((course) => {
-      const subTopics = subCategories.find(
-        (subCategory) => subCategory.id === course?.source?.subTopicId
-      );
-      return {
-        ...course,
-        subTopics: subTopics ? subTopics?.subTopicName : "Unknown",
-      };
-    });
-  };
-  const joinTopicToCourses = (courses, categories) => {
-    return courses?.map((course) => {
-      const topics = categories.find(
-        (category) => category.id === course?.topicId
-      );
-      return {
-        ...course,
-        topics: topics ? topics?.topicName : "Unknown",
-      };
-    });
-  };
   useEffect(() => {
-    if (allCourses.length && categories.length && subcategories.length) {
-      const combinedData = joinTopicToCourses(
-        joinSubtopicToCourses(allCourses, subcategories),
-        categories
-      );
-      setNewItems(combinedData);
-    }
-  }, [allCourses, categories, subcategories]);
+    console.log(allCourses);
+  }, [allCourses]);
 
   const handleClickFilter = () => {
     setIsShowFilter(!isShowFilter);
@@ -128,12 +46,12 @@ function Courses() {
         <div>
           <FilterPanel
             isShowFilter={isShowFilter}
-            topics={topics}
+             topics={allCourses}
             handleClickFilter={handleClickFilter}
           />
         </div>
         <Box>
-          {topics.map((topic, index) => {
+            {allCourses.length > 0 && allCourses.map((topic, index) => {
             ++i;
             return (
               <Box
@@ -168,7 +86,7 @@ function Courses() {
                       fontWeight: 500,
                       marginTop: "30px",
                     }}>
-                    {topic}
+                    {topic.topicName}
                   </Typography>
                   <Box sx={{ marginTop: "30px", textAlign: "center" }}>
                     <Swiper
@@ -192,25 +110,24 @@ function Courses() {
                           slidesPerView: 5,
                         },
                       }}>
-                      {newItems.map((item, i) => {
-                        if (  
-                          item?.topics === topic &&
-                          item?.source?.status === 1
+                      {topic.source.map((item, i) => {
+                        if (
+                          item?.status === 1
                         ) {
                           return (
                             <SwiperSlide key={i}>
                               <CardCourse
-                                path={`/course-detail/${item?.topics}/${encodeURIComponent(item?.source?.title)}/${item?.source.id}`}
-                                title={item?.source?.title}
+                                path={`/course-detail/${topic.topicName}/${encodeURIComponent(item?.title)}/${item.id}`}
+                                title={item?.title}
                                 category={item?.topics}
                                 price={
-                                  item?.source?.price === 0
+                                  item?.price === 0
                                     ? "Miễn phí"
-                                    : item?.source?.price
+                                    : item?.price
                                 }
                                 image={
-                                  item?.source?.thumbnail
-                                    ? item?.source?.thumbnail
+                                  item?.thumbnail
+                                    ? item?.thumbnail
                                     : "https://bom.so/vV4j7x"
                                 }
                               />
@@ -221,13 +138,13 @@ function Courses() {
                     </Swiper>
                     <ButtonCustomize
                       text="Xem tất cả"
-                      navigateTo={`/category/${topic}`}
+                      navigateTo={`/category/${topic.topicName}`}
                     />
                   </Box>
                 </Box>
               </Box>
             );
-          })}
+          })} 
         </Box>
       </Box>
     </Box>

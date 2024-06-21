@@ -63,5 +63,6 @@ namespace backend.Entities
     {
         public SourceViewDto? Source { get; set; }
         public int? TopicId { get; set; }
+        public string? TopicName { get; set; }   
     }
 }

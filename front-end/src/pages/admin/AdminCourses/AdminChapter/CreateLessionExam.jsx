@@ -1,7 +1,7 @@
 import { Box, Modal, Tab, Tabs } from "@mui/material";
 import { useState } from "react";
 import CreateLession from "./CreateLession";
-import CreateExam from "./CreateExam";
+import CreateExam from "../AdminExam/CreateExam";
 
 const styleModalCreate = {
   position: "absolute",
@@ -38,7 +38,14 @@ function a11yProps(index) {
   };
 }
 
-function CreateLessionExam({ openCreateModal, handleClose, chapter }) {
+function CreateLessionExam({
+  openCreateModal,
+  handleClose,
+  chapter,
+  fetchDataAllLessonsOfChapter,
+  lessionsOfChapter,
+  fetchDataAllExam,
+}) {
   const [value, setValue] = useState(0);
 
   const handleChange = (event, newValue) => {
@@ -63,10 +70,20 @@ function CreateLessionExam({ openCreateModal, handleClose, chapter }) {
             </Tabs>
           </Box>
           <TabPanel value={value} index={0}>
-            <CreateLession chapter={chapter} handleClose={handleClose} />
+            <CreateLession
+              chapter={chapter}
+              fetchDataAllLessonsOfChapter={fetchDataAllLessonsOfChapter}
+              handleClose={handleClose}
+            />
           </TabPanel>
           <TabPanel value={value} index={1}>
-            <CreateExam />
+            <CreateExam
+              fetchDataAllLessonsOfChapter={fetchDataAllLessonsOfChapter}
+              handleClose={handleClose}
+              lessionsOfChapter={lessionsOfChapter}
+              chapter={chapter}
+              fetchDataAllExam={fetchDataAllExam}
+            />
           </TabPanel>
         </Box>
       </Modal>

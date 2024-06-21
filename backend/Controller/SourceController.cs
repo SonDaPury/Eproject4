@@ -110,6 +110,12 @@ namespace backend.Controller
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("groupbytopic")]
+        public async Task<IActionResult> GroupByTopic()
+        {
+            var result = await _sourceService.GroupByTopic();
+            return Ok(result);
+        }
 
         // PUT: api/Sources/5
         [HttpPut("{id}")]
@@ -125,7 +131,7 @@ namespace backend.Controller
             {
                 return NotFound(new { message = $"Source with ID {id} not found." });
             }
-            return Ok(_mapper.Map<SourceDto>(updatedSource));
+            return Ok(_mapper.Map<SourceViewDto>(updatedSource));
         }
 
         // DELETE: api/Sources/5

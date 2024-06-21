@@ -23,13 +23,11 @@ namespace backend.Controller
     {
         private readonly IElasticSearchRepository _elasticSearchRepository;
         private readonly IimageServices _IimageServices;
-        private readonly IElasticClient _client;
 
-        public SearchController(IElasticSearchRepository elasticSearchRepository, IimageServices iimageServices, IElasticClient client)
+        public SearchController(IElasticSearchRepository elasticSearchRepository, IimageServices iimageServices)
         {
             _elasticSearchRepository = elasticSearchRepository;
             _IimageServices = iimageServices;
-            _client = client;
         }
         [HttpPost("searchDebounce")]
         public async Task<object> searchDebounce([FromBody] SearchRequest request)
@@ -121,18 +119,17 @@ namespace backend.Controller
                             Id = x.Id,
                             Title = x.Title,
                             Description = x.Description,
-                            Thumbnail = _IimageServices.GetFile(x.Thumbnail),
+                            Thumbnail = x.Thumbnail == null ? "" : _IimageServices.GetFile(x.Thumbnail),
                             Slug = x.Slug,
                             Status = x.Status,
                             Benefit = x.Benefit,
-                            Video_intro = x.Video_intro == null ? " " : _IimageServices.GetFile(x.Video_intro),
+                            Video_intro = x.Video_intro == null ? "" : _IimageServices.GetFile(x.Video_intro),
                             Price = x.Price,
                             Rating = x.Rating,
                             UserId = x.UserId
                         }).ToList()
                     }).ToList()
                 }).ToList();
-
             return result;
         }
 
