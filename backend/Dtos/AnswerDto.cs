@@ -14,5 +14,8 @@ namespace backend.Dtos
         public int? UserId { get; set; }
 
         public int? AttemptId { get; set; }
+        public int? CorrectAnswer { get; set; }
+        public int? IncorrectAnswer { get; set; }
+        public DateTime? CreateAt { get; set; }
     }
 }
