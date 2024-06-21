@@ -119,7 +119,7 @@ const CardCourse = ({
               </Box>
             </CardContent>
           </Card>
-        </Box>
+</Box>
       </Link>
     </Box>
   );

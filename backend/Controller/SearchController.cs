@@ -1,6 +1,7 @@
 ﻿using Azure;
 using backend.Data;
 using backend.Dtos;
+using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -101,6 +102,24 @@ namespace backend.Controller
             )
         );
             var result = GroupBy(response);
+            return result;
+        }
+        [HttpGet("getDataHome")]
+        public async Task<object> getDataHome()
+        {
+            var response = _elasticSearchRepository.Filter<OnlySources>(s => s.Index("only_sources_v2").Query(q => q.MatchAll()));
+            Random random = new Random();
+            var result = response.Select(s => new
+            {
+                imageThumbnail = s.Thumbnail == ""? "https://www.invert.vn/media/uploads/uploads/2022/12/03193534-2-anh-gai-xinh-diu-dang.jpeg" : _IimageServices.GetFile(s.Thumbnail),
+                topic = s.TopicName,
+                title = s.Title.Input.FirstOrDefault(),
+                rating = s.Rating,
+                views = random.Next(10, 1000),
+                price = s.Price,
+                id = s.Id,
+                topicID = s.TopicId,
+            });
             return result;
         }
         private List<GroupedTopic> GroupBy(List<OnlySources> onlySources)
