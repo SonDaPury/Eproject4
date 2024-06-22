@@ -36,5 +36,13 @@ export const searchFullText = () => {
       throw new Error(err);
     }
   };
-    return { searchFullTextAction, searchDebounceAction };
+  const Fillter = async (data) => {
+    try {
+      const res = await callApi(`/Search/filter`, "post", data, null, false);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+    return { searchFullTextAction, searchDebounceAction, Fillter };
 };

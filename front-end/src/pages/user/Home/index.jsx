@@ -58,7 +58,6 @@ function Home() {
     const fetchData = async () => {
       try {
         const res = await getDataHome();
-        console.log('API Response:', res.data);
         setAllCourses(res.data);
       } catch (err) {
         console.error('Error fetching courses:', err);

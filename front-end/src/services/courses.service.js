@@ -92,8 +92,24 @@ export const getAllCourses = () => {
       throw new Error(err);
     }
   }
+  const getDataHome2 = async () => {
+    try{
+      const res = await callApi("/Search/getDataHome2", "get", null, null, false);
+      return res;
+    }catch(err){
+      throw new Error(err);
+    }
+  }
+  const getTopicandSubtopic = async () => {
+    try{
+      const res = await callApi("/Search/getTopicandSubtopic", "get", null, null, false);
+      return res;
+    }catch(err){
+      throw new Error(err);
+    }
+  }
 
-  return { getCoursesAction,getCourseActionGroupByTopic, getDataHome };
+  return { getCoursesAction,getCourseActionGroupByTopic, getDataHome, getDataHome2, getTopicandSubtopic };
 };
 
 // Get course pagination

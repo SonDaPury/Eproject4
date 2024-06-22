@@ -71,7 +71,7 @@ namespace backend.Service
                 Benefit = "",
                 Video_intro = result.VideoIntro,
                 Price = result.Price,
-                Rating = result.Rating,
+                Rating = int.Parse(result.Rating),
                 UserId = (int)result.UserId,
                 TopicId = (int)result.SubTopicId,
                 TopicName = result.TopicName,
@@ -297,7 +297,7 @@ namespace backend.Service
 };
 
                 var updateResponse = _elasticsearchRepository.UpdateScript(id.ToString(), u => u
-                    .Index("only_sources_v2")
+                    .Index("only_sources_v3")
                     .Script(s => s
                         .Source(OnlySource)
                         .Params(params1)

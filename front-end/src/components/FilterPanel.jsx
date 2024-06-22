@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Box,
+  List,
   TextField,
   InputAdornment,
   Accordion,
@@ -15,6 +16,7 @@ import {
   OutlinedInput,
   ListItemIcon,
   ListItemText,
+  Radio,
 } from "@mui/material";
 import TuneIcon from "@mui/icons-material/Tune";
 import SearchIcon from "@mui/icons-material/Search";
@@ -24,55 +26,140 @@ import theme from "@eproject4/theme";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { searchFullText } from "@eproject4/services/search.service";
+import { getAllCourses } from "@eproject4/services/courses.service";
+import { isBuffer } from "lodash";
 
 function FilterPanel({
   isShowFilter,
-   topics,
-  handleClickFilter,
-  handleSearchResults,
+  topics,
+  SendData,
+  handleClickFilter2
 }) {
   const [searchKeyword, setSearchKeyword] = useState("");
-  const { searchFullTextAction } = searchFullText();
+  const { searchFullTextAction, Fillter } = searchFullText();
+  const { getDataHome2, getTopicandSubtopic } = getAllCourses();
   const navigate = useNavigate();
-  const handleCourseClick = (topic) => {
-    navigate(`/course-list/${topic}`);
+  const [dataFilter, setDataFilter] = useState([]);
+  const [topicName, SetTopicName] = useState("");
+  const [subtopicName, SetsubTopicName] = useState("");
+  const [RatingLte, setRatingLte] = useState(5);
+  const [RatingGte, setRatingGte] = useState(0);
+  const [PriceLte, setPriceLte] = useState(100000000);
+  const [PriceGte, setPriceGte] = useState(0);
+  const [checkedRatings, setCheckedRatings] = useState([]);
+  const [selectedValue, setSelectedValue] = useState(null);
+  const [selectedValue2, setSelectedValue2] = useState(null);
+  const [checkedRatings2, setCheckedRatings2] = useState([]);
+  const fromInputRef  = useRef(null);
+  const toInputRef = useRef(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getTopicandSubtopic();
+        console.log("Dâttaa", res.data);
+        setDataFilter(res.data);
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const handleClickFilter = () => {
+    handleClickFilter2();
+  };
+  const starRatings = [
+    { label: '5 sao', count: 1345 },
+    { label: '4 sao & trở lên ', count: 1345 },
+    { label: '3 sao & trở lên ', count: 1345 },
+    { label: '2 sao & trở lên ', count: 1345 },
+    { label: '1 sao & trở lên ', count: 1345 },
+  ];
+  const items = [
+    { id: 1, label: 'Trả phí' },
+    { id: 2, label: 'Miễn phí' }
+  ];
+  const handleRadioChange = (label) => {
+        setSelectedValue(label);
+        const RatingGte = label.slice(0, 1);
+        setRatingGte(RatingGte);
+        setRatingLte(5);
+  };
+  const handleRadioPrice = (label) => {
+        setSelectedValue2(label);
+        if(label === "Miễn phí"){
+          setPriceGte(0);
+          setPriceLte(0);
+          fromInputRef.current.value = '';
+          toInputRef.current.value = '';
+        }else{
+          setPriceGte(0);
+          setPriceLte(1000000000);
+        }
   };
 
-  // useEffect(() => {
-  //   window.addEventListener("keyup", handleSearchChange);
-  //   return () => {
-  //     window.removeEventListener("keyup", handleSearchChange);
-  //   };
-  // }, []);
+  useEffect(() => {
+    FilterSource();
+  }, [RatingGte, RatingLte]);
+  useEffect(() => {
+    FilterSource();
+  }, [PriceGte, PriceLte]);
+  useEffect(() => {
+    FilterSource();
+  }, [topicName, subtopicName]);
   const handleSearchChange = async (event) => {
     const keyword = event.target.value;
     setSearchKeyword(keyword);
+  };
+  const handleCourseFilterClick = (topicName, subTopicName) => {
+    console.log("Topic", topicName, "Subtopic", subTopicName);
+    SetTopicName(topicName);
+    SetsubTopicName(subTopicName);
+    
+  }
+  const FilterSource = async () => {
+    const data = {
+      topicName: topicName,
+      subTopicName: subtopicName,
+      RatingGte: RatingGte,
+      RatingLte: RatingLte,
+      PriceGte: PriceGte,
+      PriceLte: PriceLte,
+    };
+    try {
+      const res = await Fillter(data);
+      console.log("Filter", res.data);
+      SendData(res.data);
+    } catch (err) {
+      console.error("Lỗi:", err);
+    }
   };
 
   const handleSearchKeyUp = async (event) => {
     if (event.keyCode === 13 && searchKeyword.length > 2) {
       try {
         const res = await searchFullTextAction(searchKeyword);
-        console.log("Full Response:", res); // Log toàn bộ đối tượng res
 
         // Kiểm tra và log định dạng của res.data
         if (res?.data && Array.isArray(res.data)) {
           const items = res.data;
           console.log("Items found:", items);
-          handleSearchResults(items); // Truyền kết quả tìm kiếm lên ListCourses
+          SendData(items); // Truyền kết quả tìm kiếm lên ListCourses
         } else {
           console.log("No items found or data is not an array");
-          handleSearchResults([]); // Truyền mảng rỗng nếu không có items
+          SendData([]); // Truyền mảng rỗng nếu không có items
         }
 
         console.log("Title:", res?.data || []);
       } catch (err) {
         console.error(err);
       }
-    } else if (searchKeyword.length <= 2) {
-      handleSearchResults([]); // Clear search results if keyword is less than 3 characters
+    } else if (event.keyCode === 13 && searchKeyword.length == 0) {
+      const res2 = await getDataHome2();
+      SendData(res2.data);
     }
   };
+
   return (
     <Box sx={{ marginTop: "56px" }}>
       <Box
@@ -185,11 +272,10 @@ function FilterPanel({
               <Divider />
               <AccordionDetails sx={{ marginTop: "10px" }}>
                 <div>
-                  {topics.map((topic, i) => {
+                  {dataFilter.map((topic, i) => {
                     return (
                       <Accordion
-                        key={i}
-                        onChange={() => handleCourseClick(topic)}>
+                        key={i}>
                         <AccordionSummary
                           expandIcon={<ExpandMoreIcon />}
                           aria-controls="panel1-content"
@@ -200,9 +286,15 @@ function FilterPanel({
                           </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit. Suspendisse malesuada lacus ex, sit amet blandit
-                          leo lobortis eget.
+                          {topic.subtopics.map((subtopic, j) => (
+                            <Typography
+                              key={j}
+                              onClick={() => handleCourseFilterClick(topic.topicName, subtopic.subTopicName)}
+                              sx={{ cursor: 'pointer' }}
+                            >
+                              {subtopic.subTopicName}
+                            </Typography>
+                          ))}
                         </AccordionDetails>
                       </Accordion>
                     );
@@ -227,228 +319,64 @@ function FilterPanel({
               </AccordionSummary>
               <Divider />
               <AccordionDetails>
-                <div>
-                  <ListItem
-                    sx={{
-                      padding: 0,
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}>
-                    <Box
+                <List>
+                  {starRatings.map((rating, index) => (
+                    <ListItem
+                      key={index}
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}>
-                      <Checkbox />
+                        padding: 0,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                      }}
+                    >
                       <Box
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}>
-                        <ListItemIcon
-                          sx={{
-                            minWidth: 0,
-                            marginRight: "7px",
-                            color: "#FD8E1F",
-                          }}>
-                          <StarIcon sx={{ width: "18px", height: "18px" }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          sx={{
-                            fontSize: "14px",
-                            fontWeight: 400,
-                            color: "#4E5566",
-                          }}
-                          primary={"5 stars"}
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Radio
+                          name="radio-buttons"
+                          checked={selectedValue === rating.label}
+                          onChange={() => handleRadioChange(rating.label)}
                         />
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              minWidth: 0,
+                              marginRight: '7px',
+                              color: '#FD8E1F',
+                            }}
+                          >
+                            <StarIcon sx={{ width: '18px', height: '18px' }} />
+                          </ListItemIcon>
+                          <ListItemText
+                            sx={{
+                              fontSize: '14px',
+                              fontWeight: 400,
+                              color: '#4E5566',
+                            }}
+                            primary={rating.label}
+                          />
+                        </Box>
                       </Box>
-                    </Box>
-                    <Typography
-                      sx={{
-                        fontSize: "12px",
-                        fontWeight: 400,
-                        color: "#8C94A3",
-                      }}>
-                      1345
-                    </Typography>
-                  </ListItem>
-                  <ListItem
-                    sx={{
-                      padding: 0,
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}>
-                      <Checkbox />
-                      <Box
+                      <Typography
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}>
-                        <ListItemIcon
-                          sx={{
-                            minWidth: 0,
-                            marginRight: "7px",
-                            color: "#FD8E1F",
-                          }}>
-                          <StarIcon sx={{ width: "18px", height: "18px" }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          sx={{
-                            fontSize: "14px",
-                            fontWeight: 400,
-                            color: "#4E5566",
-                          }}
-                          primary={"4 stars & up"}
-                        />
-                      </Box>
-                    </Box>
-                    <Typography
-                      sx={{
-                        fontSize: "12px",
-                        fontWeight: 400,
-                        color: "#8C94A3",
-                      }}>
-                      1345
-                    </Typography>
-                  </ListItem>
-                  <ListItem
-                    sx={{
-                      padding: 0,
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}>
-                      <Checkbox />
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}>
-                        <ListItemIcon
-                          sx={{
-                            minWidth: 0,
-                            marginRight: "7px",
-                            color: "#FD8E1F",
-                          }}>
-                          <StarIcon sx={{ width: "18px", height: "18px" }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          sx={{
-                            fontSize: "14px",
-                            fontWeight: 400,
-                            color: "#4E5566",
-                          }}
-                          primary={"3 stars & up"}
-                        />
-                      </Box>
-                    </Box>
-                    <Typography
-                      sx={{
-                        fontSize: "12px",
-                        fontWeight: 400,
-                        color: "#8C94A3",
-                      }}>
-                      1345
-                    </Typography>
-                  </ListItem>
-                  <ListItem
-                    sx={{
-                      padding: 0,
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}>
-                      <Checkbox />
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}>
-                        <ListItemIcon
-                          sx={{
-                            minWidth: 0,
-                            marginRight: "7px",
-                            color: "#FD8E1F",
-                          }}>
-                          <StarIcon sx={{ width: "18px", height: "18px" }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          sx={{
-                            fontSize: "14px",
-                            fontWeight: 400,
-                            color: "#4E5566",
-                          }}
-                          primary={"2 stars & up"}
-                        />
-                      </Box>
-                    </Box>
-                    <Typography
-                      sx={{
-                        fontSize: "12px",
-                        fontWeight: 400,
-                        color: "#8C94A3",
-                      }}>
-                      1345
-                    </Typography>
-                  </ListItem>
-                  <ListItem
-                    sx={{
-                      padding: 0,
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}>
-                      <Checkbox />
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}>
-                        <ListItemIcon
-                          sx={{
-                            minWidth: 0,
-                            marginRight: "7px",
-                            color: "#FD8E1F",
-                          }}>
-                          <StarIcon sx={{ width: "18px", height: "18px" }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          sx={{
-                            fontSize: "14px",
-                            fontWeight: 400,
-                            color: "#4E5566",
-                          }}
-                          primary={"1 stars & up"}
-                        />
-                      </Box>
-                    </Box>
-                    <Typography
-                      sx={{
-                        fontSize: "12px",
-                        fontWeight: 400,
-                        color: "#8C94A3",
-                      }}>
-                      1345
-                    </Typography>
-                  </ListItem>
-                </div>
+                          fontSize: '12px',
+                          fontWeight: 400,
+                          color: '#8C94A3',
+                        }}
+                      >
+                        {rating.count}
+                      </Typography>
+                    </ListItem>
+                  ))}
+                </List>
               </AccordionDetails>
             </Accordion>
             <Accordion>
@@ -478,7 +406,9 @@ function FilterPanel({
                         startAdornment={
                           <InputAdornment position="start">$</InputAdornment>
                         }
+                         type="number"
                         label="Amount"
+                        inputRef={fromInputRef}
                       />
                     </FormControl>
                     <FormControl fullWidth sx={{ m: 1, width: "49%" }}>
@@ -491,79 +421,57 @@ function FilterPanel({
                         startAdornment={
                           <InputAdornment position="start">$</InputAdornment>
                         }
+                         type="number"
                         label="Amount"
+                        inputRef={toInputRef}
                       />
                     </FormControl>
                   </Box>
                   <Box>
-                    <ListItem
-                      sx={{
-                        padding: 0,
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}>
-                      <Box
+                    {items.map(item => (
+                      <ListItem
+                        key={item.id}
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}>
-                        <Checkbox />
+                          padding: 0,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                        }}
+                      >
                         <Box
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
-                          }}>
-                          <ListItemIcon
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Radio 
+                          name="radio-buttons"
+                          checked={selectedValue2 === item.label} 
+                          onChange={() => handleRadioPrice(item.label)} />
+                          <Box
                             sx={{
-                              minWidth: 0,
-                              marginRight: "7px",
-                              color: "#FD8E1F",
-                            }}></ListItemIcon>
-                          <ListItemText
-                            sx={{
-                              fontSize: "14px",
-                              fontWeight: 400,
-                              color: "#4E5566",
+                              display: 'flex',
+                              alignItems: 'center',
                             }}
-                            primary={"Trả phí"}
-                          />
+                          >
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 0,
+                                marginRight: '7px',
+                                color: '#FD8E1F',
+                              }}
+                            />
+                            <ListItemText
+                              sx={{
+                                fontSize: '14px',
+                                fontWeight: 400,
+                                color: '#4E5566',
+                              }}
+                              primary={item.label}
+                            />
+                          </Box>
                         </Box>
-                      </Box>
-                    </ListItem>
-                    <ListItem
-                      sx={{
-                        padding: 0,
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}>
-                        <Checkbox />
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                          }}>
-                          <ListItemIcon
-                            sx={{
-                              minWidth: 0,
-                              marginRight: "7px",
-                              color: "#FD8E1F",
-                            }}></ListItemIcon>
-                          <ListItemText
-                            sx={{
-                              fontSize: "14px",
-                              fontWeight: 400,
-                              color: "#4E5566",
-                            }}
-                            primary={"Miễn phí"}
-                          />
-                        </Box>
-                      </Box>
-                    </ListItem>
+                      </ListItem>
+                    ))}
                   </Box>
                 </div>
               </AccordionDetails>
@@ -574,5 +482,6 @@ function FilterPanel({
     </Box>
   );
 }
+
 
 export default FilterPanel;
