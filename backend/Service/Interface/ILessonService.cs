@@ -10,7 +10,7 @@ namespace backend.Service.Interface
         Task<bool> DeleteAsync(int id);
         Task<(List<LessonDto>, int)> GetAllAsync(Pagination pagination);
         Task<object> GetAllAsync(int chapterID);
-        Task<(LessonDto?,int?)> GetByIdAsync(int id);
+        Task<(LessonDtoDetail?,int?)> GetByIdAsync(int id);
         Task<LessonDto?> UpdateAsync(int id, LessonDtoUpdate updatedLesson);
         Task<LessonDto> UpdateView(int lessonId);
     }

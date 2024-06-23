@@ -92,7 +92,7 @@ function CreateLession({ chapter, handleClose, fetchDataAllLessonsOfChapter }) {
           author: getUser()?.username,
           videoDuration: String(duration),
           view: 0,
-          status: true,
+          status: false,
           chapterId: chapter?.id,
           fileVideoNameSource: fileGuid,
           description: data?.description,

@@ -7,6 +7,7 @@ import MuiAccordionSummary from "@mui/material/AccordionSummary";
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
+import { getChapterBySourceId } from "@eproject4/services/chapter.service";
 
 const Accordion = styled((props) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -50,7 +51,9 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   borderTop: "1px solid rgba(0, 0, 0, .125)",
 }));
 
-export default function SourceDetail() {
+export default function SourceDetail({ id }) {
+  console.log(id);
+  const { getChapterBySourceIdAction } = getChapterBySourceId();
   const [expanded, setExpanded] = React.useState("panel1");
 
   const items = [
@@ -211,7 +214,7 @@ export default function SourceDetail() {
           </AccordionSummary>
           <AccordionDetails>
             <Typography>
-              <Box sx={{ width: "100%", maxWidth: 600, margin: "auto" }}>
+              <Box sx={{ width: "100%", margin: "auto" }}>
                 {items.map((item, idx) => (
                   <Box
                     key={idx}
@@ -219,7 +222,7 @@ export default function SourceDetail() {
                       display: "flex",
                       alignItems: "center",
                       backgroundColor: item.playing ? "#FFF5F5" : "transparent",
-                     
+
                       borderBottom: "1px solid #E0E0E0",
                     }}>
                     <Checkbox

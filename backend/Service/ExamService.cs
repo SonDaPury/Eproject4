@@ -142,8 +142,9 @@ namespace backend.Service
 
         public async Task<List<ExamWithLessonId>> GetAllAsync()
         {
-            return await _context.Exams
+            var exams = await _context.Exams
                 .Include(e => e.Serials)
+                //.Include(e => e.)
                  .Select(e => new ExamWithLessonId
                  {
                      Id = e.Id,
@@ -153,9 +154,19 @@ namespace backend.Service
                      Status = e.Status,
                      //IsStarted = e.IsStarted,
                      SourceId = e.SourceId,
-                     LessonId = e.Serials.FirstOrDefault().LessonId
+                     LessonId = e.Serials.FirstOrDefault().LessonId,
+                     ChapterId = _context.Lessons
+                        .Where(l => l.Id == e.Serials.FirstOrDefault().LessonId)
+                        .Select(l => l.ChapterId)
+                        .FirstOrDefault()
                  })
                 .ToListAsync();
+            //foreach (var exam in exams)
+            //{
+            //    var lesson = await _context.Lessons.FindAsync(exam.LessonId);
+            //    exam.ChapterId = lesson.ChapterId;
+            //}
+            return exams;
         }
 
         public async Task<(List<Exam>, int)> GetAllAsync(Pagination pagination)
@@ -182,6 +193,10 @@ namespace backend.Service
                     e.Title,
                     e.TimeLimit,
                     e.Serials.FirstOrDefault().Index,
+                    ChapterId = _context.Lessons
+                            .Where(l => l.Id == e.Serials.FirstOrDefault().LessonId)
+                            .Select(l => l.ChapterId)
+                            .FirstOrDefault(),
                     Questions = e.QuizQuestions.Select(qq => new
                     {
                         QuestionID = qq.QuestionId,
@@ -191,6 +206,7 @@ namespace backend.Service
                 })
                 .FirstOrDefaultAsync();
             var serial = await _context.Serials.FirstOrDefaultAsync(s => s.ExamId == examId);
+            //var chapterId = await _context.Lessons.Where(l => l.Id == serial.LessonId).Select(l => l.ChapterId).FirstOrDefaultAsync();
             if (examId == null) throw new NotFoundException($"exam not found with id : {examId} ");
 
             return (exam, (int)serial.LessonId);
@@ -216,6 +232,7 @@ namespace backend.Service
             exam.MaxQuestion = updatedExam.MaxQuestion;
             exam.Status = updatedExam.Status;
             exam.SourceId = updatedExam.SourceId;
+            //exam.ChapterId = updatedExam.ChapterId;
             //exam.StaticFolder = updatedExam.StaticFolder;
 
             await _context.SaveChangesAsync();

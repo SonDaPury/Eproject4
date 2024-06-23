@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
   Box,
   Button,
@@ -111,43 +111,79 @@ function UpdateExam({
     }
   }, [examDetail, reset]);
 
+  // const onSubmit = async (data) => {
+  //   if (data.questions.length < examDetail?.exam?.questions.length) {
+  //     const result = examDetail?.exam?.questions?.filter(
+  //       (item2) =>
+  //         !data.questions.some((item1) => item1.questionId === item2.questionID)
+  //     );
+  //     await Promise.all(
+  //       result.map(async (item) => {
+  //         await deleteQuestionAction(item.questionID);
+  //       })
+  //     );
+  //     await updateQuestionAction(data, examDetail?.exam?.id);
+  //     const examData = {
+  //       title: data?.title,
+  //       timeLimit: data?.duration,
+  //       maxQuestion: 0,
+  //       status: false,
+  //       sourceId: idCourse,
+  //     };
+  //     await updateExamAction(examDetail?.exam?.id, examData);
+  //     handleUpdateExamModalClose();
+  //     fetchDataAllLessonsOfChapter();
+  //   } else {
+  //     await updateQuestionAction(data, examDetail?.exam?.id);
+  //     const examData = {
+  //       title: data?.title,
+  //       timeLimit: data?.duration,
+  //       maxQuestion: 0,
+  //       status: false,
+  //       sourceId: idCourse,
+  //     };
+  //     await updateExamAction(examDetail?.exam?.id, examData);
+  //     handleUpdateExamModalClose();
+  //     fetchDataAllLessonsOfChapter();
+  //   }
+  // };
   const onSubmit = async (data) => {
-    if (data.questions.length < examDetail?.exam?.questions.length) {
-      const result = examDetail?.exam?.questions?.filter(
-        (item2) =>
-          !data.questions.some((item1) => item1.questionId === item2.questionID)
-      );
+    const originalQuestionIds =
+      examDetail?.exam?.questions.map((q) => q.questionID) || [];
+    const newQuestionIds = data.questions.map((q) => q.questionId);
 
+    const questionsToDelete = originalQuestionIds.filter(
+      (id) => !newQuestionIds.includes(id)
+    );
+    const questionsToAdd = newQuestionIds.filter(
+      (id) => !originalQuestionIds.includes(id)
+    );
+
+    const questionsChanged =
+      questionsToDelete.length > 0 || questionsToAdd.length > 0;
+
+    if (questionsChanged) {
       await Promise.all(
-        result.map(async (item) => {
-          await deleteQuestionAction(item.questionID);
+        questionsToDelete.map(async (id) => {
+          await deleteQuestionAction(id);
         })
       );
 
       await updateQuestionAction(data, examDetail?.exam?.id);
-      const examData = {
-        title: data?.title,
-        timeLimit: data?.duration,
-        maxQuestion: 0,
-        status: true,
-        sourceId: idCourse,
-      };
-      await updateExamAction(examDetail?.exam?.id, examData);
-      handleUpdateExamModalClose();
-      fetchDataAllLessonsOfChapter();
     } else {
       await updateQuestionAction(data, examDetail?.exam?.id);
-      const examData = {
-        title: data?.title,
-        timeLimit: data?.duration,
-        maxQuestion: 0,
-        status: true,
-        sourceId: idCourse,
-      };
-      await updateExamAction(examDetail?.exam?.id, examData);
-      handleUpdateExamModalClose();
-      fetchDataAllLessonsOfChapter();
     }
+    const examData = {
+      title: data?.title,
+      timeLimit: data?.duration,
+      maxQuestion: 0,
+      status: false,
+      sourceId: idCourse,
+    };
+    await updateExamAction(examDetail?.exam?.id, examData);
+
+    handleUpdateExamModalClose();
+    fetchDataAllLessonsOfChapter();
   };
 
   return (

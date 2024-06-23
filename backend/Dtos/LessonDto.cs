@@ -21,4 +21,9 @@
     {
         public SerialDtoUpdate serialDto { get; set; }
     }
+    public class LessonDtoDetail : LessonDto
+    {
+        public string? Video {  get; set; }
+        public int? ExamId { get; set; }
+    }
 }

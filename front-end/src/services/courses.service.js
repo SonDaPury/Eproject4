@@ -78,17 +78,29 @@ export const getAllCourses = () => {
   };
   const getCourseActionGroupByTopic = async () => {
     try {
-      const res = await callApi("/Source/groupbytopic", "get", null, null, false);
+      const res = await callApi(
+        "/Source/groupbytopic",
+        "get",
+        null,
+        null,
+        false
+      );
       return res;
     } catch (err) {
       throw new Error(err);
     }
   };
   const getDataHome = async () => {
-    try{
-      const res = await callApi("/Search/getDataHome", "get", null, null, false);
+    try {
+      const res = await callApi(
+        "/Search/getDataHome",
+        "get",
+        null,
+        null,
+        false
+      );
       return res;
-    }catch(err){
+    } catch (err) {
       throw new Error(err);
     }
   }
@@ -133,7 +145,6 @@ export const getCoursesPagination = () => {
 
   return { getCoursesPaginationAction };
 };
-
 
 // Get course by id
 export const getCourseById = () => {

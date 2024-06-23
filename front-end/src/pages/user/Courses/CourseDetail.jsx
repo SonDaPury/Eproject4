@@ -13,10 +13,11 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Modal,
   Tab,
   Tabs,
 } from "@mui/material";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -52,6 +53,11 @@ import {
 } from "@eproject4/redux/slices/favoriteSlice";
 import { favoriteSelector } from "@eproject4/redux/selectors";
 import SourceDetail from "@eproject4/components/SourceDetail";
+import { getOrderforFree } from "@eproject4/services/order.service";
+import {
+  addEnrollment,
+  setEnrollmentStatus,
+} from "@eproject4/redux/slices/enrollmentSlice";
 
 // Tabs
 function CustomTabPanel(props) {
@@ -100,14 +106,23 @@ const CourseDetail = () => {
   const { getCoursesAction } = getAllCourses();
   const { getAllTopicsAction } = getAllTopics();
   const { getTopicByIdAction } = getTopicById();
+  const { getOrderforFreeAction } = getOrderforFree();
 
   const { getAllFavoriteAction } = getAllFavorite();
   const { addFavoriteSourceAction } = AddFavoriteSource();
   const { DeleteFavoriteSourceAction } = deleteFavoriteSource();
   const { category, title, id } = useParams();
 
+  // const [orderData, SetOrderData] = useParams();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const isEnrolled = useSelector(
+    (state) => state.enrollment.enrolledCourses[id]
+  );
   const [courseData, SetcourseData] = useState([]);
   const [courseDetail, setCourseDetail] = useState(null); // Đối tượng để lưu chi tiết khóa học
+
+  const navigate = useNavigate(); // Khởi tạo useNavigate
 
   const favoriteData = useSelector(
     (state) => state.favorites.favoritedCourses[id]
@@ -328,6 +343,50 @@ const CourseDetail = () => {
     }
   };
 
+  //Order Data Check
+
+  useEffect(() => {
+    const checkEnrollmentStatus = async () => {
+      try {
+        //const courseId = parseInt(id, 10); // Chuyển đổi id sang số nguyên
+        const res = await getOrderforFreeAction(courseData.userId, id);
+
+        console.log(courseData.userId, id);
+        console.log(res);
+        if (res.data.status) {
+          dispatch(setEnrollmentStatus({ courseId: id, isEnrolled: true }));
+        }
+      } catch (error) {
+        console.error("Error checking enrollment status:", error);
+      }
+    };
+    if (courseData?.userId) {
+      checkEnrollmentStatus();
+    }
+  }, [courseData?.userId, id, dispatch]);
+
+  const handleRegisterClick = () => {
+    if (isEnrolled) {
+      navigate(`/watch-course/${title}/${id}`);
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleConfirmEnroll = async () => {
+    try {
+      const res = await getOrderforFreeAction(courseData.userId, id);
+      if (res.status === 200) {
+        dispatch(addEnrollment({ userId: courseData.userId, courseId: id }));
+        dispatch(setEnrollmentStatus({ courseId: id, isEnrolled: true }));
+        navigate(`/watch-course/${title}/${id}`);
+      }
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+    }
+    setIsModalOpen(false);
+  };
+
   return (
     <Box>
       <Box sx={{ backgroundColor: "#F5F7FA" }}>
@@ -464,7 +523,7 @@ const CourseDetail = () => {
                 </CustomTabPanel>
 
                 <CustomTabPanel value={value} index={1}>
-                  <SourceDetail />
+                  <SourceDetail id={id} />
                 </CustomTabPanel>
               </Box>
             </Box>
@@ -646,14 +705,56 @@ const CourseDetail = () => {
                       sx={{ marginBottom: "15px" }}
                     />
                   )}
-                  <ButtonCustomize
-                    // text="Đăng Ký Ngay"
-                    width="56px"
-                    height="56px"
-                    backgroundColor="#FFEEE8"
-                    sx={{ marginBottom: "15px", color: "#FF6636" }}
-                    navigateTo={`/watch-course/${title}/${id}`}
-                  />
+                  <>
+                    <ButtonCustomize
+                      text={isEnrolled ? "Chuyển đến khóa học" : "Đăng Ký Ngay"}
+                      width="100%"
+                      height="56px"
+                      backgroundColor="#FFEEE8"
+                      sx={{ marginBottom: "15px", color: "#FF6636" }}
+                      onClick={handleRegisterClick}
+                    />
+                    <Modal
+                      open={isModalOpen}
+                      onClose={() => setIsModalOpen(false)}
+                      aria-labelledby="modal-modal-title"
+                      aria-describedby="modal-modal-description">
+                      <Box
+                        sx={{
+                          padding: 2,
+                          backgroundColor: "white",
+                          margin: "auto",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                          position: "absolute",
+                          outline: "none",
+                        }}>
+                        <Typography
+                          id="modal-modal-title"
+                          variant="h6"
+                          component="h2">
+                          Xác nhận đăng ký
+                        </Typography>
+                        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                          Bạn có chắc chắn muốn đăng ký khóa học này không?
+                        </Typography>
+                        <Button
+                          onClick={handleConfirmEnroll}
+                          sx={{ mt: 2 }}
+                          variant="contained"
+                          color="primary">
+                          Xác nhận
+                        </Button>
+                        <Button
+                          onClick={() => setIsModalOpen(false)}
+                          sx={{ mt: 2 }}
+                          variant="outlined">
+                          Hủy
+                        </Button>
+                      </Box>
+                    </Modal>
+                  </>
                   <ButtonCustomize
                     text={
                       isFavorited

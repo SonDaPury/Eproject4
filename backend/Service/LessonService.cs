@@ -143,7 +143,7 @@ namespace backend.Service
 
             return query;
         }
-        public async Task<(LessonDto?,int?)> GetByIdAsync(int id)
+        public async Task<(LessonDtoDetail?,int?)> GetByIdAsync(int id)
         {
             var lesson = await _context.Lessons
                 //.Include(l => l.Chapter) // Include the chapter to which the lesson belongs
@@ -154,7 +154,9 @@ namespace backend.Service
             }
             lesson.Video = lesson.Video != null ? _imageServices.GetFile(lesson.Video) : null;
             var serial = await _context.Serials.FirstOrDefaultAsync(s => s.LessonId == id);
-            return (_mapper?.Map<LessonDto?>(lesson),serial.Index);
+            var detail = _mapper.Map<LessonDtoDetail> (lesson);
+            detail.ExamId = serial.ExamId;
+            return (detail,serial.Index);
         }
         public async Task<int> GetSerialIDbyLessonID(int lessonId)
         {

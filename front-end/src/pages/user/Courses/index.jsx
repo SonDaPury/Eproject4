@@ -138,8 +138,6 @@ function Courses() {
               </Box>
             );
           })}
-
-
         </Box>
       </Box>
     </Box>
