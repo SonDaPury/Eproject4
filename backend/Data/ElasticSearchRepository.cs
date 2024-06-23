@@ -39,7 +39,7 @@ namespace backend.Data
             try
             {
                 var indexResponse = _client.Index(document, i => i
-              .Index("only_sources_v2")
+              .Index("only_sources_v3")
               .Id(id));
                 return indexResponse.IsValid;
             }
@@ -158,7 +158,7 @@ namespace backend.Data
             return null;
         }
 
-        public bool RemoveDocument(string id, string index = "only_sources_v2")
+        public bool RemoveDocument(string id, string index = "only_sources_v3")
         {
             var response = _client.Delete(new DeleteRequest(index, id));
             return response.IsValid;
