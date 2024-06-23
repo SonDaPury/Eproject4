@@ -9,12 +9,11 @@ import { DefaultLayout } from "./components/layout";
 import { Fragment } from "react";
 import NotFound from "./components/NotFound";
 import { getToken, getUser } from "./helpers/authHelper";
-import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar.js";
+import WatchCourse from "./pages/user/Courses/WatchCourse";
 
 function App() {
   const token = getToken();
   const roleId = getUser()?.roleId;
-  const { showSnackbar } = useCustomSnackbar();
   return (
     <Router>
       <>
@@ -84,6 +83,7 @@ function App() {
                 />
               );
             })}
+
             <Route
               path="*"
               element={

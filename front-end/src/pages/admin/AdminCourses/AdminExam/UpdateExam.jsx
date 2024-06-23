@@ -111,42 +111,6 @@ function UpdateExam({
     }
   }, [examDetail, reset]);
 
-  // const onSubmit = async (data) => {
-  //   if (data.questions.length < examDetail?.exam?.questions.length) {
-  //     const result = examDetail?.exam?.questions?.filter(
-  //       (item2) =>
-  //         !data.questions.some((item1) => item1.questionId === item2.questionID)
-  //     );
-  //     await Promise.all(
-  //       result.map(async (item) => {
-  //         await deleteQuestionAction(item.questionID);
-  //       })
-  //     );
-  //     await updateQuestionAction(data, examDetail?.exam?.id);
-  //     const examData = {
-  //       title: data?.title,
-  //       timeLimit: data?.duration,
-  //       maxQuestion: 0,
-  //       status: false,
-  //       sourceId: idCourse,
-  //     };
-  //     await updateExamAction(examDetail?.exam?.id, examData);
-  //     handleUpdateExamModalClose();
-  //     fetchDataAllLessonsOfChapter();
-  //   } else {
-  //     await updateQuestionAction(data, examDetail?.exam?.id);
-  //     const examData = {
-  //       title: data?.title,
-  //       timeLimit: data?.duration,
-  //       maxQuestion: 0,
-  //       status: false,
-  //       sourceId: idCourse,
-  //     };
-  //     await updateExamAction(examDetail?.exam?.id, examData);
-  //     handleUpdateExamModalClose();
-  //     fetchDataAllLessonsOfChapter();
-  //   }
-  // };
   const onSubmit = async (data) => {
     const originalQuestionIds =
       examDetail?.exam?.questions.map((q) => q.questionID) || [];

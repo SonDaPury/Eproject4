@@ -1,73 +1,108 @@
-import ButtonCustomize from "@eproject4/components/ButtonCustomize";
-import PropTypes from "prop-types";
-
-import SourceDetail from "@eproject4/components/SourceDetail";
-import { Title } from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  CardMedia,
-  Grid,
-  LinearProgress,
-  Tab,
-  Tabs,
-  Typography,
-} from "@mui/material";
-import React from "react";
-import { useParams } from "react-router-dom";
+import { Box, Button, Grid, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { getChapterBySourceId } from "@eproject4/services/chapter.service";
+import LessonDetail from "../Lesson/LessonDetail";
+import {
+  getAllLessionsByChapterId,
+  getLessonById,
+} from "@eproject4/services/lession.service";
+import LessonContent from "../Lesson/LessonContent";
+import { getAllExam } from "@eproject4/services/exam.service";
+import { useLocation } from "react-router-dom";
+import ExamDetail from "../Exam/ExamDetail";
 
-function CustomTabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}>
-      {value === index && (
-        <Box
-          sx={{
-            padding: "24px 0px",
-            textAlign: "justify",
-          }}>
-          <Typography
-            sx={{ fontSize: "24px", fontWeight: 600, color: "#1D2026" }}>
-            {children}
-          </Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-CustomTabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired,
-};
-
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
-//ádsadsadasdasdsadsadsasadsda
 const WatchCourse = () => {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { id, title } = useParams();
+  const [lessonDetail, setLessonDetail] = useState({});
+  const { getChapterBySourceIdAction } = getChapterBySourceId();
+  const [listChapterOfCourse, setListChapterOfCourse] = React.useState([]);
+  const { getLessonByIdAction } = getLessonById();
+  const idLesson = searchParams.get("id-lesson") || 1;
+  const idExam = searchParams.get("id-exam") || 1;
+  const { getAllLessionsByChapterIdAction } = getAllLessionsByChapterId();
+  const { getAllExamAction } = getAllExam();
+  const [lessonsData, setLessonsData] = useState({});
+  const [allExams, setAllExams] = useState([]);
+  const [lessonOfCourse, setLessonOfCourse] = useState([]);
 
-  const progress = 15;
-  // Tabs
-  const [value, setValue] = React.useState(0);
+  useEffect(() => {
+    const fetchChapterOfCourse = async () => {
+      const resChapterOfCourse = await getChapterBySourceIdAction(id);
+      const lessonsPromises = resChapterOfCourse?.data?.map(async (chapter) => {
+        const resLessonOfChapter = await getAllLessionsByChapterIdAction(
+          chapter?.id
+        );
+        return resLessonOfChapter?.data;
+      });
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+      const lessons = await Promise.all(lessonsPromises);
+      setLessonOfCourse(lessons.flat());
+    };
+
+    fetchChapterOfCourse();
+  }, [id]);
+
+  const getLessonsOfCourse = (listLessons) => {
+    let countLesson = 0;
+    let duration = 0;
+
+    // Get total lessons of course
+    listLessons?.forEach((lesson) => {
+      countLesson += lesson?.lessons[0].lesson.length;
+
+      lesson?.lessons[0].lesson.forEach((item) => {
+        duration += Number(item.videoDuration);
+      });
+    });
+
+    // Get total hours of course
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.ceil((duration % 3600) / 60);
+
+    return { countLesson, hours: `${hours} giờ ${minutes} phút` };
   };
-  // const cleanDescription = DOMPurify.sanitize(courseData.description);
-  console.log(id, title);
+
+  const fetchLessonsAndExams = async () => {
+    try {
+      const examsResponse = await getAllExamAction();
+      setAllExams(examsResponse.data);
+
+      const lessonsDataTemp = {};
+      await Promise.all(
+        listChapterOfCourse.map(async (chapter) => {
+          const response = await getAllLessionsByChapterIdAction(chapter.id);
+          lessonsDataTemp[chapter.id] = response.data.lessons;
+        })
+      );
+
+      setLessonsData(lessonsDataTemp);
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLessonsAndExams();
+  }, [listChapterOfCourse]);
+
+  const fetchAllCourseData = async () => {
+    const resDataChapter = await getChapterBySourceIdAction(id);
+    setListChapterOfCourse(resDataChapter.data);
+  };
+
+  const fetchDataLessonById = async () => {
+    const res = await getLessonByIdAction(idLesson);
+    setLessonDetail(res?.data);
+  };
+
+  useEffect(() => {
+    fetchDataLessonById();
+    fetchAllCourseData();
+  }, [idLesson, location]);
+
   return (
     <>
       <Box>
@@ -76,7 +111,6 @@ const WatchCourse = () => {
             display: "flex",
             padding: "20px 32px",
             justifyContent: "space-between",
-            // alignItems: "center",
             backgroundColor: "#F5F7FA",
             height: "98px",
           }}>
@@ -106,7 +140,7 @@ const WatchCourse = () => {
             </Button>
             <Box sx={{ paddingLeft: "16px" }}>
               <Typography
-                sx={{ fontSize: "18px", fontWeight: 500 }}
+                sx={{ fontSize: "18px", fontWeight: 500, marginBottom: "7px" }}
                 component={"h2"}>
                 {title}
               </Typography>
@@ -133,9 +167,10 @@ const WatchCourse = () => {
                       fontSize: "14px",
                       fontWeight: 400,
                       margin: "0px 5px",
+                      marginRight: "10px",
                     }}
                     component="p">
-                    Chương
+                    {listChapterOfCourse?.length} Chương
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -160,9 +195,10 @@ const WatchCourse = () => {
                       fontSize: "14px",
                       fontWeight: 400,
                       margin: "0px 5px",
+                      marginRight: "10px",
                     }}
                     component="p">
-                    Bài Học
+                    {getLessonsOfCourse(lessonOfCourse)?.countLesson} Bài Học
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -186,72 +222,29 @@ const WatchCourse = () => {
                       margin: "0px 5px",
                     }}
                     component="p">
-                    19h 37m
+                    {getLessonsOfCourse(lessonOfCourse)?.hours}
                   </Typography>
                 </Box>
               </Box>
             </Box>
           </Box>
-
-          <ButtonCustomize width="100px" height="48px" text="Bài kế tiếp" />
         </Box>
-
-        {/* ádsadsadaaaaaaaaaaaaaaaaaaaaaaassssssssssssss */}
-
-        <Box sx={{ padding: "36px 27px 0px 32px" }}>
-          <Grid container spacing={2}>
+        <Box
+          sx={{
+            padding: "36px 27px 0px 32px",
+            maxWidth: "1500px",
+            marginX: "auto",
+          }}>
+          <Grid container spacing={7}>
             <Grid item xs={7}>
-              <Box sx={{}}>
-                <Box>
-                  {" "}
-                  <CardMedia
-                    sx={{ width: "835px", height: "471px", objectFit: "cover" }}
-                    component="video"
-                    controls
-                    //src={courseData.videoIntro} // Thay thế 'your-video-url.mp4' bằng URL của video bạn muốn hiển thị
-                  >
-                    Your browser does not support the video tag.
-                  </CardMedia>
-                  <Box>
-                    <Typography
-                      component={"h2"}
-                      sx={{
-                        fontSize: "25px",
-                        fontWeight: 600,
-                        padding: "24px 0px",
-                      }}>
-                      2. Sign up in Webflow
-                    </Typography>
-                    <hr />
-                  </Box>
-                  <Box sx={{ width: "100%" }}>
-                    <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                      <Tabs
-                        value={value}
-                        onChange={handleChange}
-                        aria-label="basic tabs example">
-                        <Tab label="Mô Tả" {...a11yProps(0)} />
-                        <Tab label=" Nội dung bài Học" {...a11yProps(1)} />
-                      </Tabs>
-                    </Box>
-                    <CustomTabPanel value={value} index={0}>
-                      Tổng quan
-                      <Typography
-                        component="div"
-                        sx={{
-                          textAlign: "justify",
-                          color: "#4E5566",
-                          fontSize: "14px",
-                          fontWeight: 400,
-                          paddingTop: "20px",
-                        }}
-                      />
-                    </CustomTabPanel>
-
-                    <CustomTabPanel value={value} index={1}></CustomTabPanel>
-                  </Box>
-                </Box>
-              </Box>
+              {!searchParams.get("id-exam") ? (
+                <LessonDetail
+                  lessonDetail={lessonDetail}
+                  fetchDataLessonById={fetchDataLessonById}
+                />
+              ) : (
+                <ExamDetail idExam={idExam} />
+              )}
             </Grid>
             <Grid item xs={5}>
               <Box>
@@ -268,31 +261,18 @@ const WatchCourse = () => {
                       sx={{ fontSize: "24px", fontWeight: 600 }}>
                       Nội dung khóa học
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      color="#23BD33"
-                      sx={{
-                        fontSize: "16px",
-                        fontWeight: 600,
-                      }}>{`${progress}% Hoàn thành`}</Typography>
                   </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progress}
-                    sx={{
-                      height: 4,
-                      borderRadius: 5,
-                      "& .MuiLinearProgress-bar": {
-                        borderRadius: 5,
-                        backgroundColor: "#23BD33",
-                      },
-                      backgroundColor: "#E0E0E0", // Màu nền của thanh tiến trình
-                    }}
-                  />
                 </Box>
-
                 <Box>
-                  <SourceDetail id={id} />
+                  <Box sx={{ marginRight: "20px", paddingBottom: "20px" }}>
+                    <LessonContent
+                      getLessonsOfCourse={getLessonsOfCourse}
+                      lessonOfCourse={lessonOfCourse}
+                      listChapterOfCourse={listChapterOfCourse}
+                      lessonsData={lessonsData}
+                      allExams={allExams}
+                    />
+                  </Box>
                 </Box>
               </Box>
             </Grid>

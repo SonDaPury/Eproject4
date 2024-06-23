@@ -15,42 +15,10 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ChatIcon from "@mui/icons-material/Chat";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import StarIcon from "@mui/icons-material/Star";
-
-const dataColumn1 = [
-  {
-    label: "Bài học",
-    value: "1,957",
-    icon: <PlayCircleIcon sx={{ color: "#FF6636" }} />,
-  },
-  {
-    label: "Học viên",
-    value: "9,419,418",
-    icon: <GroupIcon sx={{ color: "#E34444" }} />,
-  },
-  {
-    label: "Ngôn ngữ",
-    value: "Vietnamese",
-    icon: <SubtitlesIcon sx={{ color: "#1D2026" }} />,
-  },
-  {
-    label: "Số giờ",
-    value: "19:37:51",
-    icon: <AccessTimeIcon sx={{ color: "#564FFD" }} />,
-  },
-];
-
-const dataColumn2 = [
-  {
-    label: "Bài kiểm tra",
-    value: "51,429",
-    icon: <ChatIcon sx={{ color: "#564FFD" }} />,
-  },
-  {
-    label: "Lượt xem",
-    value: "76,395,167",
-    icon: <VisibilityIcon sx={{ color: "#1D2026" }} />,
-  },
-];
+import { getAllOrder } from "@eproject4/services/order.service";
+import { getChapterBySourceId } from "@eproject4/services/chapter.service";
+import { getAllLessionsByChapterId } from "@eproject4/services/lession.service";
+import { getAllExam } from "@eproject4/services/exam.service";
 
 const ratings = [
   { label: "5", value: 67 },
@@ -67,8 +35,72 @@ function AdminDetailCourse() {
   const [dataCourses, setDataCourses] = useState({ userId: 0 });
   const [searchParams] = useSearchParams();
   const [author, setAuthor] = useState("");
-
+  const [listOrders, setListOrders] = useState([]);
+  const { getAllOrderAction } = getAllOrder();
+  const { getChapterBySourceIdAction } = getChapterBySourceId();
+  const { getAllLessionsByChapterIdAction } = getAllLessionsByChapterId();
   const idQuery = searchParams.get("id");
+  const [lessonOfCourse, setLessonOfCourse] = useState([]);
+  const { getAllExamAction } = getAllExam();
+  const [examOfCourse, setExamOfCourse] = useState([]);
+
+  useEffect(() => {
+    const fetchChapterOfCourse = async () => {
+      const resChapterOfCourse = await getChapterBySourceIdAction(idQuery);
+      const lessonsPromises = resChapterOfCourse?.data?.map(async (chapter) => {
+        const resLessonOfChapter = await getAllLessionsByChapterIdAction(
+          chapter?.id
+        );
+        return resLessonOfChapter?.data;
+      });
+
+      const lessons = await Promise.all(lessonsPromises);
+      setLessonOfCourse(lessons.flat());
+    };
+
+    fetchChapterOfCourse();
+  }, [idQuery]);
+
+  useEffect(() => {
+    const fetchExamOfCourse = async () => {
+      const res = await getAllExamAction();
+      setExamOfCourse(res?.data);
+    };
+
+    fetchExamOfCourse();
+  }, []);
+
+  const getLessonsOfCourse = (listLessons) => {
+    let countLesson = 0;
+    let duration = 0;
+    let view = 0;
+
+    // Get total lessons of course
+    listLessons?.forEach((lesson) => {
+      countLesson += lesson?.lessons[0].lesson.length;
+
+      lesson?.lessons[0].lesson.forEach((item) => {
+        view += Number(item.view);
+        duration += Number(item.videoDuration);
+      });
+    });
+
+    // Get total hours of course
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.ceil((duration % 3600) / 60);
+
+    const newListExams = examOfCourse?.filter((exam) => {
+      return exam?.sourceId == Number(idQuery);
+    });
+
+    return {
+      countLesson,
+      hours: `${hours} giờ ${minutes} phút`,
+      view,
+      newListExams,
+    };
+  };
+
   useEffect(() => {
     const fetchCoursesData = async () => {
       try {
@@ -82,6 +114,15 @@ function AdminDetailCourse() {
     fetchCoursesData();
   }, []);
 
+  const fetchDataAllOrder = async () => {
+    const res = await getAllOrderAction();
+    setListOrders(res?.data);
+  };
+
+  useEffect(() => {
+    fetchDataAllOrder();
+  }, []);
+
   useEffect(() => {
     const fetchUserByIdData = async () => {
       try {
@@ -93,6 +134,49 @@ function AdminDetailCourse() {
     };
     fetchUserByIdData();
   }, [dataCourses]);
+
+  const getOrdersOfCourse = (listOrders, courseId) => {
+    return listOrders.filter((order) => {
+      return order.souresID == courseId;
+    });
+  };
+  const ordersOfCourse = getOrdersOfCourse(listOrders, dataCourses?.id);
+
+  const dataColumn1 = [
+    {
+      label: "Bài học",
+      value: getLessonsOfCourse(lessonOfCourse).countLesson,
+      icon: <PlayCircleIcon sx={{ color: "#FF6636" }} />,
+    },
+    {
+      label: "Học viên",
+      value: ordersOfCourse[0]?.orders?.length,
+      icon: <GroupIcon sx={{ color: "#E34444" }} />,
+    },
+    {
+      label: "Ngôn ngữ",
+      value: "Vietnamese",
+      icon: <SubtitlesIcon sx={{ color: "#1D2026" }} />,
+    },
+    {
+      label: "Số giờ",
+      value: getLessonsOfCourse(lessonOfCourse).hours,
+      icon: <AccessTimeIcon sx={{ color: "#564FFD" }} />,
+    },
+  ];
+
+  const dataColumn2 = [
+    {
+      label: "Bài kiểm tra",
+      value: getLessonsOfCourse(lessonOfCourse).newListExams.length,
+      icon: <ChatIcon sx={{ color: "#564FFD" }} />,
+    },
+    {
+      label: "Lượt xem",
+      value: getLessonsOfCourse(lessonOfCourse).view,
+      icon: <VisibilityIcon sx={{ color: "#1D2026" }} />,
+    },
+  ];
 
   return (
     <Box sx={{ paddingBottom: "15px" }}>
@@ -177,7 +261,7 @@ function AdminDetailCourse() {
             </Box>
             <Box sx={{ marginLeft: "50px" }}>
               <Typography sx={{ fontSize: { md: "17px", lg: "20px" } }}>
-                10000000 Đ
+                {ordersOfCourse[0]?.totalPrice} Đ
               </Typography>
               <Typography
                 sx={{
@@ -201,7 +285,6 @@ function AdminDetailCourse() {
           <Grid container spacing={3}>
             <Grid item xs={12} lg={8}>
               <Grid container spacing={3}>
-                {/* Cột 1 */}
                 <Grid item xs={12} lg={6}>
                   {dataColumn1.map((item, index) => (
                     <Card key={index} sx={{ mb: 2 }}>

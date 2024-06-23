@@ -33,6 +33,7 @@ export const publicRoutes = [
 export const privateRoutes = [
   { path: "/dashboard-student", component: UserDashboard },
   { path: "/watch-course/:title/:id", component: WatchCourse },
+  { path: "/watch-course/:title/:id/:slug", component: WatchCourse },
 ];
 
 // Route chi danh cho admin

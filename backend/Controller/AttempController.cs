@@ -11,7 +11,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user", "admin")]
+    // [JwtAuthorize("user", "admin")]
     public class AttempController : ControllerBase
     {
         private readonly IAttempService _attempService;
@@ -33,10 +33,10 @@ namespace backend.Controller
             }
             try
             {
-            var attemp = _mapper.Map<Attemp>(attempDto);
-            var createdAttemp = await _attempService.CreateAsync(attemp);
-            var createdAttempDto = _mapper.Map<AttempDto>(createdAttemp);
-            return CreatedAtAction(nameof(GetAttemp), new { id = createdAttempDto.Id }, createdAttempDto);
+                var attemp = _mapper.Map<Attemp>(attempDto);
+                var createdAttemp = await _attempService.CreateAsync(attemp);
+                var createdAttempDto = _mapper.Map<AttempDto>(createdAttemp);
+                return CreatedAtAction(nameof(GetAttemp), new { id = createdAttempDto.Id }, createdAttempDto);
             }
             catch (Exception ex)
             {
@@ -52,7 +52,7 @@ namespace backend.Controller
             try
             {
                 var (attemps, totalCount) = await _attempService.GetAllAsync(pagination);
-            var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
+                var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
                 return Ok(new { TotalCount = totalCount, Items = attempDtos });
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace backend.Controller
             {
                 var attemps = await _attempService.GetAllAsync();
                 var attempDtos = _mapper.Map<List<AttempDto>>(attemps);
-                return Ok( attempDtos );
+                return Ok(attempDtos);
             }
             catch (Exception ex)
             {
@@ -83,9 +83,9 @@ namespace backend.Controller
         {
             try
             {
-            var attemp = await _attempService.GetByIdAsync(id);
-            var attempDto = _mapper.Map<AttempDto>(attemp);
-            return Ok(attempDto);
+                var attemp = await _attempService.GetByIdAsync(id);
+                var attempDto = _mapper.Map<AttempDto>(attemp);
+                return Ok(attempDto);
             }
             catch (Exception ex)
             {
@@ -98,7 +98,7 @@ namespace backend.Controller
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAttemp(int id, [FromBody] AttempDto attempDto)
         {
-            if (attempDto == null )
+            if (attempDto == null)
             {
                 return BadRequest(new { message = "Invalid attemp data" });
             }
