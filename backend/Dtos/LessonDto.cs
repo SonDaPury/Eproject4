@@ -23,7 +23,7 @@
     }
     public class LessonDtoDetail : LessonDto
     {
-        public int? Video {  get; set; }
+        public string? Video {  get; set; }
         public int? ExamId { get; set; }
     }
 }
