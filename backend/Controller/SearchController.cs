@@ -46,7 +46,7 @@ namespace backend.Controller
                     )
                 )
             );
-            var groupBySuggestion = GroupBy2(suggestions);
+            var groupBySuggestion = GroupBy(suggestions);
             return groupBySuggestion;
         }
         [HttpPost("filter")]
@@ -202,11 +202,11 @@ namespace backend.Controller
                             Id = x.Id,
                             Title = x.Title,
                             Description = x.Description,
-                            Thumbnail = x.Thumbnail == null ? "" : _IimageServices.GetFile(x.Thumbnail),
+                            Thumbnail = x.Thumbnail == null ? "https://www.invert.vn/media/uploads/uploads/2022/12/03193534-2-anh-gai-xinh-diu-dang.jpeg" : _IimageServices.GetFile(x.Thumbnail),
                             Slug = x.Slug,
                             Status = x.Status,
                             Benefit = x.Benefit,
-                            Video_intro = x.Video_intro == null ? "" : _IimageServices.GetFile(x.Video_intro),
+                            Video_intro = x.Video_intro == null ? "https://archive.org/download/Popeye_forPresident/Popeye_forPresident_512kb.mp4" : _IimageServices.GetFile(x.Video_intro),
                             Price = x.Price,
                             Rating = x.Rating.ToString(),
                             UserId = x.UserId
@@ -220,7 +220,7 @@ namespace backend.Controller
             Random random = new Random();
             var result = response.Select(s => new Course
             {
-                imageThumbnail = s.Thumbnail == "" ? "https://www.invert.vn/media/uploads/uploads/2022/12/03193534-2-anh-gai-xinh-diu-dang.jpeg" : _IimageServices.GetFile(s.Thumbnail),
+                imageThumbnail = s.Thumbnail == null ? "https://www.invert.vn/media/uploads/uploads/2022/12/03193534-2-anh-gai-xinh-diu-dang.jpeg" : _IimageServices.GetFile(s.Thumbnail),
                 topic = s.TopicName,
                 title = s.Title.Input.FirstOrDefault(),
                 rating = s.Rating.ToString(),
