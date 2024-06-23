@@ -19,9 +19,6 @@ const useAxiosWithLoading = () => {
 
   const request = axios.create({
     baseURL: "http://localhost:5187/api",
-    headers: {
-      "Content-Type": "application/json", // Đặt Content-Type là application/json
-    },
   });
 
   useEffect(() => {
