@@ -18,6 +18,7 @@ namespace backend.Extentions
             CreateMap<Exam, ExamDto>().ReverseMap();
 
             CreateMap<Lesson, LessonDto>().ReverseMap();
+            CreateMap<Lesson, LessonDtoDetail>().ReverseMap();
 
             CreateMap<Option, OptionDto>().ReverseMap();
 
