@@ -38,7 +38,7 @@ const HorizontalCourseCard = ({
             component="img"
             sx={{ height: "220px", objectFit: "cover" }}
             image={image}
-            alt={title}
+            alt="Error"
           />
           <CardContent>
             <Typography
@@ -64,46 +64,50 @@ const HorizontalCourseCard = ({
               {subtitle}
             </Typography>
           </CardContent>
-          <Box
-            sx={{
-              px: 2,
-              pb: 2,
-              display: "flex",
-              gap: 1,
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}>
-            <Button
-              variant="contained"
-              color="primary"
+          <Link to={path}>
+            {" "}
+            <Box
               sx={{
-                backgroundColor: "#FFEEE8",
-                color: "#FF6636",
-                textTransform: "none",
-                flexGrow: 1,
-                maxWidth: hasStarted && progress !== undefined ? "128px" : "auto",
-                "&:hover": {
-                  backgroundColor: "#FF6636", // Thay đổi màu nền khi hover
-                  color: "#FFF", // Thay đổi màu chữ khi hover
-                },
+                px: 2,
+                pb: 2,
+                display: "flex",
+                gap: 1,
+                alignItems: "center",
+                justifyContent: "space-between",
               }}>
-              Watch Lecture
-            </Button>
-            {hasStarted && (
-              <Typography
-                variant="outlined"
-                component="h2"
-                // color="primary"
+              <Button
+                variant="contained"
+                color="primary"
                 sx={{
-                  color: "#23BD33",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  // width: "fit-content",
+                  backgroundColor: "#FFEEE8",
+                  color: "#FF6636",
+                  textTransform: "none",
+                  flexGrow: 1,
+                  maxWidth:
+                    hasStarted && progress !== undefined ? "128px" : "auto",
+                  "&:hover": {
+                    backgroundColor: "#FF6636", // Thay đổi màu nền khi hover
+                    color: "#FFF", // Thay đổi màu chữ khi hover
+                  },
                 }}>
-                {progress}% Completed
-              </Typography>
-            )}
-          </Box>
+                Watch Lecture
+              </Button>
+              {hasStarted && (
+                <Typography
+                  variant="outlined"
+                  component="h2"
+                  // color="primary"
+                  sx={{
+                    color: "#23BD33",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    // width: "fit-content",
+                  }}>
+                  {progress}% Completed
+                </Typography>
+              )}
+            </Box>
+          </Link>
         </Card>
       </Box>
     </Link>

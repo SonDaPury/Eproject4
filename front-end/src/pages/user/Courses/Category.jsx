@@ -199,7 +199,7 @@ const Category = () => {
           <FilterPanel
             isShowFilter={isShowFilter}
             topics={topics}
-            handleClickFilter={handleClickFilter}
+            handleClickFilter2={handleClickFilter}
             handleSearchResults={handleSearchResults}
           />
         </div>

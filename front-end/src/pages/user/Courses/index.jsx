@@ -22,8 +22,7 @@ function Courses() {
     const fetchData = async () => {
       try {
         const res = await getDataHome2();
-        console.log(res.data);
-        setAllCourses(res.data);
+        setAllCourses(res?.data);
       } catch (err) {
         console.error("Error fetching courses:", err);
       }

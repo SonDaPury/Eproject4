@@ -58,7 +58,7 @@ function Home() {
     const fetchData = async () => {
       try {
         const res = await getDataHome();
-        setAllCourses(res.data);
+        setAllCourses(res?.data);
       } catch (err) {
         console.error("Error fetching courses:", err);
       }
@@ -66,8 +66,8 @@ function Home() {
     fetchData();
   }, []);
   useEffect(() => {
-    setcourses(Allcourses.slice(0, 10));
-    setcouresFive(Allcourses.slice(0, 5));
+    setcourses(Allcourses?.slice(0, 10));
+    setcouresFive(Allcourses?.slice(0, 5));
   }, [Allcourses]);
 
   const handleViewAllClick = () => {
@@ -102,7 +102,7 @@ function Home() {
           navigation={true}
           modules={[Pagination, Navigation]}
           className="mySwiper">
-          {courses.map((course, index) => (
+          {courses?.map((course, index) => (
             <SwiperSlide key={index}>
               <Box
                 sx={{
@@ -246,7 +246,7 @@ function Home() {
                 },
               }}
               className="mySwiper w-[90%]">
-              {courses.map((course) => (
+              {courses?.map((course) => (
                 <SwiperSlide
                   key={course.id}
                   style={{
@@ -308,7 +308,7 @@ function Home() {
               title={section.title}
               courses={section.courses}
               index={index}
-              showViewAllButton={section.courses.length == 5}
+              showViewAllButton={section?.courses?.length == 5}
               onViewAll={handleViewAllClick}
             />
           ))}

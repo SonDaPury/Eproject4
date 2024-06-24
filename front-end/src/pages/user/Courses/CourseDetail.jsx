@@ -37,7 +37,7 @@ import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import {
   getAllCourses,
   getCourseById,
-  CourseOrder
+  CourseOrder,
 } from "@eproject4/services/courses.service";
 import { getAllTopics, getTopicById } from "@eproject4/services/topic.service";
 import {
@@ -117,10 +117,14 @@ const CourseDetail = () => {
   const { getOrderforFreeAction } = getOrderforFree();
   const { showSnackbar } = useCustomSnackbar();
   const { getAllOrderAction } = getAllOrder();
-  const {CheckCourseOrder} = CourseOrder();
+  const { CheckCourseOrder } = CourseOrder();
+  const user = getUser();
+
   const { getAllFavoriteAction } = getAllFavorite();
   const { addFavoriteSourceAction } = AddFavoriteSource();
   const { DeleteFavoriteSourceAction } = deleteFavoriteSource();
+
+  const [isInCart, setIsInCart] = useState(false); // Trạng thái đã thêm vào giỏ hàng
 
   // const [orderData, SetOrderData] = useParams();
   const { category, title, id } = useParams();
@@ -129,7 +133,15 @@ const CourseDetail = () => {
   const isEnrolled =
     useSelector((state) => state.enrollment.enrolledCourses[id]?.isEnrolled) ||
     false;
+
+  console.log(isEnrolled);
   const [courseData, SetcourseData] = useState([]);
+
+  // Lấy danh sách các khóa học đã đăng ký từ Redux store
+  const enrollments = useSelector((state) => state.enrollment.enrolledCourses);
+  console.log("enrollments:", enrollments);
+
+  console.log(courseData);
   const [courseDetail, setCourseDetail] = useState(null); // Đối tượng để lưu chi tiết khóa học
 
   const navigate = useNavigate(); // Khởi tạo useNavigate
@@ -142,6 +154,7 @@ const CourseDetail = () => {
 
   const dispatch = useDispatch();
   const favorites = useSelector(favoriteSelector);
+  console.log("favorites", favorites);
 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -196,13 +209,13 @@ const CourseDetail = () => {
     setValue(newValue);
   };
   //Check Course
-  const CheckCourseIsOrder = async() =>{
+  const CheckCourseIsOrder = async () => {
     const user = getUser();
-      console.log("Course", courseData);
-      const res = await CheckCourseOrder(user.id,id);
-      console.log("OrderCheck",res);
-      setCheckCourse(res.data)
-  }
+    console.log("Course", courseData);
+    const res = await CheckCourseOrder(user.id, id);
+    console.log("OrderCheck", res);
+    setCheckCourse(res.data);
+  };
   //Get all Favorite
 
   useEffect(() => {
@@ -251,6 +264,7 @@ const CourseDetail = () => {
       }
     }
   };
+
   // Get Course by Id
   useEffect(() => {
     const fetchCourseDetailData = async () => {
@@ -316,11 +330,11 @@ const CourseDetail = () => {
   // Fetch favorite status
   useEffect(() => {
     const fetchFavoriteStatus = async () => {
-      if (!courseDetail?.userId) {
+      if (!user.id) {
         return;
       }
       try {
-        const res = await addFavoriteSourceAction(courseDetail.userId, id);
+        const res = await addFavoriteSourceAction(user.id, id);
 
         if (res.status === 200 && res.data) {
           const isFavorite = res.data.isFavorite; // Giả sử isFavorite là boolean
@@ -353,7 +367,7 @@ const CourseDetail = () => {
   const handleAddFavorite = async () => {
     if (isFavorited) return;
     try {
-      const res = await addFavoriteSourceAction(courseDetail.userId, id);
+      const res = await addFavoriteSourceAction(user.id, id);
       if (res.status !== 200) {
         throw new Error(res.data.message || "Failed to add favorite");
       }
@@ -422,15 +436,18 @@ const CourseDetail = () => {
         console.error("Error checking enrollment status:", error);
       }
     };
-    if (courseData?.userId && isInitialLoad) {
+    if (courseData.userId && isInitialLoad) {
       checkEnrollmentStatus();
       setIsInitialLoad(false);
     }
   }, [id, dispatch, isInitialLoad]);
 
-  const handleRegisterClick = () => {
+  const handleRegisterClick = async () => {
     if (isEnrolled) {
       navigate(`/watch-course/${title}/${id}/`);
+    } else if (courseData.price > 0) {
+      await handleAddCart();
+      navigate("/checkoutCart");
     } else {
       setIsModalOpen(true);
     }
@@ -442,7 +459,6 @@ const CourseDetail = () => {
       if (res.status === 200) {
         dispatch(addEnrollment({ userId: courseData.userId, courseId: id }));
         dispatch(setEnrollmentStatus({ courseId: id, isEnrolled: true }));
-        navigate(`/watch-course/${title}/${id}`);
       }
     } catch (error) {
       console.error("Error enrolling in course:", error);
@@ -556,8 +572,7 @@ const CourseDetail = () => {
                 sx={{ width: "835px", height: "471px", objectFit: "cover" }}
                 component="video"
                 controls
-                src={courseData.videoIntro} // Thay thế 'your-video-url.mp4' bằng URL của video bạn muốn hiển thị
-              >
+                src={courseData.videoIntro}>
                 Your browser does not support the video tag.
               </CardMedia>
               <Box sx={{ width: "100%", marginTop: "40px" }}>
@@ -763,16 +778,28 @@ const CourseDetail = () => {
                   {/* Hiển thị nút nếu courseData.price khác 0 */}
                   {courseData.price !== 0 && !checkCourse && (
                     <ButtonCustomize
-                      text="Thêm vào giỏ hàng"
+                      text={
+                        isInCart ? "Chuyển đến giỏ hàng" : "Thêm vào giỏ hàng"
+                      }
                       width="100%"
                       height="56px"
                       sx={{ marginBottom: "15px" }}
-                      onClick={handleAddCart}
+                      onClick={
+                        isInCart
+                          ? () => navigate("/checkoutCart")
+                          : handleAddCart
+                      }
                     />
                   )}
                   <>
                     <ButtonCustomize
-                      text={isEnrolled ? "Chuyển đến khóa học" : "Đăng Ký Ngay"}
+                      text={
+                        isEnrolled
+                          ? "Chuyển đến khóa học"
+                          : courseData.price > 0
+                            ? "Mua khóa học"
+                            : "Đăng Ký Ngay"
+                      }
                       width="100%"
                       height="56px"
                       backgroundColor="#FFEEE8"
@@ -811,9 +838,8 @@ const CourseDetail = () => {
                           }}>
                           <Button
                             onClick={handleConfirmEnroll}
-                            sx={{ mt: 2 }}
-                            variant="contained"
-                            color="primary">
+                            sx={{ mt: 2, color: "#FFF" }}
+                            variant="contained">
                             Xác nhận
                           </Button>
                           <Button

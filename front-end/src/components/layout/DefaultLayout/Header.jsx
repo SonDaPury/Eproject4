@@ -21,7 +21,7 @@ import { getToken } from "@eproject4/helpers/authHelper";
 import { logout } from "@eproject4/services/auth";
 import { cartServices } from "@eproject4/services/cart.service";
 import { getUser } from "@eproject4/helpers/authHelper";
-import { useDispatch,useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { cartSelector } from "@eproject4/redux/selectors";
 import { setShoppingCartRender } from "@eproject4/redux/slices/orderSlide";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +43,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 function Header() {
   const navigate = useNavigate();
 
-  const {GetCardByUserID} = cartServices();
+  const { GetCardByUserID } = cartServices();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [number, setNumber] = useState("");
@@ -54,18 +54,22 @@ function Header() {
   const course = useSelector(cartSelector);
 
   useEffect(() => {
-      const fetchapi = async() =>{
-        var checkUser =  getUser();
-        if(checkUser == null){
-          navigate("/dang-nhap")
-        }
-       const res = await GetCardByUserID(checkUser.id);
-       console.log("HEADER",res);
-       setNumber(res && res.data && res.data.length > 0 && res.data[0].sources ? res.data[0].sources.length : 0);
+    const fetchapi = async () => {
+      var checkUser = getUser();
+      if (checkUser == null) {
+        navigate("/dang-nhap");
       }
-      fetchapi();
-      dispatch(setShoppingCartRender({status:false}));
-  }, [course])
+      const res = await GetCardByUserID(checkUser.id);
+      console.log("HEADER", res);
+      setNumber(
+        res && res.data && res.data.length > 0 && res.data[0].sources
+          ? res.data[0].sources.length
+          : 0
+      );
+    };
+    fetchapi();
+    dispatch(setShoppingCartRender({ status: false }));
+  }, [course]);
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -87,7 +91,7 @@ function Header() {
 
   const handleClickShopping = () => {
     navigate("/checkoutCart");
-  }
+  };
   return (
     <Box>
       <AppBar
@@ -223,15 +227,20 @@ function Header() {
                 <button className="mr-[10px]">
                   <FavoriteBorderIcon sx={{ color: "#FFFFFF" }} />
                 </button>
-                <IconButton sx={{ color: "#FFFFFF" }} aria-label="cart" onClick={handleClickShopping}>
-                  <StyledBadge badgeContent={number == "" ? '0' : number} color="secondary" >
+                <IconButton
+                  sx={{ color: "#FFFFFF" }}
+                  aria-label="cart"
+                  onClick={handleClickShopping}>
+                  <StyledBadge
+                    badgeContent={number == "" ? "0" : number}
+                    color="secondary">
                     <ShoppingCartIcon />
                   </StyledBadge>
                 </IconButton>
               </Box>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  <Avatar alt="Remy Sharp" src="https://haycafe.vn/wp-content/uploads/2022/02/Avatar-trang.jpg" />
                 </IconButton>
               </Tooltip>
               <Menu
