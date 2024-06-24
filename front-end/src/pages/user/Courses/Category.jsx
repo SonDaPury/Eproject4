@@ -146,6 +146,7 @@ const Category = () => {
 
   // Xác định dữ liệu hiển thị (tìm kiếm hoặc dữ liệu đã lọc)
   const displayData = searchResults.length > 0 ? searchResults : filteredData;
+  console.log(displayData);
   const paginatedData = displayData
     .slice((pageIndex - 1) * pageSize, pageIndex * pageSize)
     .filter((item) => item.source.status === 1);

@@ -48,7 +48,7 @@ const instructors = [
     name: "Đăng Tây",
     role: "Web Development Instructor",
     image:
-      "https://scontent.fhan5-10.fna.fbcdn.net/v/t39.30808-6/241521873_1136720363525352_608366653185968406_n.jpg?_nc_cat=111&_nc_cb=99be929b-2300bf0b&ccb=1-7&_nc_sid=5f2048&_nc_ohc=5jZD8_46RccQ7kNvgGWfDFx&_nc_ht=scontent.fhan5-10.fna&oh=00_AYAsJP3VbDxSCYOBN1YApgwj2kI_rPQ2C-A_PyZpJNb3Ug&oe=665B4CC0",
+      "https://scontent.fhan2-3.fna.fbcdn.net/v/t39.30808-6/241521873_1136720363525352_608366653185968406_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=833d8c&_nc_ohc=h0b0-bsLVtgQ7kNvgGmxRKi&_nc_ht=scontent.fhan2-3.fna&oh=00_AYBjubvOIcNQUmq9bQ5boIhSBogSz6W-Xcx0gW55vAGcXA&oe=66806F00",
     social: {
       facebook: "#",
       twitter: "#",
@@ -57,7 +57,7 @@ const instructors = [
   },
   {
     name: "Xuân Sơn",
-    role: "Mobile Development Instructor",
+    role: "Game Development Instructor",
     image:
       "https://scontent.fhan5-6.fna.fbcdn.net/v/t1.6435-9/133623750_1112261565874253_7020905658337468863_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=5f2048&_nc_ohc=YR2spQJJ5nwQ7kNvgH59kjx&_nc_ht=scontent.fhan5-6.fna&oh=00_AYAF2YEBYwYK0XG6tfmxxCM62rpNp3noFv4wxedfKQQRJw&oe=667D08D1",
     social: {
@@ -70,7 +70,7 @@ const instructors = [
     name: "Đạt 09",
     role: "Backend Learning Instructor",
     image:
-      "https://scontent.fhan5-10.fna.fbcdn.net/v/t39.30808-6/297492400_1073112033568717_689076714172404748_n.jpg?_nc_cat=111&_nc_cb=99be929b-2300bf0b&ccb=1-7&_nc_sid=5f2048&_nc_ohc=CEWUS5HA-64Q7kNvgEB41jK&_nc_ht=scontent.fhan5-10.fna&oh=00_AYAAkdYwtGNp6KyDzpdOkG38_qBIsHotVdijwwXThGrVzw&oe=665B5FCE",
+      "https://scontent.fhan2-3.fna.fbcdn.net/v/t39.30808-6/297492400_1073112033568717_689076714172404748_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=833d8c&_nc_ohc=osfqvBhdIzgQ7kNvgHRmMLb&_nc_ht=scontent.fhan2-3.fna&oh=00_AYBvXrOynbdvnoI4cdJOQzHlZccPB7lhZZkeKGw9vdHZsw&oe=6680820E",
     social: {
       facebook: "#",
       twitter: "#",
@@ -80,7 +80,8 @@ const instructors = [
   {
     name: "Đăng Gay",
     role: "Data Science Instructor",
-    image: "https://photo.znews.vn/w660/Uploaded/unvjuas/2020_05_15/EYBgoZdUwAAslBr.jpg",
+    image:
+      "https://photo.znews.vn/w660/Uploaded/unvjuas/2020_05_15/EYBgoZdUwAAslBr.jpg",
     social: {
       facebook: "#",
       twitter: "#",
@@ -221,7 +222,7 @@ const About = () => {
                 <Typography variant="body1" paragraph>
                   {review.text}
                 </Typography>
-                <Typography variant="body2" color="textSecondary" >
+                <Typography variant="body2" color="textSecondary">
                   {review.name}
                 </Typography>
               </Box>

@@ -1,6 +1,6 @@
 import { Grid, Box, Typography, Card, Button, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import CardCourse from "@eproject4/components/CardCourse";
 import seedData from "@eproject4/utils/seedData";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -20,9 +20,9 @@ import { getAllCourses } from "@eproject4/services/courses.service";
 function Home() {
   const navigate = useNavigate();
   const { getDataHome } = getAllCourses();
-  const [Allcourses,setAllCourses] = useState([]);
-  const [courses,setcourses] = useState([]);
-  const [couresFive,setcouresFive] = useState([]);
+  const [Allcourses, setAllCourses] = useState([]);
+  const [courses, setcourses] = useState([]);
+  const [couresFive, setcouresFive] = useState([]);
 
   // const courses = Allcourses.slice(0, 10);
   // const couresFive = Allcourses.slice(0, 5);
@@ -31,7 +31,7 @@ function Home() {
   const [dataToShow, setDataToShow] = useState([]);
 
   const handleCourseClick = (category, title, id) => {
-    const formattedTitle = title.replace(/\s+/g, '-').toLowerCase();
+    const formattedTitle = title.replace(/\s+/g, "-").toLowerCase();
     navigate(`/course-detail/${category}/${formattedTitle}/${id}`);
   };
   const handleChangesearch = (e) => {
@@ -60,19 +60,19 @@ function Home() {
         const res = await getDataHome();
         setAllCourses(res.data);
       } catch (err) {
-        console.error('Error fetching courses:', err);
+        console.error("Error fetching courses:", err);
       }
     };
     fetchData();
   }, []);
   useEffect(() => {
-     setcourses(Allcourses.slice(0,10));
-     setcouresFive(Allcourses.slice(0,5))
-  },[Allcourses])
+    setcourses(Allcourses.slice(0, 10));
+    setcouresFive(Allcourses.slice(0, 5));
+  }, [Allcourses]);
 
   const handleViewAllClick = () => {
     // Xử lý logic khi nút "Xem tất cả" được click
-    navigate("/khoa-hoc")
+    navigate("/khoa-hoc");
     // Ví dụ: có thể navigate tới trang khác, gọi API, thay đổi state, etc.
   };
   const sections = [
@@ -102,7 +102,7 @@ function Home() {
           navigation={true}
           modules={[Pagination, Navigation]}
           className="mySwiper">
-          {courses.map((course,index) => (
+          {courses.map((course, index) => (
             <SwiperSlide key={index}>
               <Box
                 sx={{
@@ -176,32 +176,38 @@ function Home() {
             <SearchIcon className="absolute left-3 top-[70%] transform -translate-y-1/2 text-gray-600" />
           </div>
           <div>
-      {dataToShow && dataToShow.length > 0 && (
-        <div className="results">
-          {dataToShow.map((item) => (
-            item.subTopic.map((sub) => (
-              sub.sources.map((source) => (
-                <div 
-                  key={source.id} 
-                  className="result-item"
-                  onClick={() => handleCourseClick(item.topicName, source.title.input[0], source.id)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img 
-                    src={source.thumbnail} 
-                    alt={source.title.input[0]} 
-                    className="thumbnail" 
-                  />
-                  <span className="title">{source.title.input[0]}</span>
-                  <span className="price">{source.price === 0 ? "Miễn phí" : `$${source.price}`}</span>
-                </div>
-              ))
-            ))
-          ))}
-        </div>
-      )}
-    </div>
-
+            {dataToShow && dataToShow.length > 0 && (
+              <div className="results">
+                {dataToShow.map((item) =>
+                  item.subTopic.map((sub) =>
+                    sub.sources.map((source) => (
+                      <div
+                        key={source.id}
+                        className="result-item"
+                        onClick={() =>
+                          handleCourseClick(
+                            item.topicName,
+                            source.title.input[0],
+                            source.id
+                          )
+                        }
+                        style={{ cursor: "pointer" }}>
+                        <img
+                          src={source.thumbnail}
+                          alt={source.title.input[0]}
+                          className="thumbnail"
+                        />
+                        <span className="title">{source.title.input[0]}</span>
+                        <span className="price">
+                          {source.price === 0 ? "Miễn phí" : `$${source.price}`}
+                        </span>
+                      </div>
+                    ))
+                  )
+                )}
+              </div>
+            )}
+          </div>
         </Box>
         {/* Danh Muc */}
         <Box className="text-center pt-[30px] ">
