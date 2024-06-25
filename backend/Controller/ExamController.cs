@@ -179,5 +179,24 @@ namespace backend.Controller
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpPost("{examId}/calculatescore")]
+        public async Task<IActionResult> CalculateScore(int examId, [FromBody] List<UserAnswer> userAnswers)
+        {
+            if (userAnswers == null || userAnswers.Count == 0)
+            {
+                return BadRequest("User answers are required.");
+            }
+
+            try
+            {
+                int score = await _examService.CalculateScore(userAnswers, examId);
+                return Ok(new { Score = score });
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions as needed
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }
