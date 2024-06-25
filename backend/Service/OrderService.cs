@@ -14,12 +14,14 @@ namespace backend.Service
         private LMSContext _context;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IimageServices _imageServices;
 
-        public OrderService(LMSContext context, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public OrderService(LMSContext context, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IimageServices imageServices)
         {
             _context = context;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
+            _imageServices = imageServices;
         }
         public async Task<object> CreateOrder(CreateOrder Order)
         {
@@ -133,7 +135,7 @@ namespace backend.Service
         {
             var result = (from order in _context.Orders
                           join source in _context.Sources on order.SouresID equals source.Id
-                          group new { order, source } by new { order.SouresID, source.Title, source.Price } into grouped
+                          group new { order, source } by new { order.SouresID, source.Title, source.Price ,source.Thumbnail,source.Description } into grouped
                           select new
                           {
                               SouresID = grouped.Key.SouresID,
@@ -141,7 +143,9 @@ namespace backend.Service
                               TotalOrders = grouped.Count(),
                               SourceTitle = grouped.Key.Title,
                               SourcePrice = grouped.Key.Price,
-                              Orders = grouped.Select(x => x.order).ToList()
+                              Orders = grouped.Select(x => x.order).ToList(),
+                              Thumbbnail = _imageServices.GetFile( grouped.Key.Thumbnail) ,
+                              Description = grouped.Key.Description
                           })
                     .OrderByDescending(x => x.TotalPrice)
                     .ToList();
