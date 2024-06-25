@@ -358,7 +358,7 @@ namespace backend.Service
         }
 
         //tính điểm theo % nếu mỗi câu hỏi có 1 đáp án đúng
-        public async Task<int> CalculateScore(List<UserAnswer> userAnswers, int examId)
+        public async Task<(ExamAnswerDto,dynamic)> CalculateScore(List<UserAnswer> userAnswers, int examId)
         {
 
             // Lấy tất cả câu hỏi và câu trả lời đúng cho kỳ thi này
@@ -382,8 +382,45 @@ namespace backend.Service
                 }
             }
             //return 100;
+            int incorrectAnswers = totalQuestions - correctAnswers;
             var score = (double)correctAnswers / totalQuestions * 100;
-            return (int)score;
+            var examAnswer = new ExamAnswerDto()
+            {
+                score = (int)score,
+                correctAnswer = correctAnswers,
+                inCorrectAnswer = incorrectAnswers
+            };
+            var examDetail = await GetDetails(examId);
+            return (examAnswer, examDetail);
+        }
+        private async Task<dynamic> GetDetails(int examId)
+        {
+            var exam = await _context.Exams
+                .Include(e => e.Serials)
+                .Where(e => e.Id == examId)
+                .Select(e => new
+                {
+                    e.Id,
+                    e.Title,
+                    e.TimeLimit,
+                    e.Serials.FirstOrDefault().Index,
+                    LessonId = e.Serials.FirstOrDefault().LessonId,
+                    ChapterId = _context.Lessons
+                            .Where(l => l.Id == e.Serials.FirstOrDefault().LessonId)
+                            .Select(l => l.ChapterId)
+                            .FirstOrDefault(),
+                    Questions = e.QuizQuestions.Select(qq => new
+                    {
+                        QuestionID = qq.QuestionId,
+                        QuestionText = qq.Question.Content,
+                        Options = qq.Question.Options.Select(o => new { o.Id, o.Answer, o.IsCorrect })
+                    })
+                })
+                .FirstOrDefaultAsync();
+           
+            if (exam == null) throw new NotFoundException($"exam not found with id : {examId} ");
+
+            return (exam);
         }
 
         //tính điểm nếu câu hỏi có nhiều đáp án đúng

@@ -22,7 +22,7 @@ namespace backend.Service
             return answer;
         }
 
-        public async Task<(List<Answer>,int)> GetAllAsync(Pagination pagination)
+        public async Task<(List<Answer>, int)> GetAllAsync(Pagination pagination)
         {
             var answers = await _context.Answers
                 //.Include(a => a.Exam)
@@ -71,6 +71,28 @@ namespace backend.Service
         public async Task<List<Answer>> GetAllAsync()
         {
             return await _context.Answers.ToListAsync();
+        }
+        public async Task<object> GetAllByUserIdAndExamId(int userId, int examId)
+        {
+
+            var result = await (from answer in _context.Answers
+                                join attemp in _context.Attemps
+                                on answer.AttemptId equals attemp.Id
+                                where answer.UserId == userId && answer.ExamId == examId
+                                orderby attemp.Index
+                                select new 
+                                {
+                                    AnswerId = answer.Id,
+                                    Total = answer.Total,
+                                    ExamId = answer.ExamId,
+                                    UserId = answer.UserId,
+                                    AttemptId = answer.AttemptId,
+                                    Index = attemp.Index,
+                                    TimeTaken = attemp.TimeTaken
+                                }).ToListAsync();
+
+            return result;
+
         }
     }
 
