@@ -8,10 +8,6 @@ using backend.Service.Interface;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Timers;
-using Microsoft.Extensions.Options;
 
 namespace backend.Service
 {
@@ -144,7 +140,7 @@ namespace backend.Service
         {
             var exams = await _context.Exams
                 .Include(e => e.Serials)
-                //.Include(e => e.)
+                 //.Include(e => e.)
                  .Select(e => new ExamWithLessonId
                  {
                      Id = e.Id,
