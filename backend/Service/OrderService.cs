@@ -6,6 +6,8 @@ using static Nest.JoinField;
 using System.Xml;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
+using backend.Base;
 
 namespace backend.Service
 {
@@ -149,6 +151,29 @@ namespace backend.Service
                           })
                     .OrderByDescending(x => x.TotalPrice)
                     .ToList();
+
+            return result;
+        }
+        public async Task<object> GetAllOrderPagination(int PageIndex = 1, int PageSize = 10)
+        {
+            var result =await (from order in _context.Orders
+                          join source in _context.Sources on order.SouresID equals source.Id
+                          group new { order, source } by new { order.SouresID, source.Title, source.Price, source.Thumbnail, source.Description } into grouped
+                          select new
+                          {
+                              SouresID = grouped.Key.SouresID,
+                              TotalPrice = grouped.Sum(x => x.order.TotalPrice),
+                              TotalOrders = grouped.Count(),
+                              SourceTitle = grouped.Key.Title,
+                              SourcePrice = grouped.Key.Price,
+                              Orders = grouped.Select(x => x.order).ToList(),
+                              Thumbbnail = _imageServices.GetFile(grouped.Key.Thumbnail),
+                              Description = grouped.Key.Description
+                          })
+                    .OrderByDescending(x => x.TotalPrice)
+                    .Skip(PageSize*(PageIndex -1))
+                    .Take(PageSize)
+                    .ToListAsync();
 
             return result;
         }

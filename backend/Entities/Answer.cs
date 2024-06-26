@@ -22,6 +22,12 @@ namespace backend.Entities
 
         [Column("attempt_id")]
         public int? AttemptId { get; set; }
+        [Column("correct_answer")]
+        public int? CorrectAnswer {  get; set; }
+        [Column("incorrect_answer")]
+        public int? IncorrectAnswer { get; set; }
+        [Column("create_at")]
+        public DateTime? CreateAt { get; set; }
 
         public virtual Exam? Exam { get; set; }
         public virtual User? User { get; set; }

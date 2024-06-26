@@ -14,7 +14,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [JwtAuthorize("user","admin")]
+    //[JwtAuthorize("user","admin")]
     public class AnswerController : ControllerBase
     {
         private readonly IAnswerService _answerService;
@@ -80,13 +80,13 @@ namespace backend.Controller
         }
 
         [HttpGet()]
-        public async Task<ActionResult<IEnumerable<AnswerDto>>> GetAllAnswers()
+        public async Task<IActionResult> GetAllAnswers()
         {
             try
             {
                 var answers = await _answerService.GetAllAsync();
-                var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
-                return Ok(answerDtos);
+                //var answerDtos = _mapper.Map<List<AnswerDto>>(answers);
+                return Ok(answers);
             }
             catch (ArgumentException ex)
             {
@@ -99,12 +99,12 @@ namespace backend.Controller
         public async Task<ActionResult<AnswerDto>> GetAnswer(int id)
         {
             var answer = await _answerService.GetByIdAsync(id);
-            if (answer == null)
+            if (answer.Item1 == null)
             {
                 return NotFound(new { message = $"Answer with ID {id} not found." });
             }
-            var answerDto = _mapper.Map<AnswerDto>(answer);
-            return Ok(answerDto);
+            var answerDto = _mapper.Map<AnswerDto>(answer.Item1);
+            return Ok(new { Answer = answerDto, Exam = answer.Item2 });
         }
 
         // PUT: api/Answers/5
