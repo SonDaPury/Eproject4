@@ -18,10 +18,6 @@ function CreateCourse() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  // const handleCreateCourse = (data) => {
-  //   setAdvanceInfo(data);
-  // };
-
   return (
     <Box
       sx={{
