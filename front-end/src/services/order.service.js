@@ -47,3 +47,23 @@ export const getAllOrder = () => {
 
   return { getAllOrderAction };
 };
+export const getAllOrdersPag = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const getAllOrdersPagAction = async (pageIndex, pageSize) => {
+    try {
+      const res = await callApi(
+        `/Order/get-all-order-pagination?PageIndex=${pageIndex}&PageSize=${pageSize}`,
+        "get",
+        null,
+        null,
+        false
+      );
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { getAllOrdersPagAction };
+};

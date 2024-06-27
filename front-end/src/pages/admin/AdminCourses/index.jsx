@@ -110,7 +110,7 @@ function AdminCourses() {
       </Box>
       <Pagination
         count={Math.ceil(Number(dataCourses?.totalCount) / Number(pageSize))}
-        sx={{ width: "368px", marginX: "auto", marginTop: "25px" }}
+        sx={{ width: "100%", marginX: "auto", marginTop: "25px" }}
         onChange={handleChangePagination}
         page={pageIndex}
       />

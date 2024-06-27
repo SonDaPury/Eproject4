@@ -52,10 +52,15 @@ import {
   setInitialFavorites,
 } from "@eproject4/redux/slices/favoriteSlice";
 import { favoriteSelector } from "@eproject4/redux/selectors";
-import { getOrderforFree } from "@eproject4/services/order.service";
+// import SourceDetail from "@eproject4/components/SourceDetail";
+import {
+  getAllOrder,
+  getOrderforFree,
+} from "@eproject4/services/order.service";
 import {
   addEnrollment,
   setEnrollmentStatus,
+  setInitialEnrollments,
 } from "@eproject4/redux/slices/enrollmentSlice";
 
 // Tabs
@@ -104,6 +109,7 @@ const CourseDetail = () => {
   const { getAllTopicsAction } = getAllTopics();
   const { getTopicByIdAction } = getTopicById();
   const { getOrderforFreeAction } = getOrderforFree();
+  const { getAllOrderAction } = getAllOrder();
 
   const { getAllFavoriteAction } = getAllFavorite();
   const { addFavoriteSourceAction } = AddFavoriteSource();
@@ -113,9 +119,9 @@ const CourseDetail = () => {
   // const [orderData, SetOrderData] = useParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isEnrolled = useSelector(
-    (state) => state.enrollment.enrolledCourses[id]
-  );
+  const isEnrolled =
+    useSelector((state) => state.enrollment.enrolledCourses[id]?.isEnrolled) ||
+    false;
   const [courseData, SetcourseData] = useState([]);
   const [courseDetail, setCourseDetail] = useState(null); // Đối tượng để lưu chi tiết khóa học
 
@@ -129,6 +135,8 @@ const CourseDetail = () => {
 
   const dispatch = useDispatch();
   const favorites = useSelector(favoriteSelector);
+
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [subTopicName, setSubTopicName] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -340,22 +348,40 @@ const CourseDetail = () => {
   //Order Data Check
 
   useEffect(() => {
+    const fetchAllOrders = async () => {
+      try {
+        const res = await getAllOrderAction();
+        if (res.status === 200) {
+          dispatch(setInitialEnrollments(res.data));
+        } else {
+          console.error("Failed to fetch all orders:", res);
+        }
+      } catch (error) {
+        console.error("Error fetching all orders:", error);
+      }
+    };
+
+    fetchAllOrders();
+  }, [dispatch]);
+
+  useEffect(() => {
     const checkEnrollmentStatus = async () => {
       try {
-        //const courseId = parseInt(id, 10); // Chuyển đổi id sang số nguyên
         const res = await getOrderforFreeAction(courseData.userId, id);
-
-        if (res.data.status) {
+        if (res.data && res.data.status) {
           dispatch(setEnrollmentStatus({ courseId: id, isEnrolled: true }));
+        } else {
+          dispatch(setEnrollmentStatus({ courseId: id, isEnrolled: false }));
         }
       } catch (error) {
         console.error("Error checking enrollment status:", error);
       }
     };
-    if (courseData?.userId) {
+    if (courseData?.userId && isInitialLoad) {
       checkEnrollmentStatus();
+      setIsInitialLoad(false);
     }
-  }, [courseData?.userId, id, dispatch]);
+  }, [id, dispatch, isInitialLoad]);
 
   const handleRegisterClick = () => {
     if (isEnrolled) {
@@ -509,6 +535,7 @@ const CourseDetail = () => {
                       fontSize: "14px",
                       fontWeight: 400,
                       paddingTop: "20px",
+                      maxWidth: "872px",
                     }}
                     dangerouslySetInnerHTML={{ __html: cleanDescription }}
                   />
@@ -731,19 +758,25 @@ const CourseDetail = () => {
                         <Typography id="modal-modal-description" sx={{ mt: 2 }}>
                           Bạn có chắc chắn muốn đăng ký khóa học này không?
                         </Typography>
-                        <Button
-                          onClick={handleConfirmEnroll}
-                          sx={{ mt: 2 }}
-                          variant="contained"
-                          color="primary">
-                          Xác nhận
-                        </Button>
-                        <Button
-                          onClick={() => setIsModalOpen(false)}
-                          sx={{ mt: 2 }}
-                          variant="outlined">
-                          Hủy
-                        </Button>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}>
+                          <Button
+                            onClick={handleConfirmEnroll}
+                            sx={{ mt: 2 }}
+                            variant="contained"
+                            color="primary">
+                            Xác nhận
+                          </Button>
+                          <Button
+                            onClick={() => setIsModalOpen(false)}
+                            sx={{ mt: 2 }}
+                            variant="outlined">
+                            Hủy
+                          </Button>
+                        </Box>
                       </Box>
                     </Modal>
                   </>
@@ -758,12 +791,18 @@ const CourseDetail = () => {
                     }
                     height="40px"
                     backgroundColor={isFavorited ? "#FF6636" : "#FFF"}
+                    color={isFavorited ? "#FFF" : "#4E5566"}
                     fontSize="10px"
                     sx={{
                       marginBottom: "15px",
-                      color: "#4E5566",
+                      // color: "#4E5566",
                       border: "1px solid",
                       width: "213px",
+                      "&:hover": {
+                        backgroundColor: isFavorited ? "#FF4A24" : "#F0F0F0",
+                        color: isFavorited ? "#FFF" : "#3C434A",
+                        borderColor: isFavorited ? "#FF4A24" : "#3C434A",
+                      },
                     }}
                   />
                   <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -984,8 +1023,8 @@ const CourseDetail = () => {
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
+                justifyContent: "flex-start",
+                alignItems: "flex-start",
                 gap: "25px",
                 flexWrap: "wrap",
               }}>

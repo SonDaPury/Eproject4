@@ -10,9 +10,10 @@ const ButtonCustomize = ({
   height = "40px",
   fontSize = "12px",
   backgroundColor = "main.primary",
+  color = "white",
   variant = "contained",
   sx = {},
-  navigateTo , // Thêm prop này để xác định URL điều hướng
+  navigateTo, // Thêm prop này để xác định URL điều hướng
 }) => {
   const navigate = useNavigate();
 
@@ -29,19 +30,19 @@ const ButtonCustomize = ({
       <Button
         variant={variant}
         sx={{
-          color: "white",
+          color: color,
           borderRadius: 0,
           boxShadow: "none",
           width: width,
           height: height,
           fontSize: fontSize,
           backgroundColor: backgroundColor,
+
           ...sx,
         }}
         onClick={handleClick}>
         {text}
       </Button>
-      
     </Box>
   );
 };

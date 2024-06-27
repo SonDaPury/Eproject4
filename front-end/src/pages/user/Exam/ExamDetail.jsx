@@ -185,6 +185,7 @@ function ExamDetail({ idExam }) {
   function invokeStartExam() {
     let examId = Number(idExam);
     const userId = user.id;
+    console.log(userId);
     connection.invoke("StartExam", examId, userId).catch((err) => {
       throw new Error(err.toString());
     });

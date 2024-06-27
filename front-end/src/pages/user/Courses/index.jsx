@@ -25,7 +25,7 @@ function Courses() {
         console.log(res.data);
         setAllCourses(res.data);
       } catch (err) {
-        console.error('Error fetching courses:', err);
+        console.error("Error fetching courses:", err);
       }
     };
     fetchData();
@@ -39,7 +39,7 @@ function Courses() {
   };
   const GetDataFormChild = (data) => {
     setAllCourses(data);
-  }
+  };
 
   return (
     <Box sx={{ marginTop: "56px" }}>
@@ -55,91 +55,107 @@ function Courses() {
         </div>
         <Box>
           {allCourses.length === 0 && (
-            <div style={{ textAlign: "center" }}>
-              Không có sản phẩm
-            </div>
+            <div style={{ textAlign: "center" }}>Không có sản phẩm</div>
           )}
 
-          {allCourses.length > 0 && allCourses.map((topic, index) => {
-            return (
-              <Box
-                key={index}
-                sx={{
-                  margin: "auto",
-                  backgroundColor: index % 2 === 0 ? "#F5F7FA" : "white",
-                }}>
+          {allCourses.length > 0 &&
+            allCourses.map((topic, index) => {
+              return (
                 <Box
+                  key={index}
                   sx={{
-                    [theme.breakpoints.up("lg")]: {
-                      maxWidth: "1080px",
-                    },
-                    [theme.breakpoints.up("xl")]: {
-                      maxWidth: "1320px",
-                    },
-                    [theme.breakpoints.up("md")]: {
-                      maxWidth: "800px",
-                    },
-                    [theme.breakpoints.up("sm")]: {
-                      maxWidth: "550px",
-                    },
-                    maxWidth: "1320px",
                     margin: "auto",
-                    paddingTop: "5px",
-                    paddingBottom: "40px",
+                    backgroundColor: index % 2 === 0 ? "#F5F7FA" : "white",
                   }}>
-                  <Typography
-                    variant="h4"
+                  <Box
                     sx={{
-                      textAlign: "center",
-                      fontWeight: 500,
-                      marginTop: "30px",
+                      [theme.breakpoints.up("lg")]: {
+                        maxWidth: "1080px",
+                      },
+                      [theme.breakpoints.up("xl")]: {
+                        maxWidth: "1320px",
+                      },
+                      [theme.breakpoints.up("md")]: {
+                        maxWidth: "800px",
+                      },
+                      [theme.breakpoints.up("sm")]: {
+                        maxWidth: "550px",
+                      },
+                      maxWidth: "1320px",
+                      margin: "auto",
+                      paddingTop: "5px",
+                      paddingBottom: "40px",
                     }}>
-                    {topic.topic}
-                  </Typography>
-                  <Box sx={{ marginTop: "30px", textAlign: "center" }}>
-                    <Swiper
-                      className="mb-[20px]"
-                      style={{
-                        "--swiper-pagination-color": "#626262",
-                        "--swiper-navigation-color": "#626262",
-                      }}
-                      modules={[Navigation]}
-                      navigation
-                      spaceBetween={10}
-                      slidesPerView={5}
-                      breakpoints={{
-                        300: {
-                          slidesPerView: 1,
-                        },
-                        768: {
-                          slidesPerView: 3,
-                        },
-                        1200: {
-                          slidesPerView: 5,
-                        },
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        textAlign: "center",
+                        fontWeight: 500,
+                        marginTop: "30px",
                       }}>
-                      {topic.courses.map((item, i) => (
-                        item.status == 1 && (
-                          <SwiperSlide key={i}>
-                            <CardCourse
-                              path={`/course-detail/${topic.topic}/${encodeURIComponent(item?.title)}/${item.id}`}
-                              title={item?.title}
-                              category={topic?.topic}
-                              price={item?.price === 0 ? "Miễn phí" : item?.price}
-                              image={item?.imageThumbnail ? item?.imageThumbnail : "https://bom.so/vV4j7x"}
-                            />
-                          </SwiperSlide>
-                        )
-                      ))}
-                    </Swiper>
-                    <ButtonCustomize text="Xem tất cả" navigateTo={`/category/${topic.topicName}`} />
+                      {topic.topic}
+                    </Typography>
+                    <Box sx={{ marginTop: "30px", textAlign: "center" }}>
+                      <Swiper
+                        className="mb-[20px]"
+                        style={{
+                          "--swiper-pagination-color": "#626262",
+                          "--swiper-navigation-color": "#626262",
+                        }}
+                        modules={[Navigation]}
+                        navigation
+                        spaceBetween={10}
+                        slidesPerView={5}
+                        breakpoints={{
+                          300: {
+                            slidesPerView: 1,
+                          },
+                          768: {
+                            slidesPerView: 3,
+                          },
+                          1200: {
+                            slidesPerView: 5,
+                          },
+                        }}>
+                        {topic.courses.map(
+                          (item, i) =>
+                            item.status == 1 && (
+                              <SwiperSlide key={i}>
+                                <CardCourse
+                                  path={`/course-detail/${topic.topic}/${encodeURIComponent(item?.title)}/${item.id}`}
+                                  title={item?.title}
+                                  category={topic?.topic}
+                                  price={
+                                    item?.price === 0 ? "Miễn phí" : item?.price
+                                  }
+                                  image={
+                                    item?.imageThumbnail
+                                      ? item?.imageThumbnail
+                                      : "https://bom.so/vV4j7x"
+                                  }
+                                />
+                              </SwiperSlide>
+                            )
+                        )}
+                      </Swiper>
+                      <ButtonCustomize
+                        backgroundColor="#FF6636"
+                        text="Xem tất cả"
+                        navigateTo={`/category/${topic.topic}`}
+                        sx={{
+                          "&:hover": {
+                            backgroundColor: "#FF4A24",
+
+                            // color: isFavorited ? "#FFF" : "#3C434A",
+                            // borderColor: isFavorited ? "#FF4A24" : "#3C434A",
+                          },
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
-            );
-          })}
-
-
+              );
+            })}
         </Box>
       </Box>
     </Box>
