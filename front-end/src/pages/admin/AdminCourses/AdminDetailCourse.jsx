@@ -1,8 +1,11 @@
-import { getCourseById } from "@eproject4/services/courses.service";
+import {
+  deleteCourse,
+  getCourseById,
+} from "@eproject4/services/courses.service";
 import { Button, Rating, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { getUser } from "@eproject4/helpers/authHelper";
@@ -19,6 +22,8 @@ import { getAllOrder } from "@eproject4/services/order.service";
 import { getChapterBySourceId } from "@eproject4/services/chapter.service";
 import { getAllLessionsByChapterId } from "@eproject4/services/lession.service";
 import { getAllExam } from "@eproject4/services/exam.service";
+import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar";
+import UpdateCourse from "./UpdateCourse";
 
 const ratings = [
   { label: "5", value: 67 },
@@ -43,6 +48,15 @@ function AdminDetailCourse() {
   const [lessonOfCourse, setLessonOfCourse] = useState([]);
   const { getAllExamAction } = getAllExam();
   const [examOfCourse, setExamOfCourse] = useState([]);
+  const { deleteCourseAction } = deleteCourse();
+  const navigate = useNavigate();
+  const { showSnackbar } = useCustomSnackbar();
+  const [openUpdateCourseModal, setOpenUpdateCourseModal] = useState(false);
+
+  const handleUpdateCourseModalOpen = () => {
+    setOpenUpdateCourseModal(true);
+  };
+  const handleUpdateCourseModalClose = () => setOpenUpdateCourseModal(false);
 
   useEffect(() => {
     const fetchChapterOfCourse = async () => {
@@ -177,6 +191,16 @@ function AdminDetailCourse() {
       icon: <VisibilityIcon sx={{ color: "#1D2026" }} />,
     },
   ];
+
+  const handleDeleteCourse = async (id) => {
+    await deleteCourseAction(id);
+    showSnackbar("Xóa khóa học thành công", "success");
+    navigate("/admin/khoa-hoc");
+  };
+
+  const handleOpenUpdateCourse = () => {
+    handleUpdateCourseModalOpen();
+  };
 
   return (
     <Box sx={{ paddingBottom: "15px" }}>
@@ -375,6 +399,22 @@ function AdminDetailCourse() {
           maxWidth: { lg: "1000px", xl: "1200px", sm: "800px" },
           marginX: "auto",
         }}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            handleDeleteCourse(idQuery);
+          }}
+          sx={{ marginRight: "10px" }}>
+          Xóa khóa học
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            handleOpenUpdateCourse();
+          }}
+          sx={{ marginRight: "10px" }}>
+          Cập nhật khóa học
+        </Button>
         <Link
           to={`/admin/khoa-hoc/${dataCourses.slug}/bai-hoc?id-course=${dataCourses.id}`}>
           <Button
@@ -384,6 +424,12 @@ function AdminDetailCourse() {
           </Button>
         </Link>
       </Box>
+
+      <UpdateCourse
+        openUpdateCourseModal={openUpdateCourseModal}
+        handleUpdateCourseModalClose={handleUpdateCourseModalClose}
+        idQuery={idQuery}
+      />
     </Box>
   );
 }

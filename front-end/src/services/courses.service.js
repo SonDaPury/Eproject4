@@ -179,3 +179,25 @@ export const getCourseById = () => {
 
   return { getCourseByIdAction };
 };
+
+// Delete source
+export const deleteCourse = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const deleteCourseAction = async (id) => {
+    try {
+      const res = await callApi(
+        `/Source/${id}`,
+        "delete",
+        null,
+        "Xóa khóa học thành công",
+        true
+      );
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { deleteCourseAction };
+};
