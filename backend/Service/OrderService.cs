@@ -165,7 +165,9 @@ namespace backend.Service
         {
             var result =await (from order in _context.Orders
                           join source in _context.Sources on order.SouresID equals source.Id
-                          group new { order, source } by new { order.SouresID, source.Title, source.Price, source.Thumbnail, source.Description } into grouped
+                          join subTopic in _context.SubTopics on source.SubTopicId equals subTopic.Id
+                          join topic in _context.Topics on subTopic.TopicId equals topic.Id
+                          group new { order, source} by new { order.SouresID, source.Title, source.Price, source.Thumbnail, source.Description , topic.TopicName} into grouped
                           select new
                           {
                               SouresID = grouped.Key.SouresID,
@@ -175,7 +177,8 @@ namespace backend.Service
                               SourcePrice = grouped.Key.Price,
                               Orders = grouped.Select(x => x.order).ToList(),
                               Thumbbnail = _imageServices.GetFile(grouped.Key.Thumbnail),
-                              Description = grouped.Key.Description
+                              Description = grouped.Key.Description,
+                              TopicName = grouped.Key.TopicName
                           })
                     .OrderByDescending(x => x.TotalPrice)
                     .Skip(PageSize*(PageIndex -1))
