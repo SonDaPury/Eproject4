@@ -62,6 +62,10 @@ import {
   setEnrollmentStatus,
   setInitialEnrollments,
 } from "@eproject4/redux/slices/enrollmentSlice";
+import { getUser } from "@eproject4/helpers/authHelper";
+import { cartServices } from "@eproject4/services/cart.service";
+import { setShoppingCartRender } from "@eproject4/redux/slices/orderSlide";
+import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar";
 
 // Tabs
 function CustomTabPanel(props) {
@@ -104,11 +108,13 @@ function a11yProps(index) {
 }
 
 const CourseDetail = () => {
+  const {addCart} = cartServices();
   const { getCourseByIdAction } = getCourseById();
   const { getCoursesAction } = getAllCourses();
   const { getAllTopicsAction } = getAllTopics();
   const { getTopicByIdAction } = getTopicById();
   const { getOrderforFreeAction } = getOrderforFree();
+  const { showSnackbar } = useCustomSnackbar();
   const { getAllOrderAction } = getAllOrder();
 
   const { getAllFavoriteAction } = getAllFavorite();
@@ -206,7 +212,33 @@ const CourseDetail = () => {
     };
     fetchFavoriteData();
   }, [dispatch]);
-
+ const handleAddCart = async () => {
+  //kiểm tra Login
+  var checkUser =  getUser();
+  if(checkUser == null){
+    navigate("/dang-nhap")
+  }
+  if (courseData && courseData.title && courseData.price && courseData.thumbnail) {
+    const data = {
+      "sourceName": courseData.title,
+      "price": courseData.price,
+      "userid": checkUser.id,
+      "sourceId": courseData.id == null ? 11 : courseData.id,
+      "username": checkUser.username,
+      "email": checkUser.email,
+      "Thumbnail": courseData.thumbnail
+    }
+    const res = await addCart(data);
+    console.log("test",res);
+    if(res.data.code == 200){
+      showSnackbar(res.data.mess, "success");
+      dispatch(setShoppingCartRender({status:true}));
+    }else{
+      showSnackbar(res.data.mess, "error");
+    }
+  };
+   
+ }
   // Get Course by Id
   useEffect(() => {
     const fetchCourseDetailData = async () => {
@@ -722,6 +754,7 @@ const CourseDetail = () => {
                       width="100%"
                       height="56px"
                       sx={{ marginBottom: "15px" }}
+                      onClick={handleAddCart}
                     />
                   )}
                   <>

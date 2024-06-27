@@ -12,13 +12,19 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { ReactComponent as LmsLogo } from "@eproject4/assets/images/logo.svg";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Badge, styled, SvgIcon } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import { getToken } from "@eproject4/helpers/authHelper";
 import { logout } from "@eproject4/services/auth";
+import { cartServices } from "@eproject4/services/cart.service";
+import { getUser } from "@eproject4/helpers/authHelper";
+import { useDispatch,useSelector } from "react-redux";
+import { cartSelector } from "@eproject4/redux/selectors";
+import { setShoppingCartRender } from "@eproject4/redux/slices/orderSlide";
+import { useNavigate } from "react-router-dom";
 
 const pages = [
   { text: "Khóa học", path: "/khoa-hoc" },
@@ -35,11 +41,31 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 function Header() {
+  const navigate = useNavigate();
+
+  const {GetCardByUserID} = cartServices();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [number, setNumber] = useState("");
   const token = getToken();
   const { logoutAction } = logout();
+  const dispatch = useDispatch();
 
+  const course = useSelector(cartSelector);
+
+  useEffect(() => {
+      const fetchapi = async() =>{
+        var checkUser =  getUser();
+        if(checkUser == null){
+          navigate("/dang-nhap")
+        }
+       const res = await GetCardByUserID(checkUser.id);
+       console.log("HEADER",res);
+       setNumber(res && res.data && res.data.length > 0 && res.data[0].sources ? res.data[0].sources.length : 0);
+      }
+      fetchapi();
+      dispatch(setShoppingCartRender({status:false}));
+  }, [course])
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -59,6 +85,9 @@ function Header() {
     await logoutAction();
   };
 
+  const handleClickShopping = () => {
+    navigate("/checkoutCart");
+  }
   return (
     <Box>
       <AppBar
@@ -194,8 +223,8 @@ function Header() {
                 <button className="mr-[10px]">
                   <FavoriteBorderIcon sx={{ color: "#FFFFFF" }} />
                 </button>
-                <IconButton sx={{ color: "#FFFFFF" }} aria-label="cart">
-                  <StyledBadge badgeContent={4} color="secondary">
+                <IconButton sx={{ color: "#FFFFFF" }} aria-label="cart" onClick={handleClickShopping}>
+                  <StyledBadge badgeContent={number == "" ? '0' : number} color="secondary" >
                     <ShoppingCartIcon />
                   </StyledBadge>
                 </IconButton>

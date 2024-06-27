@@ -22,6 +22,6 @@ namespace backend.Entities
         [Column("PaymentID")]
         public string PaymentID { get; set; }
         [Column("CreatedAt")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

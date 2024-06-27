@@ -12,9 +12,10 @@ using Nest;
 
 namespace backend.Service
 {
-    public class SourceService(LMSContext context, IMapper mapper, IimageServices imageServices, IExamService examService, IElasticSearchRepository elasticsearchRepository, IChapterService chapterService) : ISourceService
+    public class SourceService(ICartService cartService,LMSContext context, IMapper mapper, IimageServices imageServices, IExamService examService, IElasticSearchRepository elasticsearchRepository, IChapterService chapterService) : ISourceService
     {
         private readonly LMSContext _context = context;
+        private readonly ICartService _cartService = cartService;
         private readonly IMapper _mapper = mapper;
         private readonly IimageServices _imageServices = imageServices;
         private readonly IExamService _examService = examService;

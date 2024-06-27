@@ -8,3 +8,5 @@ export const topicsSelector = (state) => state.topics;
 export const subTopicsSelector = (state) => state.subTopics;
 
 export const favoriteSelector = (state) => state.favorites;
+
+export const cartSelector = (state) => state.shoppingCart;

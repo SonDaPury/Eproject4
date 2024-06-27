@@ -5,6 +5,7 @@ import topicReducer from "./slices/topicSlice.js";
 import subTopicsReducer from "./slices/subTopicSlice.js";
 import { favoritesSlice } from "./slices/favoriteSlice.js";
 import { enrollmentSlice } from "./slices/enrollmentSlice.js";
+import orderSlide from "./slices/orderSlide.js";
 
 export const store = configureStore({
   reducer: {
@@ -14,5 +15,6 @@ export const store = configureStore({
     topics: topicReducer,
     subTopics: subTopicsReducer,
     enrollment: enrollmentSlice.reducer,
+    shoppingCart: orderSlide
   },
 });
