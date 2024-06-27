@@ -406,6 +406,17 @@ namespace backend.Service
             }).ToList();
             return result;
         }
+        public async Task<bool> SourceCheckOrder(int userId, int sourceId)
+        {
+            var source = await _context.Orders
+                //.Where(o => o.UserID == userId && o.SouresID == sourceId)
+                .SingleOrDefaultAsync(o => o.UserID == userId && o.SouresID == sourceId);
+            if (source == null)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 
 }

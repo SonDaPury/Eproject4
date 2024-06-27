@@ -13,5 +13,6 @@ namespace backend.Service.Interface
         Task<SourceViewDto?> GetByIdAsync(int id);
         Task<Source?> UpdateAsync(int id, SourceDto updatedSource);
         Task<object> GroupByTopic();
+        Task<bool> SourceCheckOrder(int userId, int sourceId);
     }
 }
