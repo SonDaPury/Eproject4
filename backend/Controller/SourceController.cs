@@ -4,6 +4,7 @@ using backend.Base;
 using backend.Data;
 using backend.Dtos;
 using backend.Entities;
+using backend.Service;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -151,6 +152,13 @@ namespace backend.Controller
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("CheckOrderSource")]
+        public async Task<IActionResult> CheckOrderSource([FromQuery] int userId, [FromQuery] int sourceId)
+        {
+            bool result = await _sourceService.SourceCheckOrder(userId, sourceId);
+            return Ok(result);
         }
     }
 }
