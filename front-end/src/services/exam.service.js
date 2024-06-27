@@ -270,3 +270,78 @@ export const deleteQuestion = () => {
 
   return { deleteQuestionAction };
 };
+
+// End Exam
+export const endExamm = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const endExamAction = async (id, userId) => {
+    try {
+      const res = await callApi(
+        `/Exam/end/${id}?userId=${userId}`,
+        "post",
+        null,
+        null,
+        false
+      );
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { endExamAction };
+};
+
+// Calculate Score Exam
+export const calculateScoreExam = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const calculateScoreExamAction = async (id, data) => {
+    try {
+      const res = await callApi(
+        `/Exam/${id}/calculatescore`,
+        "post",
+        data,
+        null,
+        null
+      );
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { calculateScoreExamAction };
+};
+
+// Create Answer
+export const createAnswer = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const createAnswerAction = async (data) => {
+    try {
+      const res = await callApi("/Answer", "post", data, null, null);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { createAnswerAction };
+};
+
+// Get Answer
+export const getAnswer = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const getAnswerAction = async () => {
+    try {
+      const res = await callApi("/Answer", "get", null, null, null);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+  return { getAnswerAction };
+};

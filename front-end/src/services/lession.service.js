@@ -128,3 +128,25 @@ export const getLessonById = () => {
 
   return { getLessonByIdAction };
 };
+
+// Update view of lesson
+export const updateViewOfLesson = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const updateViewOfLessonAction = async (id) => {
+    try {
+      const res = await callApi(
+        `/Lesson/updateview/${id}`,
+        "put",
+        null,
+        null,
+        null
+      );
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { updateViewOfLessonAction };
+};

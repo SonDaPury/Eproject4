@@ -52,7 +52,6 @@ import {
   setInitialFavorites,
 } from "@eproject4/redux/slices/favoriteSlice";
 import { favoriteSelector } from "@eproject4/redux/selectors";
-import SourceDetail from "@eproject4/components/SourceDetail";
 import { getOrderforFree } from "@eproject4/services/order.service";
 import {
   addEnrollment,
@@ -99,8 +98,6 @@ function a11yProps(index) {
   };
 }
 
-// ----------------------------------------------------------------
-
 const CourseDetail = () => {
   const { getCourseByIdAction } = getCourseById();
   const { getCoursesAction } = getAllCourses();
@@ -135,12 +132,12 @@ const CourseDetail = () => {
 
   const [subTopicName, setSubTopicName] = useState("");
   const [filteredData, setFilteredData] = useState([]);
-  //toan bo data
+
   const [coursesWithSubTopicName, setCoursesWithSubTopicName] = useState([]);
 
   const handleCardClick = (item) => {
     const path = `/course-detail/${item?.topicName}/${encodeURIComponent(item?.source?.title)}/${item?.source.id}`;
-    window.location.href = path; // Sử dụng window.location.href để tải lại trang
+    window.location.href = path;
   };
 
   const cleanDescription = DOMPurify.sanitize(courseData.description);
@@ -193,7 +190,7 @@ const CourseDetail = () => {
         if (res.status === 200) {
           dispatch(setInitialFavorites(res.data));
         } else {
-          console.error("Failed to fetch initial favorites:", res);
+          throw new Error("Failed to fetch favorite data");
         }
       } catch (err) {
         throw new Error(err);
@@ -216,7 +213,6 @@ const CourseDetail = () => {
 
           setSubTopicName(subTopicRes?.data?.topicName || "");
         }
-        // if()
       } catch (err) {
         throw new Error(err);
       }
@@ -250,7 +246,7 @@ const CourseDetail = () => {
 
         setCoursesWithSubTopicName(combinedData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        throw new Error(error);
       }
     };
     FetchData();
@@ -268,12 +264,10 @@ const CourseDetail = () => {
   useEffect(() => {
     const fetchFavoriteStatus = async () => {
       if (!courseDetail?.userId) {
-        console.log("Waiting for courseDetail to be populated...");
         return;
       }
       try {
         const res = await addFavoriteSourceAction(courseDetail.userId, id);
-        console.log("Fetch favorite status response:", res);
 
         if (res.status === 200 && res.data) {
           const isFavorite = res.data.isFavorite; // Giả sử isFavorite là boolean
@@ -294,7 +288,7 @@ const CourseDetail = () => {
           );
         }
       } catch (e) {
-        console.error("Error fetching favorite status:", e);
+        throw new Error(e);
       }
     };
 
@@ -319,7 +313,7 @@ const CourseDetail = () => {
         })
       );
     } catch (e) {
-      console.error("Error adding favorite:", e);
+      throw new Error(e);
     }
   };
 
@@ -351,8 +345,6 @@ const CourseDetail = () => {
         //const courseId = parseInt(id, 10); // Chuyển đổi id sang số nguyên
         const res = await getOrderforFreeAction(courseData.userId, id);
 
-        console.log(courseData.userId, id);
-        console.log(res);
         if (res.data.status) {
           dispatch(setEnrollmentStatus({ courseId: id, isEnrolled: true }));
         }
@@ -367,7 +359,7 @@ const CourseDetail = () => {
 
   const handleRegisterClick = () => {
     if (isEnrolled) {
-      navigate(`/watch-course/${title}/${id}`);
+      navigate(`/watch-course/${title}/${id}/`);
     } else {
       setIsModalOpen(true);
     }
@@ -394,7 +386,7 @@ const CourseDetail = () => {
           sx={{
             maxWidth: "1320px",
             margin: "auto",
-            padding: "40px 0", // Padding trên dưới
+            padding: "40px 0",
           }}>
           <Breadcrumbs aria-label="breadcrumb">
             <Link underline="hover" color="inherit" href="/">
@@ -523,7 +515,7 @@ const CourseDetail = () => {
                 </CustomTabPanel>
 
                 <CustomTabPanel value={value} index={1}>
-                  <SourceDetail id={id} />
+                  Noi dung
                 </CustomTabPanel>
               </Box>
             </Box>
