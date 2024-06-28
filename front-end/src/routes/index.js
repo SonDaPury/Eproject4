@@ -34,8 +34,10 @@ export const publicRoutes = [
 export const privateRoutes = [
   { path: "/dashboard-student", component: UserDashboard },
   { path: "/watch-course/:title/:id", component: WatchCourse },
-  {path: "/checkoutCart", component: CheckoutCart },
-  {path:"/confirmPayment", component: ConfirmPayment}];
+  { path: "/watch-course/:title/:id/:slug", component: WatchCourse },
+  { path: "/checkoutCart", component: CheckoutCart },
+  { path: "/confirmPayment", component: ConfirmPayment },
+];
 
 // Route chi danh cho admin
 export const adminRoutes = [
