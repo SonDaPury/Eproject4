@@ -37,6 +37,7 @@ import ButtonCustomize from "@eproject4/components/ButtonCustomize";
 import {
   getAllCourses,
   getCourseById,
+  CourseOrder
 } from "@eproject4/services/courses.service";
 import { getAllTopics, getTopicById } from "@eproject4/services/topic.service";
 import {
@@ -116,13 +117,13 @@ const CourseDetail = () => {
   const { getOrderforFreeAction } = getOrderforFree();
   const { showSnackbar } = useCustomSnackbar();
   const { getAllOrderAction } = getAllOrder();
-
+  const {CheckCourseOrder} = CourseOrder();
   const { getAllFavoriteAction } = getAllFavorite();
   const { addFavoriteSourceAction } = AddFavoriteSource();
   const { DeleteFavoriteSourceAction } = deleteFavoriteSource();
-  const { category, title, id } = useParams();
 
   // const [orderData, SetOrderData] = useParams();
+  const { category, title, id } = useParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isEnrolled =
@@ -148,7 +149,7 @@ const CourseDetail = () => {
   const [filteredData, setFilteredData] = useState([]);
 
   const [coursesWithSubTopicName, setCoursesWithSubTopicName] = useState([]);
-
+  const [checkCourse, setCheckCourse] = useState(false);
   const handleCardClick = (item) => {
     const path = `/course-detail/${item?.topicName}/${encodeURIComponent(item?.source?.title)}/${item?.source.id}`;
     window.location.href = path;
@@ -194,7 +195,14 @@ const CourseDetail = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
+  //Check Course
+  const CheckCourseIsOrder = async() =>{
+    const user = getUser();
+      console.log("Course", courseData);
+      const res = await CheckCourseOrder(user.id,id);
+      console.log("OrderCheck",res);
+      setCheckCourse(res.data)
+  }
   //Get all Favorite
 
   useEffect(() => {
@@ -260,6 +268,7 @@ const CourseDetail = () => {
     if (id) {
       // Chỉ gọi hàm fetchCourseDetailData khi id tồn tại
       fetchCourseDetailData();
+      CheckCourseIsOrder();
     }
   }, [id]);
 
@@ -748,7 +757,7 @@ const CourseDetail = () => {
                     />
                   </Box>
                   {/* Hiển thị nút nếu courseData.price khác 0 */}
-                  {courseData.price !== 0 && (
+                  {courseData.price !== 0 && !checkCourse && (
                     <ButtonCustomize
                       text="Thêm vào giỏ hàng"
                       width="100%"

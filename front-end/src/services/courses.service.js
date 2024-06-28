@@ -203,6 +203,21 @@ export const deleteCourse = () => {
   return { deleteCourseAction };
 };
 
+//Kiểm tra course đã order
+export const CourseOrder = () => {
+  const {callApi} = useAxiosWithLoading();
+  const CheckCourseOrder = async (userid, sourceID) => {
+    try{
+        const res = await callApi(`/Source/CheckOrderSource?userId=${userid}&sourceId=${sourceID}`
+          ,"get", null,null,false);
+          return res;
+    }catch(err){
+      throw new Error(err);
+    }
+  }
+  return {CheckCourseOrder};
+}
+
 // Update course
 export const updateCourse = () => {
   try {
