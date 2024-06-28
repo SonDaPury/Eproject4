@@ -20,6 +20,7 @@ import DashboardContent from "./DashboardContent";
 import Course from "./Course";
 import FavoritesList from "./FavoritesList";
 import Setting from "./Setting";
+import { getUser } from "@eproject4/helpers/authHelper";
 
 // Taps
 function a11yProps(index) {
@@ -58,7 +59,7 @@ const ProfileCard = styled(Box)(({ theme }) => ({
 
 const UserDashboard = () => {
   const [value, setValue] = React.useState(0);
-
+  const user = getUser();
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -74,13 +75,13 @@ const UserDashboard = () => {
           }}>
           <ProfileCard sx={{ padding: "40px", margin: "0px" }}>
             <Avatar
-              src="https://via.placeholder.com/80"
+              src="https://haycafe.vn/wp-content/uploads/2022/02/Avatar-trang.jpg"
               alt="Kevin Gilbert"
               sx={{ width: 110, height: 110, marginRight: 2 }}
             />
             <Box>
               <Typography variant="h6" sx={{ marginBottom: "14px" }}>
-                Kevin Gilbert
+                {user?.username}
               </Typography>
               <Typography variant="body2">
                 Web Designer & Best-Selling Instructor
@@ -100,8 +101,8 @@ const UserDashboard = () => {
               <Tab label="Dashboard" {...a11yProps(0)} />
               <Tab label="Khóa học" {...a11yProps(1)} />
               <Tab label="Danh sách yêu thích" {...a11yProps(2)} />
-              <Tab label="Lịch sử thanh toán" {...a11yProps(3)} />
-              <Tab label="Cài đặt tài khoản" {...a11yProps(4)} />
+
+              <Tab label="Cài đặt tài khoản" {...a11yProps(3)} />
             </Tabs>
           </Box>
         </MainContent>
@@ -115,7 +116,7 @@ const UserDashboard = () => {
           <CustomTabPanel value={value} index={2}>
             <FavoritesList />
           </CustomTabPanel>
-          <CustomTabPanel value={value} index={4}>
+          <CustomTabPanel value={value} index={3}>
             <Setting />
           </CustomTabPanel>
         </Box>

@@ -15,7 +15,11 @@ import HorizontalCourseCard from "@eproject4/components/StDashboard/HorizontalCo
 import PaginationTemp from "@eproject4/components/PaginationTemp";
 import SearchIcon from "@mui/icons-material/Search";
 
-import { getAllOrdersPag } from "@eproject4/services/order.service";
+import {
+  getAllOrder,
+  getAllOrdersPag,
+} from "@eproject4/services/order.service";
+import { getAllFavorite } from "@eproject4/services/favorite.service";
 
 // import { getAllOrders } from "@eproject4/services/order.service";
 
@@ -23,7 +27,9 @@ export default function Course() {
   const [courseData, setCourseData] = useState([]);
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(4);
-  
+  const [getAll, SetGetAll] = useState();
+
+  console.log(courseData);
 
   // const cleanDescription = DOMPurify.sanitize(courseData.description);
   function removeTags(description) {
@@ -36,8 +42,30 @@ export default function Course() {
   }
 
   // Ví dụ sử dụng với dữ liệu của bạn
-  // const cleanedDescription = removeTags(courseData.description);
+  const cleanedDescription = removeTags(courseData.description);
   const { getAllOrdersPagAction } = getAllOrdersPag();
+
+  const { getAllOrderAction } = getAllOrder();
+
+  // Hàm để lấy tất cả mục yêu thích từ cơ sở dữ liệu
+  const fetchFavoriteData = async () => {
+    try {
+      const res = await getAllOrderAction();
+      if (res.status === 200) {
+        // Cập nhật Redux store với dữ liệu yêu thích từ cơ sở dữ liệu
+        // dispatch(setInitialFavorites(res.data));
+        SetGetAll(res.data);
+      } else {
+        console.error("Failed to fetch initial favorites:", res);
+      }
+    } catch (err) {
+      console.error("Error fetching favorites from database:", err);
+    }
+  };
+  // useEffect để gọi hàm fetchFavoriteData khi component được mount
+  useEffect(() => {
+    fetchFavoriteData();
+  }, [SetGetAll]);
 
   useEffect(() => {
     const fetchAllOrderPageData = async () => {
@@ -70,11 +98,12 @@ export default function Course() {
   const handleStatusChange = (event) => {
     setStatus(event.target.value);
   };
+
   return (
     <Box>
       <>
         <Typography variant="h6" sx={{ marginBottom: 2 }}>
-          Courses ({courseData.length})
+          Courses ({getAll?.length})
         </Typography>
 
         <Box
@@ -138,6 +167,7 @@ export default function Course() {
                 key={index}
                 sx={{ padding: "16px 5px  !important " }}>
                 <HorizontalCourseCard
+                  path={`/course-detail/${course.topicName}/${encodeURIComponent(course?.sourceTitle)}/${course?.souresID}`}
                   key={course.souresID}
                   title={course.sourceTitle}
                   subtitle={cleanedDescriptions} // Nối các mô tả thành chuỗi
@@ -156,7 +186,7 @@ export default function Course() {
           marginTop: "25px",
         }}>
         <Pagination
-          count={Math.ceil(Number(courseData?.totalCount) / Number(pageSize))}
+          count={Math.ceil(Number(getAll?.length) / Number(pageSize))}
           onChange={handleChangePagination}
           page={pageIndex}
         />

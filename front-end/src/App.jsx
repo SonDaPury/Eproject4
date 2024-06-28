@@ -13,6 +13,7 @@ import WatchCourse from "./pages/user/Courses/WatchCourse";
 
 function App() {
   const token = getToken();
+  console.log(token);
   const roleId = getUser()?.roleId;
   return (
     <Router>

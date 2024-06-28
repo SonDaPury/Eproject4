@@ -42,14 +42,19 @@ export default function FavoritesList() {
   const { getsourceFavoritebyuseridAction } = getsourceFavoritebyuserid();
   const { addFavoriteSourceAction } = AddFavoriteSource();
   const { DeleteFavoriteSourceAction } = deleteFavoriteSource();
+  const [getAll, SetGetAll] = useState();
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize] = useState(4);
   // Lấy danh sách yêu thích từ Redux store
 
   const favorites = useSelector((state) => state.favorites.favorites);
+  console.log("favoritesData", favorites);
   // Lấy userId từ danh sách yêu thích nếu có
   const userId = favorites.length > 0 ? favorites[0].userId : null;
+  console.log("userId:", userId);
   const [courseData, SetcourseData] = useState([]);
+
+  console.log("courseData", courseData);
   // Hàm để lấy tất cả mục yêu thích từ cơ sở dữ liệu
   const fetchFavoriteData = async () => {
     try {
@@ -57,6 +62,7 @@ export default function FavoritesList() {
       if (res.status === 200) {
         // Cập nhật Redux store với dữ liệu yêu thích từ cơ sở dữ liệu
         dispatch(setInitialFavorites(res.data));
+        SetGetAll(res.data);
       } else {
         console.error("Failed to fetch initial favorites:", res);
       }
@@ -160,11 +166,19 @@ export default function FavoritesList() {
   const handleChangePagination = (e, newPage) => {
     setPageIndex(newPage);
   };
+  const uniqueCourses = getAll?.reduce((acc, course) => {
+    if (
+      !acc.some((existingCourse) => existingCourse.sourceId === course.sourceId)
+    ) {
+      acc.push(course);
+    }
+    return acc;
+  }, []);
 
   return (
     <Box>
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
-        Danh sách yêu thích ({length})
+        Danh sách yêu thích ({uniqueCourses?.length})
       </Typography>
       <TableContainer component={Paper}>
         <Table>
@@ -286,7 +300,7 @@ export default function FavoritesList() {
             margin: "25px 0px",
           }}>
           <Pagination
-            count={Math.ceil(courseData.length / pageSize)}
+            count={Math.ceil(getAll?.length / pageSize)}
             onChange={handleChangePagination}
             page={pageIndex}
           />

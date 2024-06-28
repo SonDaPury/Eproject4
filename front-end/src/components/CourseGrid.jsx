@@ -22,7 +22,7 @@ const CourseGrid = ({
         {title}
       </Typography>
       <Grid container spacing={2} textAlign="center" sx={{ px: 2, py: 3 }} >
-        {courses.map((course) => (
+        {courses?.map((course) => (
           <Grid item xs={12} sm={6} md={4} lg={2.4} key={course.id}>
             <CardCourse
               key={course.id}
