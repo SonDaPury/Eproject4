@@ -58,29 +58,29 @@ function AdminDetailCourse() {
   };
   const handleUpdateCourseModalClose = () => setOpenUpdateCourseModal(false);
 
+  const fetchChapterOfCourse = async () => {
+    const resChapterOfCourse = await getChapterBySourceIdAction(idQuery);
+    const lessonsPromises = resChapterOfCourse?.data?.map(async (chapter) => {
+      const resLessonOfChapter = await getAllLessionsByChapterIdAction(
+        chapter?.id
+      );
+      return resLessonOfChapter?.data;
+    });
+
+    const lessons = await Promise.all(lessonsPromises);
+    setLessonOfCourse(lessons.flat());
+  };
+
   useEffect(() => {
-    const fetchChapterOfCourse = async () => {
-      const resChapterOfCourse = await getChapterBySourceIdAction(idQuery);
-      const lessonsPromises = resChapterOfCourse?.data?.map(async (chapter) => {
-        const resLessonOfChapter = await getAllLessionsByChapterIdAction(
-          chapter?.id
-        );
-        return resLessonOfChapter?.data;
-      });
-
-      const lessons = await Promise.all(lessonsPromises);
-      setLessonOfCourse(lessons.flat());
-    };
-
     fetchChapterOfCourse();
   }, [idQuery]);
 
-  useEffect(() => {
-    const fetchExamOfCourse = async () => {
-      const res = await getAllExamAction();
-      setExamOfCourse(res?.data);
-    };
+  const fetchExamOfCourse = async () => {
+    const res = await getAllExamAction();
+    setExamOfCourse(res?.data);
+  };
 
+  useEffect(() => {
     fetchExamOfCourse();
   }, []);
 
@@ -115,16 +115,16 @@ function AdminDetailCourse() {
     };
   };
 
-  useEffect(() => {
-    const fetchCoursesData = async () => {
-      try {
-        const res = await getCourseByIdAction(idQuery);
-        setDataCourses(res?.data);
-      } catch (err) {
-        throw new Error(err);
-      }
-    };
+  const fetchCoursesData = async () => {
+    try {
+      const res = await getCourseByIdAction(idQuery);
+      setDataCourses(res?.data);
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
 
+  useEffect(() => {
     fetchCoursesData();
   }, []);
 
@@ -137,15 +137,16 @@ function AdminDetailCourse() {
     fetchDataAllOrder();
   }, []);
 
+  const fetchUserByIdData = async () => {
+    try {
+      const res = await getUserByIdAction(dataCourses?.userId);
+      setAuthor(res?.data?.username);
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
   useEffect(() => {
-    const fetchUserByIdData = async () => {
-      try {
-        const res = await getUserByIdAction(dataCourses?.userId);
-        setAuthor(res?.data?.username);
-      } catch (err) {
-        throw new Error(err);
-      }
-    };
     fetchUserByIdData();
   }, [dataCourses]);
 
@@ -429,6 +430,10 @@ function AdminDetailCourse() {
         openUpdateCourseModal={openUpdateCourseModal}
         handleUpdateCourseModalClose={handleUpdateCourseModalClose}
         idQuery={idQuery}
+        fetchChapterOfCourse={fetchChapterOfCourse}
+        fetchExamOfCourse={fetchExamOfCourse}
+        fetchCoursesData={fetchCoursesData}
+        fetchUserByIdData={fetchUserByIdData}
       />
     </Box>
   );

@@ -1,4 +1,5 @@
 import useAxiosWithLoading from "@eproject4/utils/hooks/useAxiosWithLoading";
+import axios from "axios";
 
 // create course
 export const createCourse = () => {
@@ -200,4 +201,60 @@ export const deleteCourse = () => {
   };
 
   return { deleteCourseAction };
+};
+
+// Update course
+export const updateCourse = () => {
+  try {
+    const updateCourseAction = async (id, data) => {
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+      formData.append("slug", data.slug);
+      formData.append("status", data.status);
+      formData.append("rating", data.rating);
+      if (data?.benefit.length > 0) {
+        data.benefit.map((item) => {
+          formData.append("benefit", item);
+        });
+      } else {
+        formData.append("benefit", formData.benefit);
+      }
+
+      if (data?.requirement.length > 0) {
+        data.requirement.map((item) => {
+          formData.append("requirement", item);
+        });
+      } else {
+        formData.append("requirement", formData.requirement);
+      }
+      formData.append("price", data.price);
+      formData.append("userId", data.userId);
+      formData.append("topicId", data.topicId);
+      formData.append("subTopicId", data.subTopicId);
+
+      if (data?.videoIntro) {
+        formData.append("videoIntro", data.videoIntro);
+      }
+      if (data?.thumbnail) {
+        formData.append("thumbnail", data.thumbnail);
+      }
+
+      const res = await axios.put(
+        `http://localhost:5187/api/Source/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return res;
+    };
+
+    return { updateCourseAction };
+  } catch (err) {
+    throw new Error(err);
+  }
 };

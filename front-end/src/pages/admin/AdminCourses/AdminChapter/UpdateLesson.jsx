@@ -24,9 +24,6 @@ const validationSchema = Yup.object().shape({
 function UpdateLesson({
   openUpdateLessonModal,
   handleUpdateLessonModalClose,
-  lesson,
-  fetchDataExamDetail,
-  examDetail,
   fetchDataAllLessonsOfChapter,
   lessonDetail,
 }) {
