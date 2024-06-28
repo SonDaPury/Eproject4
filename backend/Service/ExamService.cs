@@ -88,7 +88,7 @@ namespace backend.Service
                         question.Image = _imageServices.UpdateFile(updateQuestionDto.Image, question.Image, "Questions", "Image");
                     }
                     //await _context.SaveChangesAsync();
-                    List<Option> options = new List<Option>();
+                    List<Option>? options = new List<Option>();
                     if (updateQuestionDto.Options != null)
                     {
                         options = JsonConvert.DeserializeObject<List<Option>>(updateQuestionDto.Options);
@@ -237,66 +237,64 @@ namespace backend.Service
 
         public async Task<bool> DeleteAsync(int id)
         {
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                try
+                var exam = await _context.Exams.FindAsync(id);
+                if (exam == null) return false;
+
+                var quiz_questions = await _context.QuizQuestions.Where(q => q.ExamId == id).ToListAsync();
+                if (quiz_questions != null)
                 {
-                    var exam = await _context.Exams.FindAsync(id);
-                    if (exam == null) return false;
-
-                    var quiz_questions = await _context.QuizQuestions.Where(q => q.ExamId == id).ToListAsync();
-                    if (quiz_questions != null)
+                    foreach (var quiz_question in quiz_questions)
                     {
-                        foreach (var quiz_question in quiz_questions)
-                        {
-                            await _questionService.DeleteAsync(quiz_question.QuestionId);
-                            await _quizQuestionService.DeleteAsync(quiz_question.Id);
-                        }
-                        //_context.QuizQuestions.RemoveRange(quiz_questions);
-                        //await _context.SaveChangesAsync();
+                        await _questionService.DeleteAsync(quiz_question.QuestionId);
+                        await _quizQuestionService.DeleteAsync(quiz_question.Id);
                     }
-
-                    var serials = await _context.Serials.FirstOrDefaultAsync(q => q.ExamId == id);
-                    if (serials != null)
-                    {
-                        //foreach (var serial in serials)
-                        //{
-                        await _serialService.UpdateSerialDeleteExam(serials.Id);
-                        //}
-                        //_context.Serials.RemoveRange(serials);
-                        //await _context.SaveChangesAsync();
-                    }
-
-                    var answers = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
-                    if (answers != null)
-                    {
-                        foreach (var answer in answers)
-                        {
-                            await _answerService.DeleteAsync(answer.Id);
-                        }
-                        //_context.Answers.RemoveRange(answers);
-                    }
-
-                    _context.Exams.Remove(exam);
-                    await _context.SaveChangesAsync();
-
-                    await transaction.CommitAsync();
-                    return true;
+                    //_context.QuizQuestions.RemoveRange(quiz_questions);
+                    //await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException ex)
+
+                var serials = await _context.Serials.FirstOrDefaultAsync(q => q.ExamId == id);
+                if (serials != null)
                 {
-                    await transaction.RollbackAsync();
-                    // Xử lý lỗi đồng thời ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
-                    Console.WriteLine("Concurrency conflict occurred. Data may have been modified or deleted by another process.");
-                    return false;
+                    //foreach (var serial in serials)
+                    //{
+                    await _serialService.UpdateSerialDeleteExam(serials.Id);
+                    //}
+                    //_context.Serials.RemoveRange(serials);
+                    //await _context.SaveChangesAsync();
                 }
-                catch (Exception ex)
+
+                var answers = await _context.Answers.Where(a => a.ExamId == id).ToListAsync();
+                if (answers != null)
                 {
-                    await transaction.RollbackAsync();
-                    // Xử lý các lỗi khác ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
-                    Console.WriteLine($"An error occurred: {ex.Message}");
-                    return false;
+                    foreach (var answer in answers)
+                    {
+                        await _answerService.DeleteAsync(answer.Id);
+                    }
+                    //_context.Answers.RemoveRange(answers);
                 }
+
+                _context.Exams.Remove(exam);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await transaction.RollbackAsync();
+                // Xử lý lỗi đồng thời ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
+                Console.WriteLine("Concurrency conflict occurred. Data may have been modified or deleted by another process.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                // Xử lý các lỗi khác ở đây, ví dụ: ghi log, thông báo cho người dùng, etc.
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
             }
         }
         //public async Task StartExam(int examId)
@@ -358,7 +356,7 @@ namespace backend.Service
         }
 
         //tính điểm theo % nếu mỗi câu hỏi có 1 đáp án đúng
-        public async Task<(ExamAnswerDto,dynamic)> CalculateScore(List<UserAnswer> userAnswers, int examId)
+        public async Task<(ExamAnswerDto, dynamic)> CalculateScore(List<UserAnswer> userAnswers, int examId)
         {
 
             // Lấy tất cả câu hỏi và câu trả lời đúng cho kỳ thi này
@@ -417,7 +415,7 @@ namespace backend.Service
                     })
                 })
                 .FirstOrDefaultAsync();
-           
+
             if (exam == null) throw new NotFoundException($"exam not found with id : {examId} ");
 
             return (exam);

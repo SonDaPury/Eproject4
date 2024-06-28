@@ -78,13 +78,14 @@ function AdminCourses() {
     <Box>
       <Box
         sx={{
+          textAlign: 'center',
           display: "flex",
           maxWidth: {
             xs: "320px",
             sm: "540px",
             md: "650px",
             lg: "900px",
-            xl: "1320px",
+            xl: "1100px",
           },
           margin: "auto",
         }}>
@@ -110,7 +111,7 @@ function AdminCourses() {
       </Box>
       <Pagination
         count={Math.ceil(Number(dataCourses?.totalCount) / Number(pageSize))}
-        sx={{ width: "100%", marginX: "auto", marginTop: "25px" }}
+        sx={{ width: "1100px", marginX: "auto", marginTop: "25px" }}
         onChange={handleChangePagination}
         page={pageIndex}
       />
