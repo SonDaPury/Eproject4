@@ -20,7 +20,6 @@ import { Link } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
-import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOutlined";
 import FilterNoneOutlinedIcon from "@mui/icons-material/FilterNoneOutlined";
 import Filter2OutlinedIcon from "@mui/icons-material/Filter2Outlined";
@@ -29,7 +28,6 @@ const routes = [
   { slug: "dashboard", icon: <DashboardIcon />, name: "Dashboard" },
   { slug: "user", icon: <PersonOutlineIcon />, name: "User" },
   { slug: "khoa-hoc", icon: <LayersOutlinedIcon />, name: "Khóa học" },
-  { slug: "thanh-toan", icon: <CreditCardOutlinedIcon />, name: "Thanh toán" },
   {
     slug: "tao-khoa-hoc",
     icon: <AddCircleOutlineOutlinedIcon />,

@@ -109,7 +109,7 @@ function a11yProps(index) {
 }
 
 const CourseDetail = () => {
-  const {addCart} = cartServices();
+  const { addCart } = cartServices();
   const { getCourseByIdAction } = getCourseById();
   const { getCoursesAction } = getAllCourses();
   const { getAllTopicsAction } = getAllTopics();
@@ -220,33 +220,37 @@ const CourseDetail = () => {
     };
     fetchFavoriteData();
   }, [dispatch]);
- const handleAddCart = async () => {
-  //kiểm tra Login
-  var checkUser =  getUser();
-  if(checkUser == null){
-    navigate("/dang-nhap")
-  }
-  if (courseData && courseData.title && courseData.price && courseData.thumbnail) {
-    const data = {
-      "sourceName": courseData.title,
-      "price": courseData.price,
-      "userid": checkUser.id,
-      "sourceId": courseData.id == null ? 11 : courseData.id,
-      "username": checkUser.username,
-      "email": checkUser.email,
-      "Thumbnail": courseData.thumbnail
+  const handleAddCart = async () => {
+    //kiểm tra Login
+    var checkUser = getUser();
+    if (checkUser == null) {
+      navigate("/dang-nhap");
     }
-    const res = await addCart(data);
-    console.log("test",res);
-    if(res.data.code == 200){
-      showSnackbar(res.data.mess, "success");
-      dispatch(setShoppingCartRender({status:true}));
-    }else{
-      showSnackbar(res.data.mess, "error");
+    if (
+      courseData &&
+      courseData.title &&
+      courseData.price &&
+      courseData.thumbnail
+    ) {
+      const data = {
+        sourceName: courseData.title,
+        price: courseData.price,
+        userid: checkUser.id,
+        sourceId: courseData.id == null ? 11 : courseData.id,
+        username: checkUser.username,
+        email: checkUser.email,
+        Thumbnail: courseData.thumbnail,
+      };
+      const res = await addCart(data);
+      console.log("test", res);
+      if (res.data.code == 200) {
+        showSnackbar(res.data.mess, "success");
+        dispatch(setShoppingCartRender({ status: true }));
+      } else {
+        showSnackbar(res.data.mess, "error");
+      }
     }
   };
-   
- }
   // Get Course by Id
   useEffect(() => {
     const fetchCourseDetailData = async () => {
