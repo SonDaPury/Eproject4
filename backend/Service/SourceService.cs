@@ -224,10 +224,10 @@ namespace backend.Service
                     source.Thumbnail = _imageServices.AddFile(updatedSource.Thumbnail, "sources", "thumbnails");
                 }
             }
-            else if (source.Thumbnail == null && updatedSource.Thumbnail == null)
+            else if (source.Thumbnail != null && updatedSource.Thumbnail == null)
             {
-                _imageServices.DeleteFile(source.Thumbnail);
-                source.Thumbnail = null;
+                //_imageServices.DeleteFile(source.Thumbnail);
+                //source.Thumbnail = null;
             }
             else
             {
@@ -250,8 +250,8 @@ namespace backend.Service
             }
             else if (source.VideoIntro != null && updatedSource.VideoIntro == null)
             {
-                _imageServices.DeleteFile(source.VideoIntro);
-                source.VideoIntro = null;
+                //_imageServices.DeleteFile(source.VideoIntro);
+                //source.VideoIntro = null;
             }
             else
             {
