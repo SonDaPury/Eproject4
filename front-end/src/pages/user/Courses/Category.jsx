@@ -59,7 +59,7 @@ const Category = () => {
         }
         setAllCourses(allData);
       } catch (err) {
-        console.error(err);
+        throw new Error(err);
       }
     };
 
@@ -68,7 +68,7 @@ const Category = () => {
         const res = await getAllTopicsAction();
         setCategories(res?.data?.items || []);
       } catch (err) {
-        console.error(err);
+        throw new Error(err);
       }
     };
 
@@ -77,7 +77,7 @@ const Category = () => {
         const res = await getSubTopicsAction();
         setSubcategories(res?.data || []);
       } catch (err) {
-        console.error(err);
+        throw new Error(err);
       }
     };
 
@@ -146,13 +146,12 @@ const Category = () => {
 
   // Xác định dữ liệu hiển thị (tìm kiếm hoặc dữ liệu đã lọc)
   const displayData = searchResults.length > 0 ? searchResults : filteredData;
-  console.log(displayData);
   const paginatedData = displayData
     .slice((pageIndex - 1) * pageSize, pageIndex * pageSize)
     .filter((item) => item.source.status === 1);
 
   return (
-    <Box sx={{ maxWidth: "1320px", margin: "auto" }}>
+    <Box sx={{ maxWidth: "1320px", margin: "auto", paddingBottom: "50px" }}>
       <Box>
         {/* Top 5 Courses */}
         <Box
