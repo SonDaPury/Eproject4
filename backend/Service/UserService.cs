@@ -55,10 +55,12 @@ namespace backend.Service
             var users = await _context.Users
                 .Select(u => new User
                 {
+                    Id = u.Id,
                     Username = u.Username,
                     Email = u.Email,
                     PhoneNumber = u.PhoneNumber,
                     Avatar = u.Avatar != null ? _imageServices.GetFile(u.Avatar) : null,
+                    RoleId = u.RoleId
                 })
                 .ToListAsync();
             return _mapper.Map<List<ListUserDto>>(users) ?? throw new NotFoundException("there are no users at all");
@@ -77,7 +79,7 @@ namespace backend.Service
                 throw new BadRequestException("Email already exists");
             }
 
-            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.ToLower().Equals( "user"));
+            var role = await _context.Roles.SingleOrDefaultAsync(t => t.RoleName.ToLower().Equals("user"));
             if (registerViewModel.Avatar != null && !_imageServices.IsImage(registerViewModel.Avatar))
             {
                 throw new Exception("Invalid image format. Only JPG, JPEG, PNG, and GIF are allowed.");
@@ -88,7 +90,7 @@ namespace backend.Service
                 Password = BCrypt.Net.BCrypt.HashPassword(registerViewModel.Password),
                 Email = registerViewModel.Email,
                 PhoneNumber = registerViewModel.PhoneNumber,
-                Avatar = registerViewModel.Avatar !=null ? _imageServices.AddFile(registerViewModel.Avatar,"User","Avartar") : null,
+                Avatar = registerViewModel.Avatar != null ? _imageServices.AddFile(registerViewModel.Avatar, "User", "Avartar") : null,
                 RoleId = role.Id
             };
 
@@ -130,7 +132,7 @@ namespace backend.Service
             return newUser;
         }
 
-        public async Task<User> UpdateUser (int userId ,UserUpdateDto registerViewModel)
+        public async Task<User> UpdateUser(int userId, UserUpdateDto registerViewModel)
         {
             var existingUser = await _context.Users.FindAsync(userId);
             if (existingUser == null)
@@ -139,7 +141,7 @@ namespace backend.Service
             }
             existingUser.PhoneNumber = registerViewModel.PhoneNumber;
             existingUser.Email = registerViewModel.Email;
-            existingUser.Avatar = registerViewModel.Avatar != null ? _imageServices.UpdateFile(registerViewModel.Avatar,existingUser.Avatar, "User", "Avartar") : null;
+            existingUser.Avatar = registerViewModel.Avatar != null ? _imageServices.UpdateFile(registerViewModel.Avatar, existingUser.Avatar, "User", "Avartar") : null;
             await _context.SaveChangesAsync();
             return existingUser;
         }
@@ -183,8 +185,8 @@ namespace backend.Service
         public async Task<ListUserDto?> GetById(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            if(user != null)
-            user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
+            if (user != null)
+                user.Avatar = user.Avatar != null ? _imageServices.GetFile(user.Avatar) : null;
             return _mapper.Map<ListUserDto?>(user);
         }
 
@@ -282,7 +284,7 @@ namespace backend.Service
             {
                 throw new BadRequestException("Invalid attempt!");
             }
-            var rfToken = JsonSerializer.Serialize (new UserRefreshTokens
+            var rfToken = JsonSerializer.Serialize(new UserRefreshTokens
             {
                 RefreshToken = newJwtToken.RefreshToken,
                 UserName = user.Username,

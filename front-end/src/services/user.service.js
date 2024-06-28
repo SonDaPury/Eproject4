@@ -15,3 +15,19 @@ export const getUserById = () => {
 
   return { getUserByIdAction };
 };
+
+// Get all users
+export const getAllUsers = () => {
+  const { callApi } = useAxiosWithLoading();
+
+  const getAllUsersAction = async () => {
+    try {
+      const res = await callApi("/User/get-all-user", "get", null, null, false);
+      return res;
+    } catch (err) {
+      throw new Error(err);
+    }
+  };
+
+  return { getAllUsersAction };
+};

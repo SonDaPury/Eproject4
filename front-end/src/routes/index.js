@@ -18,6 +18,7 @@ import AdminLession from "@eproject4/pages/admin/AdminCourses/AdminLession";
 import WatchCourse from "@eproject4/pages/user/Courses/WatchCourse";
 import CheckoutCart from "@eproject4/pages/user/Order/CheckoutCart";
 import { ConfirmPayment } from "@eproject4/pages/user/Order/ConfirmPayment";
+import AdminUser from "@eproject4/pages/admin/AdminUser";
 
 // Route khong can login van xem duoc
 export const publicRoutes = [
@@ -60,6 +61,13 @@ export const adminRoutes = [
     layout: AdminLayout,
     name: "Dashboard",
   },
+  {
+    path: "/admin/user",
+    component: AdminUser,
+    layout: AdminLayout,
+    name: "Users",
+  },
+
   {
     path: "/admin/tao-khoa-hoc",
     component: CreateCourse,
