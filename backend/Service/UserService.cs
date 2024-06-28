@@ -237,7 +237,7 @@ namespace backend.Service
                 //await _context.UserRefreshTokens.AddAsync(rfToken);
                 //await _context.SaveChangesAsync();
                 var key = CreateCacheKey.BuildUserCacheKey(user.Id);
-                var saveRfToken = JsonSerializer.Serialize(rfToken.RefreshToken);
+                var saveRfToken = JsonSerializer.Serialize(rfToken);
                 await _redisService.SetValueWithExpiryAsync(key, saveRfToken, TimeSpan.FromHours(24));
                 var userInfo = new User
                 {

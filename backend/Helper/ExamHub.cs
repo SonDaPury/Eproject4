@@ -3,6 +3,7 @@ using backend.Entities;
 using backend.Service.Interface;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.Json;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
@@ -30,23 +31,15 @@ namespace backend.Helper
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = (int)_httpContextAccessor.HttpContext.Items["UserId"];
+            //var userId = (int)_httpContextAccessor.HttpContext.Items["UserId"];
+            //var userId = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var userId = (int)Context.Items["UserId"];
             // Giả sử bạn có thể trích xuất ID người dùng từ context
             //var userConnection = await _context.UserConnections
             //   .OrderByDescending(x => x.ConnectedAt)
             //   .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.DisconnectedAt == null);  // Giả định UserId = 1
             var cacheKey = CreateCacheKey.BuildUserConnectionCacheKey(userId);
             var userConnectionJson = await _redisService.GetValueAsync(cacheKey);
-
-            //if (userConnection != null)
-            //{
-            //    userConnection.DisconnectedAt = DateTime.UtcNow;
-            //    await _context.SaveChangesAsync();
-            //    //if (_continueExams.ContainsKey(userConnection.UserId) && _continueExams[userConnection.UserId])
-            //    //{
-            //    await _examService.EndExam((int)userConnection.ExamId, userId);
-            //    //}
-            //}
             if (userConnectionJson != null)
             {
                 var userConnection = JsonSerializer.Deserialize<UserConnection>(userConnectionJson);
@@ -64,6 +57,8 @@ namespace backend.Helper
 
         public async Task StartExam(int examId, int userId)
         {
+            //var userId = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            Context.Items["UserId"] = userId;
             var exam = await _context.Exams.FirstOrDefaultAsync(e => e.Id == examId);
 
             if (exam == null || exam.IsStarted)
