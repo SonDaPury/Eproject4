@@ -18,6 +18,7 @@ import AdminLession from "@eproject4/pages/admin/AdminCourses/AdminLession";
 import WatchCourse from "@eproject4/pages/user/Courses/WatchCourse";
 import CheckoutCart from "@eproject4/pages/user/Order/CheckoutCart";
 import { ConfirmPayment } from "@eproject4/pages/user/Order/ConfirmPayment";
+
 // Route khong can login van xem duoc
 export const publicRoutes = [
   { path: "/", component: Home },

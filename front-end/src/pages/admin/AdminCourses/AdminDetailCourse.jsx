@@ -24,6 +24,7 @@ import { getAllLessionsByChapterId } from "@eproject4/services/lession.service";
 import { getAllExam } from "@eproject4/services/exam.service";
 import useCustomSnackbar from "@eproject4/utils/hooks/useCustomSnackbar";
 import UpdateCourse from "./UpdateCourse";
+import AdminOrders from "./AdminOrders";
 
 const ratings = [
   { label: "5", value: 67 },
@@ -52,6 +53,12 @@ function AdminDetailCourse() {
   const navigate = useNavigate();
   const { showSnackbar } = useCustomSnackbar();
   const [openUpdateCourseModal, setOpenUpdateCourseModal] = useState(false);
+  const [openOrderModal, setOpenOrderModal] = useState(false);
+
+  const handleOrderModalOpen = () => {
+    setOpenOrderModal(true);
+  };
+  const handleOrderModalClose = () => setOpenOrderModal(false);
 
   const handleUpdateCourseModalOpen = () => {
     setOpenUpdateCourseModal(true);
@@ -201,6 +208,10 @@ function AdminDetailCourse() {
 
   const handleOpenUpdateCourse = () => {
     handleUpdateCourseModalOpen();
+  };
+
+  const handleOpenOrderModal = () => {
+    handleOrderModalOpen();
   };
 
   return (
@@ -416,6 +427,14 @@ function AdminDetailCourse() {
           sx={{ marginRight: "10px" }}>
           Cập nhật khóa học
         </Button>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            handleOpenOrderModal();
+          }}
+          sx={{ marginRight: "10px" }}>
+          Xem thông tin thanh toán
+        </Button>
         <Link
           to={`/admin/khoa-hoc/${dataCourses.slug}/bai-hoc?id-course=${dataCourses.id}`}>
           <Button
@@ -434,6 +453,11 @@ function AdminDetailCourse() {
         fetchExamOfCourse={fetchExamOfCourse}
         fetchCoursesData={fetchCoursesData}
         fetchUserByIdData={fetchUserByIdData}
+      />
+      <AdminOrders
+        handleOrderModalClose={handleOrderModalClose}
+        openOrderModal={openOrderModal}
+        dataCourses={dataCourses}
       />
     </Box>
   );
