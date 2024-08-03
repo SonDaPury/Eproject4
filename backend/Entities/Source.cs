@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using backend.Dtos;
 
 namespace backend.Entities
 {
@@ -40,15 +41,28 @@ namespace backend.Entities
         [Column("rating")]
         public string? Rating { get; set; }
 
+
+        //[Column("static_folder")]
+        //[StringLength(20)]
+        //public string? StaticFolder { get; set; }
+
         [Column("user_id")]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public virtual User? User { get; set; }
 
         [Column("sub_topic_id")]
-        public int SubTopicId { get; set; }
+        public int? SubTopicId { get; set; }
         public virtual SubTopic? SubTopic { get; set; }
 
 
         public ICollection<Chapter>? Chapters { get; set; }
+        public ICollection<Exam>? Exams { get; set; }
+        public ICollection<FavoriteSource>? FavoriteSources { get; set; }
+    }
+    public class SourceWithTopicId
+    {
+        public SourceViewDto? Source { get; set; }
+        public int? TopicId { get; set; }
+        public string? TopicName { get; set; }   
     }
 }

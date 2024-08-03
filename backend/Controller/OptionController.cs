@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -9,6 +11,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    [JwtAuthorize("user", "admin")]
     public class OptionController : ControllerBase
     {
         private readonly IOptionService _optionService;
@@ -26,22 +29,29 @@ namespace backend.Controller
         {
             if (optionDto == null)
             {
-                return BadRequest("Option data is required");
+                return BadRequest(new { message = "Option data is required" });
             }
 
             var option = _mapper.Map<Option>(optionDto);
             var createdOption = await _optionService.CreateAsync(option);
             var createdOptionDto = _mapper.Map<OptionDto>(createdOption);
-            return CreatedAtAction(nameof(GetOption), new { id = createdOptionDto.Id }, createdOptionDto);
+            return CreatedAtAction(nameof(GetOption), new { id = createdOption.Id }, createdOptionDto);
         }
 
         // GET: api/Options
+        [HttpGet("pagination")]
+        public async Task<ActionResult<IEnumerable<OptionDto>>> GetAllOptions([FromQuery] Pagination pagination)
+        {
+            var options = await _optionService.GetAllAsync(pagination);
+            var optionDtos = _mapper.Map<List<OptionDto>>(options.Item1);
+            return Ok(new { TotalCount = options.Item2, Items = optionDtos });
+        }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OptionDto>>> GetAllOptions()
         {
             var options = await _optionService.GetAllAsync();
             var optionDtos = _mapper.Map<List<OptionDto>>(options);
-            return Ok(optionDtos);
+            return Ok(optionDtos );
         }
 
         // GET: api/Options/5
@@ -51,7 +61,7 @@ namespace backend.Controller
             var option = await _optionService.GetByIdAsync(id);
             if (option == null)
             {
-                return NotFound($"Option with ID {id} not found.");
+                return NotFound(new { message = $"Option with ID {id} not found." });
             }
             var optionDto = _mapper.Map<OptionDto>(option);
             return Ok(optionDto);
@@ -63,14 +73,14 @@ namespace backend.Controller
         {
             if (optionDto == null)
             {
-                return BadRequest("Invalid option data");
+                return BadRequest(new { message = "Invalid option data" });
             }
 
             var option = _mapper.Map<Option>(optionDto);
             var updatedOption = await _optionService.UpdateAsync(id, option);
             if (updatedOption == null)
             {
-                return NotFound($"Option with ID {id} not found.");
+                return NotFound(new { message = $"Option with ID {id} not found." });
             }
             return Ok(_mapper.Map<OptionDto>(updatedOption));
         }
@@ -82,7 +92,7 @@ namespace backend.Controller
             var success = await _optionService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Option with ID {id} not found.");
+                return NotFound(new { message = $"Option with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }

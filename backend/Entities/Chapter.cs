@@ -12,6 +12,8 @@ namespace backend.Entities
 
         [Column("title")]
         public string? Title { get; set; }
+        [Column("Index")]
+        public int Index { get; set; }
 
         [Column("description")]
         public string? Description { get; set; }
@@ -21,6 +23,6 @@ namespace backend.Entities
         public virtual Source? Source { get; set; }
 
         public ICollection<Lesson>? Lessions { get; set; }
-        public ICollection<Exam>? Exams { get; set; }
+        //public ICollection<Exam>? Exams { get; set; }
     }
 }

@@ -19,6 +19,6 @@ namespace backend.Entities
         [Column("user_id")]
         public int? UserId { get; set; }
         public virtual User? User { get; set; }
-        public ICollection<Answer>? Answers { get; set; }
+        public virtual Answer? Answer { get; set; }
     }
 }

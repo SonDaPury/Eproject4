@@ -1,4 +1,5 @@
-﻿using backend.Entities;
+﻿using backend.Dtos;
+using backend.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data
@@ -24,9 +25,21 @@ namespace backend.Data
         public virtual DbSet<Topic> Topics { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserRefreshTokens> UserRefreshTokens { get; set; }
+        public virtual DbSet<Serial> Serials { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
+        public virtual DbSet<FavoriteSource> FavoriteSources { get; set; }
+
+        public virtual DbSet<UserConnection> UserConnections { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>().HasIndex(ul => new { ul.Username }).IsUnique();
+            modelBuilder.Entity<Attemp>()
+              .HasOne(a => a.Answer)
+              .WithOne(a => a.Attemp)
+              .HasForeignKey<Answer>(a => a.AttemptId);
+            modelBuilder.Entity<Serial>()
+              .HasIndex(s => s.LessonId)
+              .IsUnique();
         }
     }
 }

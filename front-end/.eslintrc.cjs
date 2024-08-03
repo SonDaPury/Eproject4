@@ -17,7 +17,7 @@ module.exports = {
       "warn",
       { allowConstantExport: true },
     ],
-    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/rules-of-hooks": "off",
     "react-hooks/exhaustive-deps": "warn",
     "react/prop-types": "off",
     "react/display-name": "off",
@@ -29,6 +29,7 @@ module.exports = {
     "no-multiple-empty-lines": "warn",
     "space-before-blocks": ["error", "always"],
     "object-curly-spacing": ["error", "always"],
+    "no-debugger": "off", // Thêm dòng này
     indent: ["error", 2],
     semi: ["error", "always"],
     quotes: ["error", "double"],

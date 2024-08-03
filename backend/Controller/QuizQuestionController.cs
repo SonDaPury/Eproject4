@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using backend.Attributes;
+using backend.Base;
 using backend.Dtos;
 using backend.Entities;
 using backend.Service.Interface;
@@ -9,6 +11,7 @@ namespace backend.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    [JwtAuthorize("user", "admin")]
     public class QuizQuestionController : ControllerBase
     {
         private readonly IQuizQuestionService _quizQuestionService;
@@ -26,7 +29,7 @@ namespace backend.Controller
         {
             if (quizQuestionDto == null)
             {
-                return BadRequest("Quiz question data is required");
+                return BadRequest(new { message = "Quiz question data is required" });
             }
 
             var quizQuestion = _mapper.Map<QuizQuestion>(quizQuestionDto);
@@ -36,12 +39,19 @@ namespace backend.Controller
         }
 
         // GET: api/QuizQuestions
+        [HttpGet("pagination")]
+        public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetAllQuizQuestions([FromQuery] Pagination pagination)
+        {
+            var quizQuestions = await _quizQuestionService.GetAllAsync(pagination);
+            var quizQuestionDtos = _mapper.Map<List<QuizQuestionDto>>(quizQuestions.Item1);
+            return Ok(new { TotalCount = quizQuestions.Item2, Items = quizQuestionDtos });
+        }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<QuizQuestionDto>>> GetAllQuizQuestions()
         {
             var quizQuestions = await _quizQuestionService.GetAllAsync();
             var quizQuestionDtos = _mapper.Map<List<QuizQuestionDto>>(quizQuestions);
-            return Ok(quizQuestionDtos);
+            return Ok( quizQuestionDtos );
         }
 
         // GET: api/QuizQuestions/5
@@ -51,7 +61,7 @@ namespace backend.Controller
             var quizQuestion = await _quizQuestionService.GetByIdAsync(id);
             if (quizQuestion == null)
             {
-                return NotFound($"Quiz question with ID {id} not found.");
+                return NotFound(new { message = $"Quiz question with ID {id} not found." });
             }
             var quizQuestionDto = _mapper.Map<QuizQuestionDto>(quizQuestion);
             return Ok(quizQuestionDto);
@@ -63,14 +73,14 @@ namespace backend.Controller
         {
             if (quizQuestionDto == null)
             {
-                return BadRequest("Invalid quiz question data");
+                return BadRequest(new { message = "Invalid quiz question data" });
             }
 
             var quizQuestion = _mapper.Map<QuizQuestion>(quizQuestionDto);
             var updatedQuizQuestion = await _quizQuestionService.UpdateAsync(id, quizQuestion);
             if (updatedQuizQuestion == null)
             {
-                return NotFound($"Quiz question with ID {id} not found.");
+                return NotFound(new { message = $"Quiz question with ID {id} not found." });
             }
             return Ok(_mapper.Map<QuizQuestionDto>(updatedQuizQuestion));
         }
@@ -82,7 +92,7 @@ namespace backend.Controller
             var success = await _quizQuestionService.DeleteAsync(id);
             if (!success)
             {
-                return NotFound($"Quiz question with ID {id} not found.");
+                return NotFound(new { message = $"Quiz question with ID {id} not found." });
             }
             return NoContent(); // Using NoContent for successful delete as it's more appropriate than Ok in REST terms.
         }

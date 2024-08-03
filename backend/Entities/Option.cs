@@ -14,10 +14,10 @@ namespace backend.Entities
         public string? Answer { get; set; }
 
         [Column("is_correct")]
-        public bool? IsCorrect { get; set; }
+        public bool IsCorrect { get; set; }
 
         [Column("question_id")]
         public int QuestionId { get; set; }
-        public Question? Question { get; set; }
+        public virtual Question? Question { get; set; }
     }
 }

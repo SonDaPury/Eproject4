@@ -12,16 +12,24 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import { ReactComponent as LmsLogo } from "@eproject4/assets/images/logo.svg";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Badge, styled, SvgIcon } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import ButtonCustomize from "@eproject4/components/ButtonCustomize";
+import { getToken } from "@eproject4/helpers/authHelper";
+import { logout } from "@eproject4/services/auth";
+import { cartServices } from "@eproject4/services/cart.service";
+import { getUser } from "@eproject4/helpers/authHelper";
+import { useDispatch, useSelector } from "react-redux";
+import { cartSelector } from "@eproject4/redux/selectors";
+import { setShoppingCartRender } from "@eproject4/redux/slices/orderSlide";
+import { useNavigate } from "react-router-dom";
 
 const pages = [
   { text: "Khóa học", path: "/khoa-hoc" },
   { text: "Về chúng tôi", path: "/ve-chung-toi" },
 ];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -33,9 +41,35 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 function Header() {
+  const navigate = useNavigate();
+
+  const { GetCardByUserID } = cartServices();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [number, setNumber] = useState("");
+  const token = getToken();
+  const { logoutAction } = logout();
+  const dispatch = useDispatch();
 
+  const course = useSelector(cartSelector);
+
+  useEffect(() => {
+    const fetchapi = async () => {
+      var checkUser = getUser();
+      if (checkUser == null) {
+        navigate("/dang-nhap");
+      }
+      const res = await GetCardByUserID(checkUser.id);
+      console.log("HEADER", res);
+      setNumber(
+        res && res.data && res.data.length > 0 && res.data[0].sources
+          ? res.data[0].sources.length
+          : 0
+      );
+    };
+    fetchapi();
+    dispatch(setShoppingCartRender({ status: false }));
+  }, [course]);
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -50,7 +84,14 @@ function Header() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+  const handleLogout = async () => {
+    setAnchorElUser(null);
+    await logoutAction();
+  };
 
+  const handleClickShopping = () => {
+    navigate("/checkoutCart");
+  };
   return (
     <Box>
       <AppBar
@@ -167,20 +208,39 @@ function Header() {
                 </Link>
               ))}
             </Box>
-            <Box sx={{ flexGrow: 0, display: "flex" }}>
+            <Box sx={{ display: token ? "none" : "flex" }}>
+              <Link to={"/dang-ky"}>
+                <ButtonCustomize text="Đăng ký" width="100px" />
+              </Link>
+              <Link to={"/dang-nhap"}>
+                <ButtonCustomize
+                  text="Đăng nhập"
+                  width="110px"
+                  backgroundColor="#0E1640"
+                  variant="outlined"
+                  sx={{ border: "0.5px solid #FFFFFF", marginLeft: "10px" }}
+                />
+              </Link>
+            </Box>
+            <Box sx={{ flexGrow: 0, display: token ? "flex" : "none" }}>
               <Box sx={{ marginRight: "30px" }}>
                 <button className="mr-[10px]">
                   <FavoriteBorderIcon sx={{ color: "#FFFFFF" }} />
                 </button>
-                <IconButton sx={{ color: "#FFFFFF" }} aria-label="cart">
-                  <StyledBadge badgeContent={4} color="secondary">
+                <IconButton
+                  sx={{ color: "#FFFFFF" }}
+                  aria-label="cart"
+                  onClick={handleClickShopping}>
+                  <StyledBadge
+                    badgeContent={number == "" ? "0" : number}
+                    color="secondary">
                     <ShoppingCartIcon />
                   </StyledBadge>
                 </IconButton>
               </Box>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  <Avatar alt="Remy Sharp" src="https://haycafe.vn/wp-content/uploads/2022/02/Avatar-trang.jpg" />
                 </IconButton>
               </Tooltip>
               <Menu
@@ -198,11 +258,22 @@ function Header() {
                 }}
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}>
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
+                {/*{settings.map((setting) => (*/}
+                {/*  <MenuItem key={setting} onClick={handleCloseUserMenu}>*/}
+                {/*    <Typography textAlign="center">{setting}</Typography>*/}
+                {/*  </MenuItem>*/}
+                {/*))}*/}
+                <Link to={"/dashboard-student"}>
+                  <MenuItem onClick={handleCloseUserMenu}>
+                    <Typography textAlign="center">
+                      Thông tin cá nhân
+                    </Typography>
                   </MenuItem>
-                ))}
+                </Link>
+
+                <MenuItem onClick={handleLogout}>
+                  <Typography textAlign="center">Đăng xuất</Typography>
+                </MenuItem>
               </Menu>
             </Box>
           </Toolbar>
